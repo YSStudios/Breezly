@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Container } from "@/components/Container";
-import heroImg from "../public/hero.webp";
+import heroImg from "../public/hero.jpeg";
 
 export const Hero = () => {
   return (
