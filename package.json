@@ -22,6 +22,7 @@
     "@types/react": "18.2.24",
     "@types/react-dom": "18.2.8",
     "@vercel/analytics": "^0.1.11",
+    "@vercel/nft": "^0.27.2",
     "@vercel/og": "^0.0.26",
     "@vercel/postgres": "^0.8.0",
     "classnames": "^2.3.2",
