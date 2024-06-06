@@ -16,8 +16,10 @@ export default async function handler(
         },
       });
       res.status(200).json(users);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch users.', error: error.message || error });
+    } catch (error: any) {
+      // Ensure the error is of type Error before attempting to access `message`
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ message: 'Failed to fetch finally!', error: errorMessage });
     }
   } else {
     res.setHeader('Allow', ['GET']);
