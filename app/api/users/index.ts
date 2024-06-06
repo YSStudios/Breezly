@@ -1,9 +1,13 @@
 import { PrismaClient } from '@prisma/client';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 const prisma = new PrismaClient();
 
-export default async function handler(req, res) {
-  if (req.method == 'GET') {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method === 'GET') {
     try {
       const users = await prisma.user.findMany({
         include: {
@@ -13,7 +17,7 @@ export default async function handler(req, res) {
       });
       res.status(200).json(users);
     } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch users.', error });
+      res.status(500).json({ message: 'Failed to fetch users.', error: error.message || error });
     }
   } else {
     res.setHeader('Allow', ['GET']);
