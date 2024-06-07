@@ -26,8 +26,8 @@ export default function NavBar({ session }: { session: Session | null }) {
         <div className="flex h-16 items-center justify-between w-full">
           <Link href="/" className="flex items-center font-display text-2xl dark:text-white">
             <Image
-              src="/logo.png"
-              alt="Precedent logo"
+              src="/applogo.webp"
+              alt="OfferApp"
               width="30"
               height="30"
               className="mr-2 rounded-sm"
