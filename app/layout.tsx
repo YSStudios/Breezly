@@ -7,10 +7,10 @@ import { Suspense } from "react";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 
 export const metadata = {
-  title: "Precedent - Building blocks for your Next.js project",
+  title: "OfferApp - Send real estate offers quick and easy",
   description:
-    "Precedent is the all-in-one solution for your Next.js project. It includes a design system, authentication, analytics, and more.",
-  metadataBase: new URL("https://precedent.dev"),
+    "Offer app is a completely self powered real-estate offer writing platform. Save thousands and get your real-estate offer sent quickly and easily.",
+  metadataBase: new URL("https://offerapp.vercel.app"),
 };
 
 export default async function RootLayout({
