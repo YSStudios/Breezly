@@ -6,6 +6,7 @@ import useScroll from "@/lib/hooks/use-scroll";
 import { useSignInModal } from "./sign-in-modal";
 import UserDropdown from "./user-dropdown";
 import { Session } from "next-auth";
+import { Container } from "../Container";
 
 export default function NavBar({ session }: { session: Session | null }) {
   const { SignInModal, setShowSignInModal } = useSignInModal();
@@ -21,8 +22,9 @@ export default function NavBar({ session }: { session: Session | null }) {
             : "bg-white/0"
         } z-30 transition-all`}
       >
-        <div className="mx-5 flex h-16 max-w-screen-xl items-center justify-between w-full">
-          <Link href="/" className="flex items-center font-display text-2xl">
+		<Container className="py-2">
+        <div className="flex h-16 items-center justify-between w-full">
+          <Link href="/" className="flex items-center font-display text-2xl dark:text-white">
             <Image
               src="/logo.png"
               alt="Precedent logo"
@@ -37,7 +39,7 @@ export default function NavBar({ session }: { session: Session | null }) {
               <UserDropdown session={session} />
             ) : (
               <button
-                className="rounded-full border border-black bg-black p-1.5 px-4 text-sm text-white transition-all hover:bg-white hover:text-black"
+                className="px-8 py-2 text-lg font-medium text-center text-white bg-emerald-500 rounded-md"
                 onClick={() => setShowSignInModal(true)}
               >
                 Sign In
@@ -45,6 +47,7 @@ export default function NavBar({ session }: { session: Session | null }) {
             )}
           </div>
         </div>
+		</Container>
       </div>
     </>
   );
