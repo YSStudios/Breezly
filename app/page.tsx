@@ -7,6 +7,7 @@ import Image from "next/image";
 import { nFormatter } from "@/lib/utils";
 
 //custom
+import { Container } from "@/components/Container";
 import { Hero } from "@/components/Hero";
 import { SectionTitle } from "@/components/SectionTitle";
 import { Benefits } from "@/components/Benefits";
@@ -33,7 +34,7 @@ export default async function Home() {
     .catch((e) => console.log(e));
 
   return (
-    <>
+    <Container>
       <Hero />
       <SectionTitle
         preTitle="Nextly Benefits"
@@ -62,7 +63,7 @@ export default async function Home() {
 
       <Faq />
       <Cta />
-    </>
+	</Container>
   );
 }
 
