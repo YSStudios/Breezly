@@ -24,7 +24,7 @@ export default function NavBar({ session }: { session: Session | null }) {
       >
 		<Container className="py-2">
         <div className="flex h-16 items-center justify-between w-full">
-          <Link href="/" className="flex items-center font-display text-2xl dark:text-white">
+          <Link href="/" className="flex items-center font-display text-2xl">
             <Image
               src="/applogo.webp"
               alt="OfferApp"

@@ -9,13 +9,13 @@ export default function Footer() {
   return (
     <div className="relative">
       <Container>
-        <div className="dark:border-trueGray-700 mx-auto mt-5 grid max-w-screen-xl grid-cols-1 gap-10 border-t border-gray-100 pt-10 lg:grid-cols-5">
+        <div className="mx-auto mt-5 grid max-w-screen-xl grid-cols-1 gap-10 border-t border-gray-100 pt-10 lg:grid-cols-5">
           <div className="lg:col-span-2">
             <div>
               {" "}
               <Link
                 href="/"
-                className="flex items-center space-x-2 text-2xl font-medium text-emerald-500 dark:text-gray-100"
+                className="flex items-center space-x-2 text-2xl font-medium text-emerald-500"
               >
                 <Image
                   src="/applogo.webp"
@@ -28,7 +28,7 @@ export default function Footer() {
               </Link>
             </div>
 
-            <div className="mt-4 max-w-md text-gray-500 dark:text-gray-400">
+            <div className="mt-4 max-w-md text-gray-500">
               Nextly is a free landing page & marketing website template for
               startups and indie projects. Its built with Next.js & TailwindCSS.
               And its completely open-source.
@@ -41,7 +41,7 @@ export default function Footer() {
                 <Link
                   key={index}
                   href="/"
-                  className="dark:focus:bg-trueGray-700 w-full rounded-md px-4 py-2 text-gray-500 hover:text-emerald-500 focus:bg-emerald-100 focus:text-emerald-500 focus:outline-none dark:text-gray-300"
+                  className="w-full rounded-md px-4 py-2 text-gray-500 hover:text-emerald-500 focus:bg-emerald-100 focus:text-emerald-500 focus:outline-none"
                 >
                   {item}
                 </Link>
@@ -54,7 +54,7 @@ export default function Footer() {
                 <Link
                   key={index}
                   href="/"
-                  className="dark:focus:bg-trueGray-700 w-full rounded-md px-4 py-2 text-gray-500 hover:text-emerald-500 focus:bg-emerald-100 focus:text-emerald-500 focus:outline-none dark:text-gray-300"
+                  className="w-full rounded-md px-4 py-2 text-gray-500 hover:text-emerald-500 focus:bg-emerald-100 focus:text-emerald-500 focus:outline-none"
                 >
                   {item}
                 </Link>
@@ -63,7 +63,7 @@ export default function Footer() {
           </div>
           <div className="">
             <div>Follow us</div>
-            <div className="mt-5 flex space-x-5 text-gray-400 dark:text-gray-500">
+            <div className="mt-5 flex space-x-5 text-gray-400">
               <a
                 href="https://twitter.com/web3templates"
                 target="_blank"
