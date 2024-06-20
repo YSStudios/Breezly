@@ -1,17 +1,44 @@
-import React from 'react';
+"use client"; // Add this at the top of the file
+import React, { useState } from 'react';
 import { Container } from '@/components/Container';
 import Image from 'next/image';
 import formimage from "../public/formimage.png";
 
 const AddressForm = () => {
+	const [currentStep, setCurrentStep] = useState(1);
+	const [currentSubstep, setCurrentSubstep] = useState(1);
+
+	const handleNextSubstep = () => {
+		setCurrentSubstep((prevSubstep) => prevSubstep + 1);
+	};
+
+	const handlePreviousSubstep = () => {
+		setCurrentSubstep((prevSubstep) => Math.max(prevSubstep - 1, 1));
+	};
+
+	const handleNextStep = () => {
+		setCurrentStep((prevStep) => prevStep + 1);
+		setCurrentSubstep(1); // Reset substep to 1 for the new step
+	};
+
+	const handleSkip = () => {
+		handleNextSubstep();
+	};
+
+	const handleSetStep = (step) => {
+		setCurrentStep(step);
+		setCurrentSubstep(1); // Reset substep to 1 for the new step
+	};
+
 	return (
 		<Container>
 			<div className="w-full mx-auto">
 				<div className="lg:col-start-2 min-h-[45em] col-span-12 lg:col-span-10 grid grid-cols-6 gap-y-10 pb-12 mx-auto">
-					
+
 					{/* Sidebar */}
 					<div style={{ backgroundImage: `url(${formimage.src})` }} className="bg-[length:60%_auto] bg-no-repeat bg-bottom p-4 col-span-6 md:col-span-2 bg-emerald-500 rounded-l-2xl">
 						<div className="grid grid-cols-5 space-y-4">
+							<h1 className="md:col-span-5 text-2xl p-3 font-bold text-white">Offer to Purchase Real Estate</h1>
 							<div className="md:col-span-5 group relative flex items-left gap-x-6 rounded-lg p-3 text-sm leading-6">
 								<div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white mx-auto md:mx-0">
 									<svg className="mx-auto items-center justify-center h-6 w-6 text-gray-600 group-hover:text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
@@ -20,13 +47,14 @@ const AddressForm = () => {
 									</svg>
 								</div>
 								<div className="flex-auto hidden md:block">
-									<a href="#" className="block font-semibold text-white">
+									<button onClick={() => handleSetStep(1)} className="text-left block font-semibold text-white">
 										<p>Step 1</p>
 										Get Started
 										<span className="absolute inset-0"></span>
-									</a>
+									</button>
 								</div>
 							</div>
+
 							<div className="md:col-span-5 group relative flex items-left justify-left gap-x-6 rounded-lg p-3 text-sm leading-6">
 								<div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white  mx-auto md:mx-0">
 									<svg className="h-6 w-6 text-gray-600 group-hover:text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
@@ -34,11 +62,11 @@ const AddressForm = () => {
 									</svg>
 								</div>
 								<div className="flex-auto  hidden md:block">
-									<a href="#" className="block font-semibold text-white">
+									<button onClick={() => handleSetStep(2)} className="text-left block font-semibold text-white">
 										<p>Step 2</p>
 										Property Details
 										<span className="absolute inset-0"></span>
-									</a>
+									</button>
 								</div>
 							</div>
 							<div className="md:col-span-5 group relative flex items-center gap-x-6 rounded-lg p-3 text-sm leading-6">
@@ -48,11 +76,11 @@ const AddressForm = () => {
 									</svg>
 								</div>
 								<div className="flex-auto  hidden md:block">
-									<a href="#" className="block font-semibold text-white">
+									<button onClick={() => handleSetStep(3)} className="text-left block font-semibold text-white">
 										<p>Step 3</p>
 										Parties
 										<span className="absolute inset-0"></span>
-									</a>
+									</button>
 								</div>
 							</div>
 							<div className="md:col-span-5 group relative flex items-center gap-x-6 rounded-lg p-3 text-sm leading-6">
@@ -62,11 +90,11 @@ const AddressForm = () => {
 									</svg>
 								</div>
 								<div className="flex-auto  hidden md:block">
-									<a href="#" className="block font-semibold text-white">
+									<button onClick={() => handleSetStep(4)} className="text-left block font-semibold text-white">
 										<p>Step 4</p>
 										Terms
 										<span className="absolute inset-0"></span>
-									</a>
+									</button>
 								</div>
 							</div>
 							<div className="md:col-span-5 group relative flex items-center gap-x-6 rounded-lg p-3 text-sm leading-6">
@@ -76,50 +104,174 @@ const AddressForm = () => {
 									</svg>
 								</div>
 								<div className="flex-auto  hidden md:block">
-									<a href="#" className="block font-semibold text-white">
+									<button onClick={() => handleSetStep(5)} className="text-left block font-semibold text-white">
 										<p>Step 5</p>
 										Send Offer/Download
 										<span className="absolute inset-0"></span>
-									</a>
+									</button>
 								</div>
 							</div>
 						</div>
 					</div>
-					
+
 					{/* Form */}
-					<div className="p-10 col-span-6 md:col-span-4 bg-gray-100 rounded-r-2xl">
-						<div className="mx-auto grid grid-cols-2 gap-x-8 gap-y-10">
-							<div className="col-span-2 sm:col-span-1">
-								<label htmlFor="first-name" className="block text-sm font-medium leading-6 text-gray-900">First name 1</label>
-								<div className="mt-2">
-									<input 
-										type="text" 
-										name="first-name" 
-										id="first-name" 
-										placeholder="given-name" 
-										className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-									/>
+					<div className="p-10 col-span-6 md:col-span-4 bg-gray-100 rounded-r-2xl flex flex-col">
+						<div className="flex-grow">
+							{currentStep === 1 && (
+								<div className="mx-auto grid grid-cols-2 gap-x-8 gap-y-10">
+									{currentSubstep === 1 && (
+										<div className="col-span-2 sm:col-span-1">
+											<label htmlFor="first-name" className="block text-sm font-medium leading-6 text-gray-900">First name</label>
+											<div className="mt-2">
+												<input
+													type="text"
+													name="first-name"
+													id="first-name"
+													placeholder="John"
+													className="block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:outline-none focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+												/>
+											</div>
+										</div>
+									)}
+									{currentSubstep === 2 && (
+										<div className="col-span-2 sm:col-span-1">
+											<label htmlFor="last-name" className="block text-sm font-medium leading-6 text-gray-900">Last name</label>
+											<div className="mt-2">
+												<input
+													type="text"
+													name="last-name"
+													id="last-name"
+													placeholder="Doe"
+													className="block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:outline-none focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+												/>
+											</div>
+										</div>
+									)}
+									{currentSubstep === 3 && (
+										<div className="col-span-2">
+											<label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">Email address</label>
+											<div className="mt-2">
+												<input
+													type="text"
+													name="email"
+													id="email"
+													placeholder="contact@email.com"
+													className="block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:outline-none focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+												/>
+											</div>
+										</div>
+									)}
 								</div>
-							</div>
+							)}
 
-							<div className="col-span-2 sm:col-span-1">
-								<label className="block text-sm font-medium leading-6 text-gray-900">Last name</label>
-								<div className="mt-2">
-									
+							{currentStep === 2 && (
+								<div className="mx-auto grid grid-cols-2 gap-x-8 gap-y-10">
+									{currentSubstep === 1 && (
+										<div className="col-span-2 sm:col-span-1">
+											<label htmlFor="property-details" className="block text-sm font-medium leading-6 text-gray-900">Property Details</label>
+											<div className="mt-2">
+												<input
+													type="text"
+													name="property-details"
+													id="property-details"
+													placeholder="Property Details"
+													className="block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:outline-none focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+												/>
+											</div>
+										</div>
+									)}
+									{currentSubstep === 2 && (
+										<div className="col-span-2 sm:col-span-1">
+											<label htmlFor="additional-info" className="block text-sm font-medium leading-6 text-gray-900">Additional Info</label>
+											<div className="mt-2">
+												<input
+													type="text"
+													name="additional-info"
+													id="additional-info"
+													placeholder="Additional Info"
+													className="block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:outline-none focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+												/>
+											</div>
+										</div>
+									)}
 								</div>
-							</div>
+							)}
 
-							<div className="col-span-2">
-								<label className="block text-sm font-medium leading-6 text-gray-900">Email address</label>
-								<div className="mt-2">
-									
+							{currentStep === 3 && (
+								<div className="mx-auto grid grid-cols-2 gap-x-8 gap-y-10">
+									{currentSubstep === 1 && (
+										<div className="col-span-2 sm:col-span-1">
+											<label htmlFor="party-name" className="block text-sm font-medium leading-6 text-gray-900">Party Name</label>
+											<div className="mt-2">
+												<input
+													type="text"
+													name="party-name"
+													id="party-name"
+													placeholder="Party Name"
+													className="block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:outline-none focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+												/>
+											</div>
+										</div>
+									)}
+									{currentSubstep === 2 && (
+										<div className="col-span-2 sm:col-span-1">
+											<label htmlFor="party-contact" className="block text-sm font-medium leading-6 text-gray-900">Party Contact</label>
+											<div className="mt-2">
+												<input
+													type="text"
+													name="party-contact"
+													id="party-contact"
+													placeholder="Party Contact"
+													className="block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:outline-none focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+												/>
+											</div>
+										</div>
+									)}
 								</div>
-							</div>
+							)}
+
+							{currentStep === 4 && (
+								<div className="mx-auto grid grid-cols-2 gap-x-8 gap-y-10">
+									{currentSubstep === 1 && (
+										<div className="col-span-2 sm:col-span-1">
+											<label htmlFor="terms" className="block text-sm font-medium leading-6 text-gray-900">Terms</label>
+											<div className="mt-2">
+												<input
+													type="text"
+													name="terms"
+													id="terms"
+													placeholder="Terms"
+													className="block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:outline-none focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+												/>
+											</div>
+										</div>
+									)}
+									{currentSubstep === 2 && (
+										<div className="col-span-2 sm:col-span-1">
+											<label htmlFor="agreement" className="block text-sm font-medium leading-6 text-gray-900">Agreement</label>
+											<div className="mt-2">
+												<input
+													type="text"
+													name="agreement"
+													id="agreement"
+													placeholder="Agreement"
+													className="block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:outline-none focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+												/>
+											</div>
+										</div>
+									)}
+								</div>
+							)}
 						</div>
 
 						<div className="mt-6 flex items-center justify-end gap-x-6">
-							<button type="button" className="text-sm font-semibold leading-6 text-gray-900">Cancel</button>
-							<button type="submit" className="rounded-md bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Save</button>
+							{currentStep > 1 && (
+								<button type="button" onClick={handlePreviousSubstep} className="mr-auto text-sm font-semibold leading-6 text-gray-900">Previous</button>
+							)}
+							<button type="submit" className="rounded-md bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Save and continue</button>
+
+								<button type="button" onClick={handleSkip} className="text-sm font-semibold leading-6 text-gray-900">Skip this step</button>
+
 						</div>
 					</div>
 				</div>
