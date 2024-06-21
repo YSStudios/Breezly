@@ -1,6 +1,7 @@
 const Step1 = ({ currentSubstep }) => {
 	return (
 		<div className="mx-auto grid grid-cols-2 gap-x-8 gap-y-10">
+			<h1 className="col-span-2 sm:col-span-2 text-3xl font-bold text-gray-900">Offer to Purchase Real Estate</h1>
 			{currentSubstep === 1 && (
 				<>
 					<div className="col-span-2 sm:col-span-2">
