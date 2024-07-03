@@ -1,4 +1,7 @@
-const Step1 = ({ currentSubstep }) => {
+import React from 'react';
+import { StepProps } from '../types';
+
+const Step1: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 	return (
 		<div className="mx-auto grid grid-cols-2 gap-x-8 gap-y-10">
 			<h1 className="col-span-2 sm:col-span-2 text-3xl font-bold text-gray-900">Offer to Purchase Real Estate</h1>
