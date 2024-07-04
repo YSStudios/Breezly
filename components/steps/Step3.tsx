@@ -18,12 +18,12 @@ const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
             {
                 value: 'individual',
                 label: 'Individual',
-                image: '/path/to/individual-icon.svg'
+                image: '/icons/individual.svg'
             },
             {
                 value: 'corporation',
                 label: 'Corporation/Organization',
-                image: '/path/to/corporation-icon.svg'
+                image: '/icons/corporation.svg'
             }
         ]
     });
