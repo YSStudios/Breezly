@@ -32,7 +32,7 @@ const StateSelector: React.FC<StateSelectorProps> = ({ onStateSelect }) => {
         <button
           type="button"
           onClick={() => setShowStateSelection(true)}
-          className="mt-2 rounded-md bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          className="mt-2 rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
           Choose your state
         </button>

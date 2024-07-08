@@ -13,7 +13,7 @@ const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 
     const partyTypeQuestion = (partyType: 'buyer' | 'seller'): Question => ({
         id: `${partyType}-type`,
-        title: `Who is the ${partyType}?`,
+        description: `Who is the ${partyType}?`,
         options: [
             {
                 value: 'individual',
@@ -79,7 +79,7 @@ const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 
         return (
             <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-gray-900">{partyType === 'buyer' ? 'Buyer' : 'Seller'} Details</h2>
+                <h2 className="text-3xl font-bold text-gray-900">{partyType === 'buyer' ? 'Buyer' : 'Seller'} Details</h2>
                 {parties.map((partyIndex) => (
                     <div key={partyIndex} className="bg-white p-6 rounded-lg shadow">
                         {getPartyLabel(partyType, partyIndex) && (

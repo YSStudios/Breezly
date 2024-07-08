@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Step1 from './steps/Step1';
 import Step2 from './steps/Step2';
 import Step3 from './steps/Step3';
+import Step4 from './steps/Step4';
 import generatePDF from '../utils/generatePDF';
 import { FormData, StepProps } from './types';
 import { Container } from '@/components/Container';
@@ -98,6 +99,7 @@ const Form: React.FC = () => {
                 {currentStep === 1 && <Step1 {...stepProps} />}
                 {currentStep === 2 && <Step2 {...stepProps} />}
 				{currentStep === 3 && <Step3 currentSubstep={currentSubstep} onInputChange={handleInputChange} />}
+				{currentStep === 4 && <Step4 currentSubstep={currentSubstep} onInputChange={handleInputChange} />}
                 {/* Add similar lines for other steps */}
               </div>
 

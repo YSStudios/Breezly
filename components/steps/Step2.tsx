@@ -13,7 +13,7 @@ const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 
 	const addressOptionQuestion: Question = {
 		id: 'address-option',
-		title: 'When would you like to add the house address?',
+		description: 'When would you like to add the house address?',
 		options: [
 			{
 				value: 'later',
@@ -35,7 +35,7 @@ const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 
 	const legalLandDescriptionQuestion: Question = {
 		id: 'legal-land-description',
-		title: "When would you like to add the house's legal land description?",
+		description: "When would you like to add the house's legal land description?",
 		options: [
 			{
 				value: 'attach',
@@ -56,7 +56,7 @@ const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 
 	const PropertyFeaturesQuestion: Question = {
 		id: 'property-features',
-		title: "Are there any chattels, fixtures, or improvements included in the purchase?",
+		description: "Are there any chattels, fixtures, or improvements included in the purchase?",
 		options: [
 			{
 				value: 'yes',
@@ -71,7 +71,7 @@ const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 
 	const AdditionalFeaturesQuestion: Question = {
 		id: 'additional-features',
-		title: "When would you like to describe the chattels, fixtures or improvements?",
+		description: "When would you like to describe the chattels, fixtures or improvements?",
 		options: [
 			{
 				value: 'attach',
