@@ -1,174 +1,207 @@
-"use client"
-import React, { useState, useEffect } from 'react';
-import 'tailwindcss/tailwind.css';
-
-// Define interfaces for the data
-interface Account {
-	id: string;
-	type: string;
-	provider: string;
-}
-
-interface Session {
-	id: string;
-	expires: Date;
-}
-
-interface Offer {
-	id: string;
-	address: string;
-	price: number;
-	status: string;
-}
-
-interface User {
-	id: string;
-	name: string | null;
-	email: string | null;
-	password: string | null;
-	address: string | null;
-	accounts: Account[];
-	sessions: Session[];
-	pendingOffers: Offer[];
-	pastOffers: Offer[];
-}
+// Dashboard.tsx
+import React from 'react';
+import { 
+  UserIcon, 
+  BuildingOfficeIcon, 
+  PhoneIcon, 
+  EnvelopeIcon, 
+  MapPinIcon,
+  CurrencyDollarIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  XCircleIcon
+} from '@heroicons/react/24/outline';
 
 const Dashboard = () => {
-	// Mock data for demonstration
-	const mockUsers: User[] = [
-		{
-			id: '1',
-			name: 'John Doe',
-			email: 'john.doe@example.com',
-			password: '********',
-			address: '123 Main St, Anytown, USA',
-			accounts: [],
-			sessions: [],
-			pendingOffers: [
-				{ id: '1', address: '456 Elm St', price: 250000, status: 'Pending' },
-				{ id: '2', address: '789 Oak St', price: 300000, status: 'Pending' },
-			],
-			pastOffers: [
-				{ id: '3', address: '101 Pine St', price: 200000, status: 'Accepted' },
-				{ id: '4', address: '202 Maple St', price: 150000, status: 'Rejected' },
-			],
-		},
-	];
+  // Mock data for demonstration
+  const user = {
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    phone: '(123) 456-7890',
+    address: '123 Main St, Anytown, USA',
+  };
 
-	const [users, setUsers] = useState<User[]>(mockUsers);
-	const [error, setError] = useState<string | null>(null);
-	const [loading, setLoading] = useState<boolean>(false);
+  const stats = [
+    { name: 'Active Offers', value: '18', change: '2 new', icon: CurrencyDollarIcon },
+    { name: 'Pending Offers', value: '132', change: '28 closing soon', icon: ClockIcon },
+    { name: 'Completed Offers', value: '12', change: '3 this month', icon: CheckCircleIcon },
+    { name: 'Productivity', value: '76%', change: '5% increase', icon: BuildingOfficeIcon },
+  ];
 
-	return (
-		<div className="min-h-screen bg-gray-100 p-6">
-			<h1 className="text-2xl font-bold mb-6">User Dashboard</h1>
+  const pendingOffers = [
+    { id: '1', address: '456 Elm St', price: 250000, status: 'Pending' },
+    { id: '2', address: '789 Oak St', price: 300000, status: 'Pending' },
+  ];
 
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-				<div className="bg-white shadow-md rounded-lg p-4">
-					<div className="text-gray-500">Active Offers</div>
-					<div className="text-2xl font-bold">18</div>
-					<div className="text-gray-500">2 Completed</div>
-				</div>
-				<div className="bg-white shadow-md rounded-lg p-4">
-					<div className="text-gray-500">Pending Offers</div>
-					<div className="text-2xl font-bold">132</div>
-					<div className="text-gray-500">28 Completed</div>
-				</div>
-				<div className="bg-white shadow-md rounded-lg p-4">
-					<div className="text-gray-500">Completed Offers</div>
-					<div className="text-2xl font-bold">12</div>
-					<div className="text-gray-500">1 Completed</div>
-				</div>
-				<div className="bg-white shadow-md rounded-lg p-4">
-					<div className="text-gray-500">Productivity</div>
-					<div className="text-2xl font-bold">76%</div>
-					<div className="text-gray-500">5% Completed</div>
-				</div>
-			</div>
+  const pastOffers = [
+    { id: '3', address: '101 Pine St', price: 200000, status: 'Accepted' },
+    { id: '4', address: '202 Maple St', price: 150000, status: 'Rejected' },
+  ];
 
-			{error ? (
-				<div className="text-red-500">Error: {error}</div>
-			) : loading ? (
-				<div className="text-blue-500">Loading...</div>
-			) : (
-				<div>
-					<div className="bg-white shadow-md rounded-lg p-4 mb-6">
-						<h2 className="text-xl font-bold mb-4">User Information</h2>
-						<div className="mb-2"><strong>Name:</strong> {users[0].name}</div>
-						<div className="mb-2"><strong>Email:</strong> {users[0].email}</div>
-						<div className="mb-2"><strong>Password:</strong> {users[0].password}</div>
-						<div className="mb-2"><strong>Address:</strong> {users[0].address}</div>
-					</div>
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <main className="py-10">
+        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
+          
+          {/* User Information */}
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+            <div className="px-4 py-5 sm:px-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">User Information</h3>
+            </div>
+            <div className="border-t border-gray-200">
+              <dl>
+                <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500 flex items-center">
+                    <UserIcon className="h-5 w-5 mr-2" />
+                    Full name
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{user.name}</dd>
+                </div>
+                <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500 flex items-center">
+                    <EnvelopeIcon className="h-5 w-5 mr-2" />
+                    Email address
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{user.email}</dd>
+                </div>
+                <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500 flex items-center">
+                    <PhoneIcon className="h-5 w-5 mr-2" />
+                    Phone number
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{user.phone}</dd>
+                </div>
+                <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500 flex items-center">
+                    <MapPinIcon className="h-5 w-5 mr-2" />
+                    Address
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{user.address}</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
 
-					{users.map(user => (
-						<div key={user.id} className="bg-white shadow-md rounded-lg p-6 mb-6">
-							<h2 className="text-xl font-bold mb-4">{user.name}&apos;s Offers</h2>
+          {/* Stats */}
+          <div className="mt-8">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {stats.map((item) => (
+                <div key={item.name} className="bg-white overflow-hidden shadow rounded-lg">
+                  <div className="p-5">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <item.icon className="h-6 w-6 text-gray-400" aria-hidden="true" />
+                      </div>
+                      <div className="ml-5 w-0 flex-1">
+                        <dl>
+                          <dt className="text-sm font-medium text-gray-500 truncate">{item.name}</dt>
+                          <dd>
+                            <div className="text-lg font-medium text-gray-900">{item.value}</div>
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 px-5 py-3">
+                    <div className="text-sm">
+                      <a href="#" className="font-medium text-indigo-600 hover:text-indigo-900">
+                        {item.change}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-							<div className="mb-6">
-								<h3 className="text-lg font-semibold mb-2">Pending Offers</h3>
-								<div className="overflow-x-auto">
-									<table className="min-w-full divide-y divide-gray-200">
-										<thead>
-											<tr>
-												<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
-												<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-												<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-											</tr>
-										</thead>
-										<tbody className="bg-white divide-y divide-gray-200">
-											{user.pendingOffers.length > 0 ? (
-												user.pendingOffers.map(offer => (
-													<tr key={offer.id}>
-														<td className="px-6 py-4 whitespace-nowrap">{offer.address}</td>
-														<td className="px-6 py-4 whitespace-nowrap">{`$${offer.price.toLocaleString()}`}</td>
-														<td className="px-6 py-4 whitespace-nowrap text-yellow-500">{offer.status}</td>
-													</tr>
-												))
-											) : (
-												<tr>
-													<td className="px-6 py-4 whitespace-nowrap text-center" colSpan={3}>No pending offers</td>
-												</tr>
-											)}
-										</tbody>
-									</table>
-								</div>
-							</div>
+          {/* Pending Offers */}
+          <div className="mt-8">
+            <h2 className="text-lg leading-6 font-medium text-gray-900 mb-4">Pending Offers</h2>
+            <div className="flex flex-col">
+              <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                  <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Address
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Price
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {pendingOffers.map((offer) => (
+                          <tr key={offer.id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{offer.address}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${offer.price.toLocaleString()}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                {offer.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-							<div>
-								<h3 className="text-lg font-semibold mb-2">Past Offers</h3>
-								<div className="overflow-x-auto">
-									<table className="min-w-full divide-y divide-gray-200">
-										<thead>
-											<tr>
-												<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
-												<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-												<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-											</tr>
-										</thead>
-										<tbody className="bg-white divide-y divide-gray-200">
-											{user.pastOffers.length > 0 ? (
-												user.pastOffers.map(offer => (
-													<tr key={offer.id}>
-														<td className="px-6 py-4 whitespace-nowrap">{offer.address}</td>
-														<td className="px-6 py-4 whitespace-nowrap">{`$${offer.price.toLocaleString()}`}</td>
-														<td className={`px-6 py-4 whitespace-nowrap ${offer.status === 'Accepted' ? 'text-green-500' : 'text-red-500'}`}>{offer.status}</td>
-													</tr>
-												))
-											) : (
-												<tr>
-													<td className="px-6 py-4 whitespace-nowrap text-center" colSpan={3}>No past offers</td>
-												</tr>
-											)}
-										</tbody>
-									</table>
-								</div>
-							</div>
-						</div>
-					))}
-				</div>
-			)}
-		</div>
-	);
+          {/* Past Offers */}
+          <div className="mt-8">
+            <h2 className="text-lg leading-6 font-medium text-gray-900 mb-4">Past Offers</h2>
+            <div className="flex flex-col">
+              <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                  <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Address
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Price
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {pastOffers.map((offer) => (
+                          <tr key={offer.id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{offer.address}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${offer.price.toLocaleString()}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                offer.status === 'Accepted' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              }`}>
+                                {offer.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
 };
 
 export default Dashboard;
