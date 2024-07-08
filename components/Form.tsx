@@ -5,6 +5,7 @@ import Step1 from './steps/Step1';
 import Step2 from './steps/Step2';
 import Step3 from './steps/Step3';
 import Step4 from './steps/Step4';
+import Step5 from './steps/Step5';
 import generatePDF from '../utils/generatePDF';
 import { FormData, StepProps } from './types';
 import { Container } from '@/components/Container';
@@ -148,9 +149,14 @@ const Form: React.FC = () => {
               <div className="flex-grow">
                 {currentStep === 1 && <Step1 {...stepProps} />}
                 {currentStep === 2 && <Step2 {...stepProps} />}
-                {currentStep === 3 && <Step3 {...stepProps} />}
-                {currentStep === 4 && <Step4 {...stepProps} />}
-                {currentStep === 5 && <div>Final Step: Review and Send</div>}
+                {currentStep === 3 && <Step3 currentSubstep={currentSubstep} onInputChange={handleInputChange} />}
+                {currentStep === 4 && <Step4 currentSubstep={currentSubstep} onInputChange={handleInputChange} />}
+                {currentStep === 5 && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-4">Review Your Offer</h2>
+                    <Step5 formData={formData} />
+                  </div>
+                )}
               </div>
 
               {/* Form navigation buttons */}
@@ -158,13 +164,17 @@ const Form: React.FC = () => {
                 {!(currentStep === 1 && currentSubstep === 1) && (
                   <button type="button" onClick={handlePreviousSubstep} className="mr-auto rounded-md bg-gray-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Previous</button>
                 )}
-                <button type="button" onClick={handleNextSubstep} className="rounded-md bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                  Save & Continue
-                </button>
                 {currentStep < totalSteps && (
-                  <button type="button" onClick={handleSkip} className="text-sm font-semibold leading-6 text-gray-900">Skip this step</button>
+                  <button type="button" onClick={handleNextSubstep} className="rounded-md bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                    Next
+                  </button>
                 )}
-                {currentStep === totalSteps && currentSubstep === getMaxSubsteps(currentStep) && (
+                {currentStep < totalSteps - 1 && (
+                  <button type="button" onClick={handleSkip} className="text-sm font-semibold leading-6 text-gray-900">
+                    {currentStep === 4 ? 'Next' : 'Skip this step'}
+                  </button>
+                )}
+                {currentStep === totalSteps && (
                   <button type="button" onClick={handleSubmit} className="rounded-md bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Generate PDF</button>
                 )}
               </div>
