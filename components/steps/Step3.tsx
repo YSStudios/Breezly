@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import FormQuestion from '../shared/FormQuestion';
 import { StepProps, Question } from '../types';
+import { UserIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
 
 const MAX_PARTIES = 5;
 
@@ -18,12 +19,12 @@ const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
             {
                 value: 'individual',
                 label: 'Individual',
-                image: '/icons/individual.svg'
+                icon: UserIcon
             },
             {
                 value: 'corporation',
                 label: 'Corporation/Organization',
-                image: '/icons/corporation.svg'
+                icon: BuildingOfficeIcon
             }
         ]
     });

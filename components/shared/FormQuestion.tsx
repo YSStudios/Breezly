@@ -39,7 +39,7 @@ const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title }
           type="date"
           id={`text-field-${index}`}
           onChange={(e) => handleTextFieldChange(index, e.target.value)}
-          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-lg"
+          className="mt-1 px-2 block w-full border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-lg"
         />
       );
     }
@@ -92,7 +92,7 @@ const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title }
                   className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
                 />
                 <label className="ml-3 flex items-center">
-                  {option.image && <img src={option.image} alt={option.label} className="w-10 h-10 mr-3" />}
+                  {option.icon && <option.icon className="h-8 w-8 text-emerald-500 mr-2" />}
                   <span className="text-lg font-medium text-gray-900">{option.label}</span>
                 </label>
               </div>

@@ -2,6 +2,18 @@
 import React, { useState } from 'react';
 import FormQuestion from '../shared/FormQuestion';
 import { StepProps, Question } from '../types';
+import { 
+	CurrencyDollarIcon, 
+	CreditCardIcon, 
+	DocumentTextIcon, 
+	ReceiptRefundIcon, 
+	QuestionMarkCircleIcon,
+	CalendarIcon,
+	UserIcon,
+	BuildingOfficeIcon,
+	KeyIcon,
+	ClipboardDocumentCheckIcon
+  } from '@heroicons/react/24/outline';
 
 const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 	const [purchasePrice, setPurchasePrice] = useState<string>('');
@@ -123,13 +135,14 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 		id: 'depositMethod',
 		description: 'How will the deposit be paid?',
 		options: [
-		  { value: 'Cash', label: 'Cash' },
-		  { value: 'Personal check', label: 'Personal check' },
-		  { value: 'Bank draft', label: 'Bank draft' },
-		  { value: 'Certified check', label: 'Certified check' },
+		  { value: 'Cash', label: 'Cash', icon: CurrencyDollarIcon },
+		  { value: 'Personal check', label: 'Personal check', icon: DocumentTextIcon },
+		  { value: 'Bank draft', label: 'Bank draft', icon: ReceiptRefundIcon },
+		  { value: 'Certified check', label: 'Certified check', icon: CreditCardIcon },
 		  { 
 			value: 'Other', 
 			label: 'Other', 
+			icon: QuestionMarkCircleIcon,
 			textFields: [
 			  { 
 				type: 'text', 
@@ -140,42 +153,44 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 		  },
 		],
 	  };
-
-	const depositDueDateQuestion: Question = {
+	
+	  const depositDueDateQuestion: Question = {
 		id: 'depositDueDate',
 		description: 'When is the deposit due?',
 		options: [
-		  { value: 'Unsure', label: 'Unsure' },
+		  { value: 'Unsure', label: 'Unsure', icon: QuestionMarkCircleIcon },
 		  { 
 			value: 'Specify date', 
 			label: 'Specify date',
+			icon: CalendarIcon,
 			textFields: [{ type: 'date', label: 'Deposit Due Date' }]
 		  },
 		],
 	  };
-	  
-
-	const escrowAgentQuestion: Question = {
+	
+	  const escrowAgentQuestion: Question = {
 		id: 'escrowAgent',
 		description: 'Who will hold the deposit until the deal is closed?',
 		options: [
-			{ value: 'Individual', label: 'Individual', textFields: [{ placeholder: 'e.g. Morgan Leigh Brown' }] },
-			{ value: 'Corporation/Organization', label: 'Corporation/Organization', textFields: [{ placeholder: 'Full Name' }] },
+		  { value: 'Individual', label: 'Individual', icon: UserIcon, textFields: [{ placeholder: 'e.g. Morgan Leigh Brown' }] },
+		  { value: 'Corporation/Organization', label: 'Corporation/Organization', icon: BuildingOfficeIcon, textFields: [{ placeholder: 'Full Name' }] },
 		],
-	};
-
-	const possessionQuestion: Question = {
+	  };
+	
+	  const possessionQuestion: Question = {
 		id: 'possession',
 		description: 'When will the seller provide possession?',
 		options: [
 		  { 
 			value: 'Upon closing and funding', 
 			label: 'Upon closing and funding',
+			icon: KeyIcon,
 			textFields: [{ type: 'date', label: 'Closing (Funding) Date' }]
 		  },
 		  { 
 			value: 'Before funding, under a temporary lease', 
 			label: 'Before funding, under a temporary lease',
+			icon: DocumentTextIcon,
 			textFields: [
 			  { type: 'date', label: 'Possession Date' },
 			  { type: 'date', label: 'Closing (Funding) Date' }
@@ -183,23 +198,15 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 		  },
 		],
 	  };
-
-	const closingDateQuestion: Question = {
-		id: 'closingDate',
-		description: 'Closing (Funding) Date:',
-		options: [
-			{ value: 'date', label: 'Select date', textFields: [{ placeholder: 'Enter date' }] },
-		],
-	};
-
-	const conditionsQuestion: Question = {
+	
+	  const conditionsQuestion: Question = {
 		id: 'hasConditions',
 		description: 'Is this offer subject to any conditions?',
 		options: [
-			{ value: 'Yes', label: 'Yes' },
-			{ value: 'No', label: 'No' },
+		  { value: 'Yes', label: 'Yes', icon: ClipboardDocumentCheckIcon },
+		  { value: 'No', label: 'No', icon: QuestionMarkCircleIcon },
 		],
-	};
+	  };
 
 	const specificConditionsQuestion: Question = {
 		id: 'conditions',

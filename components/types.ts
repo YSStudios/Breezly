@@ -1,5 +1,5 @@
 // types.ts
-import { ChangeEvent } from "react";
+import { ElementType } from 'react';
 
 export interface FormData {
   [key: string]: string;
@@ -19,10 +19,10 @@ export interface TextField {
 }
 
 export interface Option {
-  value: string;
-  label: string;
-  image?: string;
-  textFields?: TextField[];
+	value: string;
+	label: string;
+	icon?: ElementType;
+	textFields?: TextField[];
 }
 
 export interface Question {
