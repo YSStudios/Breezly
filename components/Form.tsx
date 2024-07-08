@@ -149,41 +149,38 @@ const Form: React.FC = () => {
               <div className="flex-grow">
                 {currentStep === 1 && <Step1 {...stepProps} />}
                 {currentStep === 2 && <Step2 {...stepProps} />}
-                {currentStep === 3 && <Step3 currentSubstep={currentSubstep} onInputChange={handleInputChange} />}
-                {currentStep === 4 && <Step4 currentSubstep={currentSubstep} onInputChange={handleInputChange} />}
-                {currentStep === 5 && (
-                  <div>
-                    <h2 className="text-2xl font-bold mb-4">Review Your Offer</h2>
-                    <Step5 formData={formData} />
-                  </div>
-                )}
-              </div>
+{currentStep === 3 && <Step3 currentSubstep={currentSubstep} onInputChange={handleInputChange} />}
+{currentStep === 4 && <Step4 currentSubstep={currentSubstep} onInputChange={handleInputChange} />}
+{currentStep === 5 && (
+  <div>
+    <h2 className="text-2xl font-bold mb-4">Review Your Offer</h2>
+    <Step5 formData={formData} />
+  </div>
+)}
+</div>
 
-              {/* Form navigation buttons */}
-              <div className="mt-6 flex items-center justify-end gap-x-6">
-                {!(currentStep === 1 && currentSubstep === 1) && (
-                  <button type="button" onClick={handlePreviousSubstep} className="mr-auto rounded-md bg-gray-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Previous</button>
-                )}
-                {currentStep < totalSteps && (
-                  <button type="button" onClick={handleNextSubstep} className="rounded-md bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                    Next
-                  </button>
-                )}
-                {currentStep < totalSteps - 1 && (
-                  <button type="button" onClick={handleSkip} className="text-sm font-semibold leading-6 text-gray-900">
-                    {currentStep === 4 ? 'Next' : 'Skip this step'}
-                  </button>
-                )}
-                {currentStep === totalSteps && (
-                  <button type="button" onClick={handleSubmit} className="rounded-md bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Generate PDF</button>
-                )}
-              </div>
-            </div>
-          </div>
-        </form>
-      </div>
-    </Container>
-  );
+{/* Form navigation buttons */}
+<div className="mt-6 flex items-center justify-end gap-x-6">
+  {currentStep < totalSteps && (
+    <button type="button" onClick={handleNextSubstep} className="text-sm font-semibold leading-6 text-gray-900">
+      Skip this step
+    </button>
+  )}
+  {currentStep < totalSteps && (
+    <button type="button" className="rounded-md bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+      Save & Continue
+    </button>
+  )}
+  {currentStep === totalSteps && (
+    <button type="button" onClick={handleSubmit} className="rounded-md bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Generate PDF</button>
+  )}
+</div>
+</div>
+</div>
+</form>
+</div>
+</Container>
+);
 };
 
 export default Form;

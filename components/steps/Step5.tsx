@@ -1,6 +1,6 @@
 // Step5.tsx
 import React from 'react';
-import { FormData } from './types';
+import { FormData } from '../types';
 
 interface Step5Props {
   formData: FormData;
