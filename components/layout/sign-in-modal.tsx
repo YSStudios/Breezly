@@ -1,37 +1,29 @@
-import Modal from "@/components/shared/modal";
+import { useState, Dispatch, SetStateAction, useCallback, useMemo } from "react";
 import { signIn } from "next-auth/react";
-import {
-  useState,
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useMemo,
-} from "react";
+import Modal from "@/components/shared/modal";
 import { LoadingDots, Google } from "@/components/shared/icons";
 import Image from "next/image";
 
-const SignInModal = ({
-  showSignInModal,
-  setShowSignInModal,
-}: {
+interface SignInModalProps {
   showSignInModal: boolean;
   setShowSignInModal: Dispatch<SetStateAction<boolean>>;
-}) => {
+}
+
+const SignInModal = ({ showSignInModal, setShowSignInModal }: SignInModalProps) => {
   const [signInClicked, setSignInClicked] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState(""); // New state for name
+  const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
     if (isRegistering) {
-      // Registration logic
       try {
         const res = await fetch('/api/auth/register', {
           method: 'POST',
@@ -40,9 +32,12 @@ const SignInModal = ({
         });
         
         if (res.ok) {
-          // Registration successful, now sign in
-          await signIn("credentials", { redirect: false, email, password });
-          setShowSignInModal(false);
+          const result = await signIn("credentials", { redirect: false, email, password });
+          if (result?.error) {
+            setError(result.error);
+          } else {
+            setShowSignInModal(false);
+          }
         } else {
           const data = await res.json();
           setError(data.message || "Registration failed");
@@ -51,7 +46,6 @@ const SignInModal = ({
         setError("An error occurred during registration");
       }
     } else {
-      // Sign in logic
       try {
         const result = await signIn("credentials", {
           redirect: false,
@@ -60,7 +54,7 @@ const SignInModal = ({
         });
 
         if (result?.error) {
-          setError("Invalid email or password");
+          setError(result.error);
         } else {
           setShowSignInModal(false);
         }
@@ -80,8 +74,8 @@ const SignInModal = ({
             <Image
               src="/applogo.webp"
               alt="OfferApp"
-              width="30"
-              height="30"
+              width={30}
+              height={30}
               className="mr-2 rounded-sm"
             />
           </a>
@@ -137,6 +131,7 @@ const SignInModal = ({
           <p className="text-center text-sm">
             {isRegistering ? "Already have an account? " : "Don't have an account? "}
             <button
+              type="button"
               className="text-blue-500 hover:underline"
               onClick={() => setIsRegistering(!isRegistering)}
             >
@@ -152,6 +147,7 @@ const SignInModal = ({
             </div>
           </div>
           <button
+            type="button"
             disabled={signInClicked}
             className={`${
               signInClicked
