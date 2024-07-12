@@ -29,7 +29,7 @@ const Form: React.FC = () => {
 		1: { 1: "Personal Information" },
 		2: { 1: "Location", 2: "Address", 3: "Features" },
 		3: { 1: "Buyer Details", 2: "Seller Details" },
-		4: { 1: "Purchase Price", 2: "Deposit", 3: "Escrow Agent", 4: "Closing and Possession", 5: "Conditions", 6: "Acceptance" },
+		4: { 1: "Purchase Price", 2: "Deposit", 3: "Escrow Agent", 4: "Closing and Possession", 5: "Conditions", 6: "Condition Details", 7: "Additional Clauses", 8: "Acceptance"},
 		5: { 1: "Review and Generate" }
 	};
 
