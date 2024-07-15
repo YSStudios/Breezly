@@ -5,8 +5,10 @@ import WebVitals from "@/components/home/web-vitals";
 import ComponentGrid from "@/components/home/component-grid";
 import Image from "next/image";
 import { nFormatter } from "@/lib/utils";
+import { getSession } from "next-auth/react";
+import { Session } from "next-auth";
 
-//custom
+// Custom
 import { Container } from "@/components/Container";
 import { Hero } from "@/components/Hero";
 import { SectionTitle } from "@/components/SectionTitle";
@@ -14,58 +16,38 @@ import { Benefits } from "@/components/Benefits";
 import { benefitOne, benefitTwo } from "@/components/data";
 import { Testimonials } from "@/components/Testimonials";
 import { Faq } from "@/components/Faq";
-import { Cta } from "@/components/Cta"
+import { Cta } from "@/components/Cta";
+import RootLayout from "./layout";
 
-export default async function Home() {
-  const { stargazers_count: stars } = await fetch(
-    "https://api.github.com/repos/steven-tey/precedent",
-    {
-      ...(process.env.GITHUB_OAUTH_TOKEN && {
-        headers: {
-          Authorization: `Bearer ${process.env.GITHUB_OAUTH_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-      }),
-      // data will revalidate every 24 hours
-      next: { revalidate: 86400 },
-    },
-  )
-    .then((res) => res.json())
-    .catch((e) => console.log(e));
+export default async function HomePage() {
+  const session: Session | null = await getSession();
 
   return (
-    <Container>
-      <Hero />
-      <SectionTitle
-        preTitle="Nextly Benefits"
-        title=" Why should you use this landing page"
-      >
-        Nextly is a free landing page & marketing website template for startups
-        and indie projects. Its built with Next.js & TailwindCSS. And its
-        completely open-source.
-      </SectionTitle>
-	  <Benefits data={benefitOne} />
-      <Benefits imgPos="right" data={benefitTwo} />
-	  {/* <SectionTitle
-        preTitle="Testimonials"
-        title="Here's what our customers said"
-      >
-        Testimonials is a great way to increase the brand trust and awareness.
-        Use this section to highlight your popular customers.
-      </SectionTitle>
-
-      <Testimonials /> */}
-
-      <SectionTitle preTitle="FAQ" title="Frequently Asked Questions">
-        Answer your customers possible questions here, it will increase the
-        conversion rate as well as support or chat requests.
-      </SectionTitle>
-
-      <Faq />
-      <Cta />
-	</Container>
+    <RootLayout session={session}>
+      <Container>
+        <Hero />
+        <SectionTitle
+          preTitle="Nextly Benefits"
+          title=" Why should you use this landing page"
+        >
+          Nextly is a free landing page & marketing website template for startups
+          and indie projects. Its built with Next.js & TailwindCSS. And its
+          completely open-source.
+        </SectionTitle>
+        <Benefits data={benefitOne} />
+        <Benefits imgPos="right" data={benefitTwo} />
+        <SectionTitle preTitle="FAQ" title="Frequently Asked Questions">
+          Answer your customers possible questions here, it will increase the
+          conversion rate as well as support or chat requests.
+        </SectionTitle>
+        <Faq />
+        <Cta />
+      </Container>
+    </RootLayout>
   );
 }
+
+
 
 const features = [
   {

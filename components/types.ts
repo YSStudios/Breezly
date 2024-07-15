@@ -8,6 +8,7 @@ export interface FormData {
 export interface StepProps {
   currentSubstep: number;
   onInputChange: (name: string, value: string) => void;
+  formData: FormData;
 }
 
 export interface TextField {
