@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; // Use next/navigation instead of next/router
 import { useSession } from "next-auth/react";
 import Step1 from './steps/Step1';
 import Step2 from './steps/Step2';
@@ -24,9 +23,7 @@ const Form: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [currentSubstep, setCurrentSubstep] = useState<number>(1);
   const [formData, setFormData] = useState<FormData>({});
-  const { data: session } = useSession();
-  const router = useRouter();
-  const address = router.query?.address || "default-address"; // Use a default address for testing
+  const { data: session, status } = useSession();
 
   const totalSteps = 5;
 
@@ -39,39 +36,25 @@ const Form: React.FC = () => {
   };
 
   useEffect(() => {
-    const loadSavedForm = async () => {
-      if (session && address) {
-        try {
-          console.log('Fetching form data for address:', address);
-          const response = await fetch(`/api/form/get?address=${encodeURIComponent(address as string)}`);
-          if (response.ok) {
-            const data = await response.json();
-            setFormData(data.data);
-            if (data.data.currentStep) setCurrentStep(data.data.currentStep);
-            if (data.data.currentSubstep) setCurrentSubstep(data.data.currentSubstep);
-          } else {
-            console.error('Failed to fetch form data:', response.statusText);
-          }
-        } catch (error) {
-          console.error('Error loading saved form:', error);
-        }
-      }
-    };
-
-    loadSavedForm();
-  }, [session, address]);
+    console.log('Form component mounted');
+    console.log('Session status:', status);
+    console.log('Session data:', session);
+  }, [session, status]);
 
   const saveFormData = async () => {
-    if (session && address) {
+    console.log('Attempting to save form data');
+    console.log('Session status:', status);
+    console.log('Session data:', session);
+
+    if (session?.user) {
       try {
-        console.log('Saving form data for address:', address);
+        console.log('Saving form data');
         const response = await fetch('/api/form/save', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            address: address,
             data: {
               ...formData,
               currentStep,
@@ -89,7 +72,7 @@ const Form: React.FC = () => {
         console.error('Error saving form data:', error);
       }
     } else {
-      console.warn('Session or address not available. Data not saved.');
+      console.warn('Session not available. Data not saved.');
     }
   };
 
