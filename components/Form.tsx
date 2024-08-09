@@ -13,6 +13,8 @@ import Step5 from './steps/Step5';
 import FormQuestion from './shared/FormQuestion';
 import { FormData } from './types';
 
+const DEBUG = process.env.NODE_ENV === 'development';
+
 const Form: React.FC = () => {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
@@ -22,7 +24,7 @@ const Form: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -53,7 +55,14 @@ const Form: React.FC = () => {
       const response = await fetch(`/api/form/get?id=${id}`);
       if (response.ok) {
         const data = await response.json();
+        console.log('Fetched form data:', data);
         setFormData(data);
+      } else if (response.status === 404) {
+        console.log('Form not found, creating a new one');
+        const newFormId = uuidv4();
+        setFormId(newFormId);
+        localStorage.setItem('currentFormId', newFormId);
+        setFormData({});
       } else {
         console.error('Error fetching form data:', await response.text());
       }
@@ -67,26 +76,41 @@ const Form: React.FC = () => {
   const saveFormData = async () => {
     if (!formId) return;
 
+    if (!session) {
+      setSaveError("You must be logged in to save the form. Please log in and try again.");
+      return;
+    }
+
     setIsSaving(true);
     setSaveError(null);
     try {
+      console.log('Saving form data:');
+      console.log('FormId:', formId);
+      console.log('Form data:', JSON.stringify(formData, null, 2));
+      console.log('Session status:', status);
+      console.log('Session user:', JSON.stringify(session?.user, null, 2));
+
       const response = await fetch('/api/form/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formId, data: formData, userId: session?.user?.id }),
+        body: JSON.stringify({ 
+          formId, 
+          data: formData
+        }),
       });
 
+      const result = await response.json();
+
       if (response.ok) {
-        console.log('Form saved successfully');
-        if (session) {
-          router.push('/dashboard');
-        } else {
-          console.log('Form saved. You can access it later using this ID:', formId);
-        }
+        console.log('Save response:', result);
+        router.push('/dashboard');
       } else {
-        const errorText = await response.text();
-        console.error('Error saving form:', errorText);
-        setSaveError('Failed to save form. Please try again.');
+        console.error('Error saving form:', result);
+        let errorMessage = `Failed to save form: ${result.message}`;
+        if (result.error) {
+          errorMessage += DEBUG ? `\nError details: ${result.error}` : '';
+        }
+        setSaveError(errorMessage);
       }
     } catch (error) {
       console.error('Error saving form data:', error);
@@ -198,7 +222,17 @@ const Form: React.FC = () => {
           </button>
         )}
       </div>
-      {saveError && <p className="text-red-500 mt-2">{saveError}</p>}
+      {saveError && (
+        <div className="text-red-500 mt-2">
+          <p>{saveError}</p>
+          {DEBUG && (
+            <details>
+              <summary>Debug Information</summary>
+              <pre>{JSON.stringify({ session, formId, formData }, null, 2)}</pre>
+            </details>
+          )}
+        </div>
+      )}
     </div>
   );
 };

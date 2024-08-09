@@ -6,19 +6,15 @@ import Link from 'next/link';
 import { useSession } from "next-auth/react";
 
 interface FormData {
-	id: string;
-	data: {
-	  address?: string;
-	  price?: string | number;
-	  status?: string;
-	};
-	updatedAt: string;
-  }
+  id: string;
+  data: Record<string, any>;
+  updatedAt: string;
+}
 
 const Dashboard = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const [savedForms, setSavedForms] = useState([]);
+  const [savedForms, setSavedForms] = useState<FormData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -70,31 +66,36 @@ const Dashboard = () => {
       {isLoading ? (
         <div>Loading your forms...</div>
       ) : savedForms.length > 0 ? (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {savedForms.map((form) => (
-                <tr key={form.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">{form.data.address || 'N/A'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{form.data.price || 'N/A'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{form.data.status || 'N/A'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Link href={`/offerform?id=${form.id}`} className="text-indigo-600 hover:text-indigo-900">
-                      Edit
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-8">
+          {savedForms.map((form) => (
+            <div key={form.id} className="bg-white shadow overflow-hidden sm:rounded-lg">
+              <div className="px-4 py-5 sm:px-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900">
+                  Form ID: {form.id}
+                </h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  Last updated: {new Date(form.updatedAt).toLocaleString()}
+                </p>
+              </div>
+              <div className="border-t border-gray-200">
+                <dl>
+                  {Object.entries(form.data).map(([key, value]) => (
+                    <div key={key} className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                      <dt className="text-sm font-medium text-gray-500">{key}</dt>
+                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+              <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
+                <Link href={`/offerform?id=${form.id}`} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Edit
+                </Link>
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <div>You haven't created any forms yet.</div>
