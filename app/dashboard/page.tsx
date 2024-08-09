@@ -1,125 +1,104 @@
 "use client";
-// Dashboard.tsx
-import React, { useEffect, useState } from 'react';
-import { useSession } from "next-auth/react";
-import Link from 'next/link';
-import { 
-  UserIcon, 
-  BuildingOfficeIcon, 
-  PhoneIcon, 
-  EnvelopeIcon, 
-  MapPinIcon,
-  CurrencyDollarIcon,
-  ClockIcon,
-  CheckCircleIcon,
-  XCircleIcon
-} from '@heroicons/react/24/outline';
 
-interface SavedForm {
-  id: string;
-  address: string;
-  updatedAt: string;
-  price: number;
-  status: string;
-}
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useSession } from "next-auth/react";
+
+interface FormData {
+	id: string;
+	data: {
+	  address?: string;
+	  price?: string | number;
+	  status?: string;
+	};
+	updatedAt: string;
+  }
 
 const Dashboard = () => {
-  const { data: session } = useSession();
-  const [savedForms, setSavedForms] = useState<SavedForm[]>([]);
-  
+  const router = useRouter();
+  const { data: session, status } = useSession();
+  const [savedForms, setSavedForms] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    const fetchData = async () => {
-      if (session) {
-        const address = session.user.address || "default-address"; // Ensure a valid address is used
+    const fetchForms = async () => {
+      if (status === "authenticated") {
         try {
-          console.log('Fetching data for address:', address);
-          const response = await fetch(`/api/form/get?address=${encodeURIComponent(address)}`);
+          const response = await fetch('/api/form/list');
           if (response.ok) {
             const data = await response.json();
             setSavedForms(data);
           } else {
-            console.error('Failed to fetch form data:', response.statusText);
+            console.error('Failed to fetch forms:', response.statusText);
           }
         } catch (error) {
-          console.error('Error fetching form data:', error);
+          console.error('Error fetching forms:', error);
+        } finally {
+          setIsLoading(false);
         }
+      } else if (status === "unauthenticated") {
+        router.push('/login');
       }
     };
 
-    fetchData();
-  }, [session]);
+    fetchForms();
+  }, [status, router]);
 
-  if (!session) {
+  const createNewForm = () => {
+    localStorage.removeItem('currentFormId');
+    router.push('/offerform');
+  };
+
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+
+  if (status === "unauthenticated") {
     return <div>Please log in to view your dashboard.</div>;
   }
 
   return (
-    <div>
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6">Your Forms</h1>
+      <button
+        onClick={createNewForm}
+        className="mb-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Create New Form
+      </button>
+      {isLoading ? (
+        <div>Loading your forms...</div>
+      ) : savedForms.length > 0 ? (
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {savedForms.map((form) => (
+                <tr key={form.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">{form.data.address || 'N/A'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{form.data.price || 'N/A'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{form.data.status || 'N/A'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Link href={`/offerform?id=${form.id}`} className="text-indigo-600 hover:text-indigo-900">
+                      Edit
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </header>
-      <main>
-        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="px-4 py-6 sm:px-0">
-            <div className="border-4 border-dashed border-gray-200 rounded-lg h-96">
-              {/* Your content */}
-              <div className="px-4 py-6 sm:px-0">
-                <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                  <table className="min-w-full divide-y divide-gray-300">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th
-                          scope="col"
-                          className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
-                        >
-                          Address
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                        >
-                          Price
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                        >
-                          Status
-                        </th>
-                        <th
-                          scope="col"
-                          className="relative py-3.5 pl-3 pr-4 sm:pr-6"
-                        >
-                          <span className="sr-only">Edit</span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 bg-white">
-                      {savedForms.map((form) => (
-                        <tr key={form.id}>
-                          <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                            {form.address}
-                          </td>
-                          <td className="px-3 py-4 text-sm text-gray-500">{form.price}</td>
-                          <td className="px-3 py-4 text-sm text-gray-500">{form.status}</td>
-                          <td className="relative py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                            <Link href={`/form/${form.id}`} className="text-indigo-600 hover:text-indigo-900">
-                              Edit<span className="sr-only">, {form.address}</span>
-                            </Link>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              {/* End content */}
-            </div>
-          </div>
-        </div>
-      </main>
+      ) : (
+        <div>You haven't created any forms yet.</div>
+      )}
     </div>
   );
 };

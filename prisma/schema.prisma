@@ -42,11 +42,13 @@ model Session {
 
 model FormData {
   id        String   @id @default(cuid())
-  userId    String   @unique
+  userId    String
   data      Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model User {
@@ -58,7 +60,7 @@ model User {
   password      String?   
   accounts      Account[]
   sessions      Session[]
-  formData      FormData?
+  formData      FormData[]
 }
 
 model VerificationToken {

@@ -5,7 +5,8 @@ import Nav from "@/components/layout/nav";
 import Footer from "@/components/layout/footer";
 import { Suspense, ReactNode } from "react";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
-import ClientSessionProvider from "@/components/ClientSessionProvider"; // Adjust the import path accordingly
+import ClientSessionProvider from "@/components/ClientSessionProvider";
+import { getServerSession } from "next-auth/next";
 
 export const metadata = {
   title: "OfferApp - Send real estate offers quick and easy",
@@ -16,10 +17,11 @@ export const metadata = {
 
 interface RootLayoutProps {
   children: ReactNode;
-  session: any; // Adjust this type as needed
 }
 
-export default function RootLayout({ children, session }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  const session = await getServerSession();
+
   return (
     <html lang="en">
       <body className={cx(sfPro.variable, inter.variable)}>

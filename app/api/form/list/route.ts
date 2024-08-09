@@ -6,32 +6,23 @@ import prisma from '@/lib/prisma';
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
 
-  if (!session) {
+  if (!session || !session.user) {
     return NextResponse.json({ message: "You must be logged in." }, { status: 401 });
   }
 
   try {
-    const formData = await prisma.formData.findUnique({
+    const forms = await prisma.formData.findMany({
       where: {
         userId: session.user.id,
       },
       select: {
         id: true,
-        updatedAt: true,
         data: true,
+        updatedAt: true,
       },
     });
 
-    if (formData) {
-      // Assuming data contains some identifiable information like a title or name
-      const formList = [{
-        id: formData.id,
-        updatedAt: formData.updatedAt,
-      }];
-      return NextResponse.json(formList);
-    } else {
-      return NextResponse.json([]); // Return an empty array if no form data found
-    }
+    return NextResponse.json(forms);
   } catch (error) {
     console.error('Error retrieving form list:', error);
     return NextResponse.json({ message: "Error retrieving form list" }, { status: 500 });

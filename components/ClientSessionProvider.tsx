@@ -5,7 +5,7 @@ import { ReactNode, useEffect } from "react";
 
 interface ClientSessionProviderProps {
   children: ReactNode;
-  session: any; // Adjust this type as needed
+  session: any;
 }
 
 const ClientSessionProvider = ({ children, session }: ClientSessionProviderProps) => {

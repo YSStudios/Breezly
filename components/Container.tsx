@@ -5,14 +5,14 @@ interface ContainerProps {
   className?: string;
 }
 
-export function Container(props: Readonly<ContainerProps>) {
+export function Container({ children, className }: ContainerProps) {
   return (
     <div
       className={`container p-8 mx-auto xl:px-0 ${
-        props.className ? props.className : ""
-      }`}>
-      {props.children}
+        className ? className : ""
+      }`}
+    >
+      {children}
     </div>
   );
 }
-
