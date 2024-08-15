@@ -1,5 +1,5 @@
 // Step2.tsx
-import React, {useState} from 'react';
+import React, { useState, useCallback } from 'react';
 import FormQuestion from '../shared/FormQuestion';
 import StateSelectionQuestion from '../shared/StateSelector';
 import { StepProps, Question } from '../types';
@@ -7,9 +7,13 @@ import { StepProps, Question } from '../types';
 const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 	const [showAdditionalFeatures, setShowAdditionalFeatures] = useState(false);
 
-	const handleStateSelect = (state: string) => {
+	const handleStateSelect = useCallback((state: string) => {
 		onInputChange('property-location', state);
-	};
+	}, [onInputChange]);
+
+	const handleInputChange = useCallback((questionId: string, value: string, textFieldValues?: { [key: number]: string }) => {
+		onInputChange(questionId, value, textFieldValues);
+	}, [onInputChange]);
 
 	const addressOptionQuestion: Question = {
 		id: 'address-option',
@@ -91,10 +95,10 @@ const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 		]
 	};
 
-	const handlePropertyFeaturesChange = (questionId: string, value: string) => {
+	const handlePropertyFeaturesChange = useCallback((questionId: string, value: string) => {
 		onInputChange(questionId, value);
 		setShowAdditionalFeatures(value === 'yes');
-	};
+	}, [onInputChange]);
 
 	return (
 		<div className="mx-auto grid grid-cols-2 gap-x-8 gap-y-10">
@@ -108,7 +112,7 @@ const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 				<div className="col-span-2 sm:col-span-2">
 					<FormQuestion
 						question={addressOptionQuestion}
-						onChange={onInputChange}
+						onChange={handleInputChange}
 						title="Property Address"
 					/>
 				</div>
@@ -118,7 +122,7 @@ const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 				<div className="col-span-2 sm:col-span-2">
 					<FormQuestion
 						question={legalLandDescriptionQuestion}
-						onChange={onInputChange}
+						onChange={handleInputChange}
 						title="Legal Land Description"
 					/>
 				</div>
@@ -134,7 +138,7 @@ const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 					{showAdditionalFeatures && (
 						<FormQuestion
 							question={AdditionalFeaturesQuestion}
-							onChange={onInputChange}
+							onChange={handleInputChange}
 						/>
 					)}
 				</div>

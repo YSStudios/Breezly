@@ -41,4 +41,6 @@ export interface FormQuestionProps {
     textFields?: { [key: number]: string },
   ) => void;
   title?: string;
+  initialValue?: string;
+  initialTextFieldValues?: { [key: number]: string };
 }

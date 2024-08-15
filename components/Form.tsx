@@ -3,14 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
 import Step1 from './steps/Step1';
 import Step2 from './steps/Step2';
 import Step3 from './steps/Step3';
 import Step4 from './steps/Step4';
 import Step5 from './steps/Step5';
-import FormQuestion from './shared/FormQuestion';
 import { FormData } from './types';
 
 const DEBUG = process.env.NODE_ENV === 'development';
@@ -205,6 +203,13 @@ const Form: React.FC = () => {
         ) : (
           <div></div>
         )}
+        <button
+          onClick={saveFormData}
+          disabled={isSaving}
+          className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-green-300 mr-2"
+        >
+          {isSaving ? 'Saving...' : 'Save Progress'}
+        </button>
         {currentStep < 5 || (currentStep === 5 && currentSubstep < getMaxSubsteps(5)) ? (
           <button
             onClick={nextSubstep}

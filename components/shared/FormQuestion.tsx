@@ -1,35 +1,53 @@
-// FormQuestion.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { FormQuestionProps, Option, TextField } from '../types';
 
-const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title }) => {
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [textFieldValues, setTextFieldValues] = useState<{ [key: number]: string }>({});
+const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title, initialValue = '', initialTextFieldValues = {} }) => {
+  const [selectedOptions, setSelectedOptions] = useState<string[]>(initialValue ? initialValue.split(',') : []);
+  const [textFieldValues, setTextFieldValues] = useState<{ [key: number]: string }>(initialTextFieldValues);
 
-  useEffect(() => {
+  const updateParentState = useCallback(() => {
     if (question.options.length === 1 && question.options[0].textFields) {
       onChange(question.id, textFieldValues[0] || '', textFieldValues);
     } else {
       onChange(question.id, selectedOptions.join(','), textFieldValues);
     }
-  }, [selectedOptions, textFieldValues]);
+  }, [question.id, question.options.length, selectedOptions, textFieldValues, onChange]);
 
   const handleOptionChange = (value: string) => {
+    let newSelectedOptions: string[];
     if (question.multiSelect) {
-      setSelectedOptions(prev => 
-        prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
-      );
+      newSelectedOptions = selectedOptions.includes(value)
+        ? selectedOptions.filter(v => v !== value)
+        : [...selectedOptions, value];
     } else {
-      setSelectedOptions([value]);
+      newSelectedOptions = [value];
+    }
+    
+    setSelectedOptions(newSelectedOptions);
+    if (!question.multiSelect) {
       setTextFieldValues({});
     }
+    
+    // Call updateParentState after state updates
+    setTimeout(() => {
+      updateParentState();
+    }, 0);
   };
 
   const handleTextFieldChange = (fieldIndex: number, textValue: string) => {
-    setTextFieldValues(prev => ({
-      ...prev,
-      [fieldIndex]: textValue
-    }));
+    setTextFieldValues(prev => {
+      const newTextFieldValues = {
+        ...prev,
+        [fieldIndex]: textValue
+      };
+      
+      // Call updateParentState after state update
+      setTimeout(() => {
+        updateParentState();
+      }, 0);
+      
+      return newTextFieldValues;
+    });
   };
 
   const renderTextField = (field: TextField, index: number) => {
@@ -38,6 +56,7 @@ const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title }
         <input
           type="date"
           id={`text-field-${index}`}
+          value={textFieldValues[index] || ''}
           onChange={(e) => handleTextFieldChange(index, e.target.value)}
           className="mt-1 px-2 block w-full border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-lg"
         />
@@ -55,6 +74,7 @@ const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title }
           type="text"
           id={`text-field-${index}`}
           placeholder={field.placeholder}
+          value={textFieldValues[index] || ''}
           onChange={(e) => handleTextFieldChange(index, e.target.value)}
           className={`mt-1 px-2 block w-full border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-lg ${field.prefix ? 'pl-7' : ''}`}
         />
