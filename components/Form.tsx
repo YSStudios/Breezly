@@ -168,6 +168,7 @@ const Form: React.FC = () => {
   };
 
   const renderStep = () => {
+    console.log('Rendering step, formData:', formData); // Add this line for debugging
     switch (currentStep) {
       case 1:
         return <Step1 currentSubstep={currentSubstep} onInputChange={handleInputChange} formData={formData} />;
