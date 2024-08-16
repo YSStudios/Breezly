@@ -17,8 +17,8 @@ import {
 import ConditionDetails from './ConditionDetails';
 
 const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
-  const [purchasePrice, setPurchasePrice] = useState<string>('');
-  const [depositAmount, setDepositAmount] = useState<string>('');
+  const [purchasePrice, setPurchasePrice] = useState<number | null>(null);
+  const [depositAmount, setDepositAmount] = useState<number | null>(null);
   const [depositMethod, setDepositMethod] = useState<string>('');
   const [depositDueDate, setDepositDueDate] = useState<string>('');
   const [escrowAgent, setEscrowAgent] = useState<string>('');
@@ -32,13 +32,25 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
   const [additionalClauses, setAdditionalClauses] = useState<string[]>(['']);
 
   const handlePurchasePriceChange = (value: string) => {
-    setPurchasePrice(value);
-    onInputChange('purchasePrice', value);
+    const numValue = parseFloat(value.replace(/[^0-9.]/g, ''));
+    if (!isNaN(numValue)) {
+      setPurchasePrice(numValue);
+      onInputChange('purchasePrice', numValue);
+    } else {
+      setPurchasePrice(null);
+      onInputChange('purchasePrice', null);
+    }
   };
 
   const handleDepositAmountChange = (value: string) => {
-    setDepositAmount(value);
-    onInputChange('depositAmount', value);
+    const numValue = parseFloat(value.replace(/[^0-9.]/g, ''));
+    if (!isNaN(numValue)) {
+      setDepositAmount(numValue);
+      onInputChange('depositAmount', numValue);
+    } else {
+      setDepositAmount(null);
+      onInputChange('depositAmount', null);
+    }
   };
 
   const handleDepositMethodChange = (questionId: string, value: string, textFields?: { [key: number]: string }) => {
@@ -286,9 +298,9 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
             onChange={handleDepositAmountChange}
             title="Deposit"
           />
-          {depositAmount && purchasePrice && (
+          {depositAmount !== null && purchasePrice !== null && (
             <p className="text-sm text-gray-500 mt-1">
-              Balance owing: ${(Number(purchasePrice) - Number(depositAmount)).toLocaleString()}
+              Balance owing: ${(purchasePrice - depositAmount).toLocaleString()}
             </p>
           )}
           <FormQuestion
@@ -351,48 +363,48 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
         />
       )}
 
-{currentSubstep === 7 && (
-  <div className="space-y-6">
-    <h2 className="text-3xl font-bold text-gray-900">Additional Clauses</h2>
-    {additionalClauses.map((clause, index) => (
-      <div key={index} className="bg-white p-6 rounded-lg shadow">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-900">Clause {index + 1}</h3>
-          {index > 0 && (
+      {currentSubstep === 7 && (
+        <div className="space-y-6">
+          <h2 className="text-3xl font-bold text-gray-900">Additional Clauses</h2>
+          {additionalClauses.map((clause, index) => (
+            <div key={index} className="bg-white p-6 rounded-lg shadow">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold text-gray-900">Clause {index + 1}</h3>
+                {index > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveClause(index)}
+                    className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    aria-label={`Remove Clause ${index + 1}`}
+                  >
+                    Remove
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+              <textarea
+                id={`clause-${index}`}
+                rows={3}
+                className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                placeholder="Enter clause text here"
+                value={clause}
+                onChange={(e) => handleClauseChange(index, e.target.value)}
+              />
+            </div>
+          ))}
+          {additionalClauses.length < 10 && (
             <button
               type="button"
-              onClick={() => handleRemoveClause(index)}
-              className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              aria-label={`Remove Clause ${index + 1}`}
+              onClick={handleAddClause}
+              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              Remove
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
+              Add Another Clause
             </button>
           )}
         </div>
-        <textarea
-          id={`clause-${index}`}
-          rows={3}
-          className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          placeholder="Enter clause text here"
-          value={clause}
-          onChange={(e) => handleClauseChange(index, e.target.value)}
-        />
-      </div>
-    ))}
-    {additionalClauses.length < 10 && (
-      <button
-        type="button"
-        onClick={handleAddClause}
-        className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-      >
-        Add Another Clause
-      </button>
-    )}
-  </div>
-)}
+      )}
 
       {currentSubstep === 8 && (
         <FormQuestion
