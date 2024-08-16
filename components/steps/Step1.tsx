@@ -18,7 +18,7 @@ const Step1: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
 							type="text"
 							name="first-name"
 							id="first-name"
-							// placeholder="John"
+							placeholder="John"
 							value={formData['first-name'] || ''}
 							onChange={(e) => {
 								console.log('First name changed:', e.target.value);

@@ -12,7 +12,12 @@ const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 	}, [onInputChange]);
 
 	const handleInputChange = useCallback((questionId: string, value: string, textFieldValues?: { [key: number]: string }) => {
-		onInputChange(questionId, value, textFieldValues);
+		if (questionId === 'address-option' && value === 'now' && textFieldValues) {
+			const propertyAddress = textFieldValues[0]; // Assuming the property address is in the first text field
+			onInputChange('property-address', propertyAddress);
+		} else {
+			onInputChange(questionId, value);
+		}
 	}, [onInputChange]);
 
 	const addressOptionQuestion: Question = {
@@ -28,9 +33,9 @@ const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 				label: 'Now',
 				textFields: [
 					{
-						label: 'Full Address',
+						label: 'Property Address',
 						placeholder: 'e.g., Street, City, State ZIP Code',
-						helperText: 'Enter the full address of the property'
+						helperText: 'Enter the address of the property you are purchasing'
 					}
 				]
 			}
