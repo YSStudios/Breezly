@@ -12,18 +12,27 @@ export interface StepProps {
 }
 
 export interface TextField {
-	label?: string;
-	placeholder?: string;
-	helperText?: string;
-	prefix?: string;
-	type?: 'text' | 'date';
+  label?: string;
+  placeholder?: string;
+  helperText?: string;
+  prefix?: string;
+  type?: 'text' | 'date';
+}
+
+export interface NumberFieldProps {
+  id: string;
+  label?: string;
+  placeholder?: string;
+  prefix?: string;
+  value: number | null;
+  onChange: (value: number | null) => void;
 }
 
 export interface Option {
-	value: string;
-	label: string;
-	icon?: ElementType;
-	textFields?: TextField[];
+  value: string;
+  label: string;
+  icon?: ElementType;
+  textFields?: TextField[];
 }
 
 export interface Question {

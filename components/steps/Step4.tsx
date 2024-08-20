@@ -1,6 +1,7 @@
 // Step4.tsx
 import React, { useState, useEffect } from 'react';
 import FormQuestion from '../shared/FormQuestion';
+import NumberField from '../shared/NumberField';
 import { StepProps, Question } from '../types';
 import { 
   CurrencyDollarIcon, 
@@ -47,26 +48,14 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
     setAdditionalClauses(formData.additionalClauses ? JSON.parse(formData.additionalClauses) : ['']);
   }, [formData]);
 
-  const handlePurchasePriceChange = (value: string) => {
-    const numValue = parseFloat(value.replace(/[^0-9.]/g, ''));
-    if (!isNaN(numValue)) {
-      setPurchasePrice(numValue);
-      onInputChange('purchasePrice', numValue.toString());
-    } else {
-      setPurchasePrice(null);
-      onInputChange('purchasePrice', '');
-    }
+  const handlePurchasePriceChange = (value: number | null) => {
+    setPurchasePrice(value);
+    onInputChange('purchasePrice', value !== null ? value.toString() : '');
   };
 
-  const handleDepositAmountChange = (value: string) => {
-    const numValue = parseFloat(value.replace(/[^0-9.]/g, ''));
-    if (!isNaN(numValue)) {
-      setDepositAmount(numValue);
-      onInputChange('depositAmount', numValue.toString());
-    } else {
-      setDepositAmount(null);
-      onInputChange('depositAmount', '');
-    }
+  const handleDepositAmountChange = (value: number | null) => {
+    setDepositAmount(value);
+    onInputChange('depositAmount', value !== null ? value.toString() : '');
   };
 
   const handleDepositMethodChange = (questionId: string, value: string, textFields?: { [key: number]: string }) => {
@@ -300,24 +289,32 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
   return (
     <div className="space-y-8">
       {currentSubstep === 1 && (
-        <FormQuestion
-          question={purchasePriceQuestion}
-          onChange={handlePurchasePriceChange}
-          title="Purchase Price"
-          initialValue={purchasePrice?.toString() || ''}
-          initialTextFieldValues={{ 0: purchasePrice?.toString() || '' }}
-        />
+        <div>
+          <h2 className="text-2xl font-bold mb-4">Purchase Price</h2>
+          <NumberField
+            id="purchasePrice"
+            label="What is the purchase price?"
+            placeholder="e.g. 250000"
+            prefix="$"
+            value={purchasePrice}
+            onChange={handlePurchasePriceChange}
+          />
+        </div>
       )}
 
       {currentSubstep === 2 && (
         <>
-          <FormQuestion
-            question={depositAmountQuestion}
-            onChange={handleDepositAmountChange}
-            title="Deposit"
-            initialValue={depositAmount?.toString() || ''}
-            initialTextFieldValues={{ 0: depositAmount?.toString() || '' }}
-          />
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Deposit</h2>
+            <NumberField
+              id="depositAmount"
+              label="How much is the initial deposit?"
+              placeholder="e.g. 20000"
+              prefix="$"
+              value={depositAmount}
+              onChange={handleDepositAmountChange}
+            />
+          </div>
           {depositAmount !== null && purchasePrice !== null && (
             <p className="text-sm text-gray-500 mt-1">
               Balance owing: ${(purchasePrice - depositAmount).toLocaleString()}
