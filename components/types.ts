@@ -44,3 +44,9 @@ export interface FormQuestionProps {
   initialValue?: string;
   initialTextFieldValues?: { [key: number]: string };
 }
+
+export interface ConditionDetailsProps {
+  selectedConditions: string[];
+  onInputChange: (name: string, value: string) => void;
+  formData: FormData;
+}

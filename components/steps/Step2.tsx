@@ -1,11 +1,15 @@
 // Step2.tsx
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import FormQuestion from '../shared/FormQuestion';
 import StateSelectionQuestion from '../shared/StateSelector';
 import { StepProps, Question } from '../types';
 
-const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
+const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData }) => {
 	const [showAdditionalFeatures, setShowAdditionalFeatures] = useState(false);
+
+	useEffect(() => {
+		setShowAdditionalFeatures(formData['property-features'] === 'yes');
+	}, [formData]);
 
 	const handleStateSelect = useCallback((state: string) => {
 		onInputChange('property-location', state);
@@ -15,6 +19,16 @@ const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 		if (questionId === 'address-option' && value === 'now' && textFieldValues) {
 			const propertyAddress = textFieldValues[0]; // Assuming the property address is in the first text field
 			onInputChange('property-address', propertyAddress);
+		} else if (questionId === 'additional-features') {
+			onInputChange(questionId, value);
+			if (value === 'specify' && textFieldValues) {
+				onInputChange('additional-features-text', textFieldValues[0]);
+			}
+		} else if (questionId === 'legal-land-description') {
+			onInputChange(questionId, value);
+			if (value === 'specify' && textFieldValues) {
+				onInputChange('legal-land-description-text', textFieldValues[0]);
+			}
 		} else {
 			onInputChange(questionId, value);
 		}
@@ -119,6 +133,8 @@ const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 						question={addressOptionQuestion}
 						onChange={handleInputChange}
 						title="Property Address"
+						initialValue={formData['property-address'] ? 'now' : 'later'}
+						initialTextFieldValues={{ 0: formData['property-address'] }}
 					/>
 				</div>
 			)}
@@ -129,6 +145,8 @@ const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 						question={legalLandDescriptionQuestion}
 						onChange={handleInputChange}
 						title="Legal Land Description"
+						initialValue={formData['legal-land-description-text'] ? 'specify' : formData['legal-land-description']}
+						initialTextFieldValues={{ 0: formData['legal-land-description-text'] }}
 					/>
 				</div>
 			)}
@@ -139,11 +157,14 @@ const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
 						question={PropertyFeaturesQuestion}
 						onChange={handlePropertyFeaturesChange}
 						title="Property Features"
+						initialValue={formData['property-features']}
 					/>
 					{showAdditionalFeatures && (
 						<FormQuestion
 							question={AdditionalFeaturesQuestion}
 							onChange={handleInputChange}
+							initialValue={formData['additional-features-text'] ? 'specify' : formData['additional-features']}
+							initialTextFieldValues={{ 0: formData['additional-features-text'] }}
 						/>
 					)}
 				</div>

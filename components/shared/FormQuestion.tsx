@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { FormQuestionProps, Option, TextField } from '../types';
 
-const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title, initialValue = '', initialTextFieldValues = {} }) => {
+const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title, initialValue, initialTextFieldValues = {} }) => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>(initialValue ? initialValue.split(',') : []);
   const [textFieldValues, setTextFieldValues] = useState<{ [key: number]: string }>(initialTextFieldValues);
 
@@ -24,9 +24,6 @@ const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title, 
     }
     
     setSelectedOptions(newSelectedOptions);
-    if (!question.multiSelect) {
-      setTextFieldValues({});
-    }
     
     // Call updateParentState after state updates
     setTimeout(() => {

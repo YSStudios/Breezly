@@ -1,5 +1,5 @@
 // Step4.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FormQuestion from '../shared/FormQuestion';
 import { StepProps, Question } from '../types';
 import { 
@@ -16,7 +16,7 @@ import {
 } from '@heroicons/react/24/outline';
 import ConditionDetails from './ConditionDetails';
 
-const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
+const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData }) => {
   const [purchasePrice, setPurchasePrice] = useState<number | null>(null);
   const [depositAmount, setDepositAmount] = useState<number | null>(null);
   const [depositMethod, setDepositMethod] = useState<string>('');
@@ -31,14 +31,30 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
   const [acceptanceDeadline, setAcceptanceDeadline] = useState<string>('');
   const [additionalClauses, setAdditionalClauses] = useState<string[]>(['']);
 
+  useEffect(() => {
+    setPurchasePrice(formData.purchasePrice ? parseFloat(formData.purchasePrice) : null);
+    setDepositAmount(formData.depositAmount ? parseFloat(formData.depositAmount) : null);
+    setDepositMethod(formData.depositMethod || '');
+    setDepositDueDate(formData.depositDueDate || '');
+    setEscrowAgent(formData.escrowAgent || '');
+    setEscrowAgentName(formData.escrowAgentName || '');
+    setPossession(formData.possession || '');
+    setClosingDate(formData.closingDate || '');
+    setHasConditions(formData.hasConditions || '');
+    setSelectedConditions(formData.conditions ? formData.conditions.split(',') : []);
+    setCompletionDate(formData.completionDate || '');
+    setAcceptanceDeadline(formData.acceptanceDeadline || '');
+    setAdditionalClauses(formData.additionalClauses ? JSON.parse(formData.additionalClauses) : ['']);
+  }, [formData]);
+
   const handlePurchasePriceChange = (value: string) => {
     const numValue = parseFloat(value.replace(/[^0-9.]/g, ''));
     if (!isNaN(numValue)) {
       setPurchasePrice(numValue);
-      onInputChange('purchasePrice', numValue);
+      onInputChange('purchasePrice', numValue.toString());
     } else {
       setPurchasePrice(null);
-      onInputChange('purchasePrice', null);
+      onInputChange('purchasePrice', '');
     }
   };
 
@@ -46,10 +62,10 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
     const numValue = parseFloat(value.replace(/[^0-9.]/g, ''));
     if (!isNaN(numValue)) {
       setDepositAmount(numValue);
-      onInputChange('depositAmount', numValue);
+      onInputChange('depositAmount', numValue.toString());
     } else {
       setDepositAmount(null);
-      onInputChange('depositAmount', null);
+      onInputChange('depositAmount', '');
     }
   };
 
@@ -288,6 +304,8 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
           question={purchasePriceQuestion}
           onChange={handlePurchasePriceChange}
           title="Purchase Price"
+          initialValue={purchasePrice?.toString() || ''}
+          initialTextFieldValues={{ 0: purchasePrice?.toString() || '' }}
         />
       )}
 
@@ -297,6 +315,8 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
             question={depositAmountQuestion}
             onChange={handleDepositAmountChange}
             title="Deposit"
+            initialValue={depositAmount?.toString() || ''}
+            initialTextFieldValues={{ 0: depositAmount?.toString() || '' }}
           />
           {depositAmount !== null && purchasePrice !== null && (
             <p className="text-sm text-gray-500 mt-1">
@@ -306,10 +326,14 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
           <FormQuestion
             question={depositMethodQuestion}
             onChange={handleDepositMethodChange}
+            initialValue={depositMethod}
+            initialTextFieldValues={depositMethod.startsWith('Other:') ? { 0: depositMethod.split(': ')[1] } : {}}
           />
           <FormQuestion
             question={depositDueDateQuestion}
             onChange={handleDepositDueDateChange}
+            initialValue={depositDueDate ? 'Specify date' : 'Unsure'}
+            initialTextFieldValues={{ 0: depositDueDate }}
           />
         </>
       )}
@@ -320,6 +344,8 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
           <FormQuestion
             question={escrowAgentQuestion}
             onChange={handleEscrowAgentChange}
+            initialValue={escrowAgent}
+            initialTextFieldValues={{ 0: escrowAgentName }}
           />
         </>
       )}
@@ -330,6 +356,14 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
           <FormQuestion
             question={possessionQuestion}
             onChange={handlePossessionChange}
+            initialValue={possession}
+            initialTextFieldValues={
+              possession === 'Upon closing and funding'
+                ? { 0: closingDate }
+                : possession === 'Before funding, under a temporary lease'
+                ? { 0: formData.possessionDate, 1: closingDate }
+                : {}
+            }
           />
         </>
       )}
@@ -340,16 +374,20 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
           <FormQuestion
             question={conditionsQuestion}
             onChange={handleConditionsChange}
+            initialValue={hasConditions}
           />
           {hasConditions === 'Yes' && (
             <>
               <FormQuestion
                 question={specificConditionsQuestion}
                 onChange={handleSpecificConditionsChange}
+                initialValue={selectedConditions.join(',')}
               />
               <FormQuestion
                 question={completionDateQuestion}
                 onChange={handleCompletionDateChange}
+                initialValue={completionDate ? 'date' : ''}
+                initialTextFieldValues={{ 0: completionDate }}
               />
             </>
           )}
@@ -360,6 +398,7 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
         <ConditionDetails
           selectedConditions={selectedConditions}
           onInputChange={onInputChange}
+          formData={formData}
         />
       )}
 
@@ -411,6 +450,8 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
           question={acceptanceQuestion}
           onChange={handleAcceptanceDeadlineChange}
           title="Acceptance"
+          initialValue={acceptanceDeadline ? 'deadline' : ''}
+          initialTextFieldValues={{ 0: acceptanceDeadline }}
         />
       )}
     </div>

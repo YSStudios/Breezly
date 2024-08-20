@@ -1,16 +1,35 @@
 // Step3.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FormQuestion from '../shared/FormQuestion';
 import { StepProps, Question } from '../types';
 import { UserIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
 
 const MAX_PARTIES = 5;
 
-const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
+const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData }) => {
     const [buyers, setBuyers] = useState([0]);
     const [sellers, setSellers] = useState([0]);
     const [selectedBuyerTypes, setSelectedBuyerTypes] = useState<{ [key: number]: string }>({});
     const [selectedSellerTypes, setSelectedSellerTypes] = useState<{ [key: number]: string }>({});
+
+    useEffect(() => {
+        const buyerCount = Object.keys(formData).filter(key => key.startsWith('buyer-type-')).length;
+        const sellerCount = Object.keys(formData).filter(key => key.startsWith('seller-type-')).length;
+        
+        setBuyers(Array.from({ length: Math.max(1, buyerCount) }, (_, i) => i));
+        setSellers(Array.from({ length: Math.max(1, sellerCount) }, (_, i) => i));
+
+        const newBuyerTypes: { [key: number]: string } = {};
+        const newSellerTypes: { [key: number]: string } = {};
+        for (let i = 0; i < buyerCount; i++) {
+            newBuyerTypes[i] = formData[`buyer-type-${i}`];
+        }
+        for (let i = 0; i < sellerCount; i++) {
+            newSellerTypes[i] = formData[`seller-type-${i}`];
+        }
+        setSelectedBuyerTypes(newBuyerTypes);
+        setSelectedSellerTypes(newSellerTypes);
+    }, [formData]);
 
     const partyTypeQuestion = (partyType: 'buyer' | 'seller'): Question => ({
         id: `${partyType}-type`,
@@ -104,6 +123,7 @@ const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
                         <FormQuestion
                             question={partyTypeQuestion(partyType)}
                             onChange={handlePartyTypeChange(partyType, partyIndex)}
+                            initialValue={formData[`${partyType}-type-${partyIndex}`]}
                         />
                         
                         {selectedTypes[partyIndex] && (
@@ -119,6 +139,7 @@ const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
                                         placeholder={selectedTypes[partyIndex] === 'individual' 
                                             ? (partyType === 'buyer' ? 'e.g. Alex Garcia Smith' : 'e.g. John Doe') 
                                             : (partyType === 'buyer' ? 'e.g. ABC Ltd.' : 'e.g. XYZ Corp')}
+                                        value={formData[`name-${partyType}-${partyIndex}`] || ''}
                                         onChange={(e) => onInputChange(`name-${partyType}-${partyIndex}`, e.target.value)}
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                     />
@@ -130,6 +151,7 @@ const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange }) => {
                                         id={`address-${partyType}-${partyIndex}`}
                                         name={`address-${partyType}-${partyIndex}`}
                                         placeholder="e.g. Street, City, State ZIP Code"
+                                        value={formData[`address-${partyType}-${partyIndex}`] || ''}
                                         onChange={(e) => onInputChange(`address-${partyType}-${partyIndex}`, e.target.value)}
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                     />

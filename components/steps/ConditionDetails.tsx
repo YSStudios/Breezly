@@ -1,14 +1,15 @@
 // ConditionDetails.tsx
 import React from 'react';
 import FormQuestion from '../shared/FormQuestion';
-import { Question } from '../types';
+import { Question, FormData } from '../types';
 
 interface ConditionDetailsProps {
   selectedConditions: string[];
   onInputChange: (name: string, value: string) => void;
+  formData: FormData;
 }
 
-const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions, onInputChange }) => {
+const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions, onInputChange, formData }) => {
   const renderConditionDetails = (condition: string) => {
     switch (condition) {
       case 'The buyer sells their property':
@@ -21,6 +22,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
                 options: [{ value: 'address', label: 'Address', textFields: [{ placeholder: 'e.g. 42 Evergreen Way, Santa Fe, New Mexico' }] }],
               }}
               onChange={onInputChange}
+              initialValue={formData['buyer-property-address']}
             />
             <FormQuestion
               question={{
@@ -29,6 +31,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
                 options: [{ value: 'date', label: 'Date', textFields: [{ type: 'date' }] }],
               }}
               onChange={onInputChange}
+              initialValue={formData['buyer-property-sale-date']}
             />
           </>
         );
@@ -41,6 +44,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
               options: [{ value: 'date', label: 'Date', textFields: [{ type: 'date' }] }],
             }}
             onChange={onInputChange}
+            initialValue={formData['disclosure-form-date']}
           />
         );
       case 'Buyer must obtain a new loan':
@@ -53,6 +57,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
                 options: [{ value: 'amount', label: 'Amount', textFields: [{ placeholder: 'e.g. 125,000.00', prefix: '$' }] }],
               }}
               onChange={onInputChange}
+              initialValue={formData['new-loan-amount']}
             />
             <FormQuestion
               question={{
@@ -61,6 +66,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
                 options: [{ value: 'term', label: 'Term', textFields: [{ placeholder: 'e.g. 60' }] }],
               }}
               onChange={onInputChange}
+              initialValue={formData['new-loan-term']}
             />
             <FormQuestion
               question={{
@@ -69,6 +75,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
                 options: [{ value: 'rate', label: 'Rate', textFields: [{ placeholder: 'e.g. 4.5' }] }],
               }}
               onChange={onInputChange}
+              initialValue={formData['new-loan-interest-rate']}
             />
             <FormQuestion
               question={{
@@ -77,6 +84,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
                 options: [{ value: 'period', label: 'Period', textFields: [{ placeholder: 'e.g. 10' }] }],
               }}
               onChange={onInputChange}
+              initialValue={formData['new-loan-amortization']}
             />
             <FormQuestion
               question={{
@@ -85,6 +93,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
                 options: [{ value: 'days', label: 'Days', textFields: [{ placeholder: 'e.g. 90' }] }],
               }}
               onChange={onInputChange}
+              initialValue={formData['new-loan-approval-time']}
             />
           </>
         );
@@ -97,6 +106,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
               options: [{ value: 'date', label: 'Date', textFields: [{ type: 'date' }] }],
             }}
             onChange={onInputChange}
+            initialValue={formData['assume-loan-approval-deadline']}
           />
         );
       case 'Buyer must receive third party approval':
@@ -109,6 +119,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
                 options: [{ value: 'name', label: 'Name', textFields: [{ placeholder: 'e.g. John Doe' }] }],
               }}
               onChange={onInputChange}
+              initialValue={formData['third-party-name']}
             />
             <FormQuestion
               question={{
@@ -120,6 +131,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
                 ],
               }}
               onChange={onInputChange}
+              initialValue={formData['third-party-is-attorney']}
             />
             <FormQuestion
               question={{
@@ -128,6 +140,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
                 options: [{ value: 'date', label: 'Date', textFields: [{ type: 'date' }] }],
               }}
               onChange={onInputChange}
+              initialValue={formData['third-party-approval-deadline']}
             />
             <FormQuestion
               question={{
@@ -139,6 +152,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
                 ],
               }}
               onChange={onInputChange}
+              initialValue={formData['third-party-approval-notice']}
             />
           </>
         );
@@ -152,6 +166,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
                 options: [{ value: 'date', label: 'Date', textFields: [{ type: 'date' }] }],
               }}
               onChange={onInputChange}
+              initialValue={formData['home-inspection-deadline']}
             />
             <FormQuestion
               question={{
@@ -164,6 +179,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
                 ],
               }}
               onChange={onInputChange}
+              initialValue={formData['home-inspection-payer']}
             />
           </>
         );
@@ -176,6 +192,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
               options: [{ value: 'acknowledged', label: 'Acknowledged' }],
             }}
             onChange={onInputChange}
+            initialValue={formData['appraisal-details']}
           />
         );
       case 'Specific property repairs':
@@ -188,6 +205,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
                 options: [{ value: 'repairs', label: 'Repairs', textFields: [{ placeholder: 'e.g. re-shingle the roof, re-seed the lawn in the backyard, repaint the basement, replace ensuite toilet, etc.' }] }],
               }}
               onChange={onInputChange}
+              initialValue={formData['specific-repairs']}
             />
             <FormQuestion
               question={{
@@ -196,6 +214,7 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
                 options: [{ value: 'date', label: 'Date', textFields: [{ type: 'date' }] }],
               }}
               onChange={onInputChange}
+              initialValue={formData['repairs-completion-date']}
             />
           </>
         );
