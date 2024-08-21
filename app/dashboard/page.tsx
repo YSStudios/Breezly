@@ -129,7 +129,7 @@ const Dashboard = () => {
           </div>
 
 
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Past Offers ({savedForms.length})</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Current Offers ({savedForms.length})</h2>
       <div className="overflow-x-auto">
         <table className="min-w-full">
           <thead className="bg-gray-50">

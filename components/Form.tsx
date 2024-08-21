@@ -1,9 +1,9 @@
-// Form.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
+import Sidebar, { substepNames } from './Sidebar';
 import Step1 from './steps/Step1';
 import Step2 from './steps/Step2';
 import Step3 from './steps/Step3';
@@ -14,16 +14,16 @@ import { FormData } from './types';
 const DEBUG = process.env.NODE_ENV === 'development';
 
 const Form: React.FC = () => {
-  const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [currentSubstep, setCurrentSubstep] = useState(1);
-  const [formData, setFormData] = useState<FormData>({});
-  const [formId, setFormId] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const { data: session, status } = useSession();
-  const searchParams = useSearchParams();
+	const router = useRouter();
+	const [currentStep, setCurrentStep] = useState(1);
+	const [currentSubstep, setCurrentSubstep] = useState(1);
+	const [formData, setFormData] = useState<FormData>({});
+	const [formId, setFormId] = useState<string | null>(null);
+	const [isSaving, setIsSaving] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
+	const [saveError, setSaveError] = useState<string | null>(null);
+	const { data: session, status } = useSession();
+	const searchParams = useSearchParams();
 
   useEffect(() => {
     const initForm = async () => {
@@ -125,34 +125,38 @@ const Form: React.FC = () => {
     }));
   };
 
-  const nextStep = () => {
-    if (currentStep < 5) {
-      setCurrentStep(currentStep + 1);
-      setCurrentSubstep(1);
-    }
+  const handleSetStep = (step: number, substep: number = 1) => {
+    setCurrentStep(step);
+    setCurrentSubstep(substep);
   };
 
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-      setCurrentSubstep(1);
+  const getPreviousSubstepName = (): string | null => {
+    if (currentSubstep > 1) {
+      return substepNames[currentStep]?.[currentSubstep - 1] || null;
+    } else if (currentStep > 1) {
+      const previousStepSubsteps = substepNames[currentStep - 1];
+      const lastSubstepOfPreviousStep = Math.max(...Object.keys(previousStepSubsteps).map(Number));
+      return previousStepSubsteps[lastSubstepOfPreviousStep] || null;
     }
+    return null;
   };
 
   const nextSubstep = () => {
     const maxSubsteps = getMaxSubsteps(currentStep);
     if (currentSubstep < maxSubsteps) {
       setCurrentSubstep(currentSubstep + 1);
-    } else {
-      nextStep();
+    } else if (currentStep < 5) {
+      setCurrentStep(currentStep + 1);
+      setCurrentSubstep(1);
     }
   };
 
   const prevSubstep = () => {
     if (currentSubstep > 1) {
       setCurrentSubstep(currentSubstep - 1);
-    } else {
-      prevStep();
+    } else if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+      setCurrentSubstep(getMaxSubsteps(currentStep - 1));
     }
   };
 
@@ -168,7 +172,7 @@ const Form: React.FC = () => {
   };
 
   const renderStep = () => {
-    console.log('Rendering step, formData:', formData); // Add this line for debugging
+    console.log('Rendering step, formData:', formData);
     switch (currentStep) {
       case 1:
         return <Step1 currentSubstep={currentSubstep} onInputChange={handleInputChange} formData={formData} />;
@@ -190,55 +194,76 @@ const Form: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Real Estate Offer Form</h1>
-      {renderStep()}
-      <div className="mt-6 flex justify-between">
-        {currentStep > 1 || currentSubstep > 1 ? (
-          <button
-            onClick={prevSubstep}
-            className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
-          >
-            Previous
-          </button>
-        ) : (
-          <div></div>
-        )}
-        <button
-          onClick={saveFormData}
-          disabled={isSaving}
-          className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-green-300 mr-2"
-        >
-          {isSaving ? 'Saving...' : 'Save Progress'}
-        </button>
-        {currentStep < 5 || (currentStep === 5 && currentSubstep < getMaxSubsteps(5)) ? (
-          <button
-            onClick={nextSubstep}
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            Next
-          </button>
-        ) : (
-          <button
-            onClick={saveFormData}
-            disabled={isSaving}
-            className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-green-300"
-          >
-            {isSaving ? 'Saving...' : 'Save and Finish'}
-          </button>
-        )}
-      </div>
-      {saveError && (
-        <div className="text-red-500 mt-2">
-          <p>{saveError}</p>
-          {DEBUG && (
-            <details>
-              <summary>Debug Information</summary>
-              <pre>{JSON.stringify({ session, formId, formData }, null, 2)}</pre>
-            </details>
+    <div className="container p-8 mx-auto xl:px-0 ">
+      <div className="lg:col-start-2 min-h-[50em] col-span-12 lg:col-span-10 grid grid-cols-6 gap-y-10 pb-12 mx-auto">
+        <Sidebar 
+          currentStep={currentStep}
+          currentSubstep={currentSubstep}
+          handleSetStep={handleSetStep}
+        />
+        <div className="p-10 col-span-6 md:col-span-4 bg-gray-100 rounded-r-2xl flex flex-col">
+		{getPreviousSubstepName() && (
+            <button
+              onClick={() => handleSetStep(currentStep, currentSubstep - 1)}
+              className="flex items-center text-emerald-600 hover:text-emerald-700 mb-4"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
+              </svg>
+              {getPreviousSubstepName()}
+            </button>
+          )}
+		  <div className="flex-grow">
+          	{renderStep()}
+		  </div>
+          <div className="mt-6 flex justify-between">
+            {currentStep > 1 || currentSubstep > 1 ? (
+              <button
+                onClick={prevSubstep}
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
+              >
+                Previous
+              </button>
+            ) : (
+              <div></div>
+            )}
+            <button
+              onClick={saveFormData}
+              disabled={isSaving}
+              className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-green-300 mr-2"
+            >
+              {isSaving ? 'Saving...' : 'Save Progress'}
+            </button>
+            {currentStep < 5 || (currentStep === 5 && currentSubstep < getMaxSubsteps(5)) ? (
+              <button
+                onClick={nextSubstep}
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+              >
+                Next
+              </button>
+            ) : (
+              <button
+                onClick={saveFormData}
+                disabled={isSaving}
+                className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-green-300"
+              >
+                {isSaving ? 'Saving...' : 'Save and Finish'}
+              </button>
+            )}
+          </div>
+          {saveError && (
+            <div className="text-red-500 mt-2">
+              <p>{saveError}</p>
+              {DEBUG && (
+                <details>
+                  <summary>Debug Information</summary>
+                  <pre>{JSON.stringify({ session, formId, formData }, null, 2)}</pre>
+                </details>
+              )}
+            </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
