@@ -56,10 +56,16 @@ export async function POST(req: NextRequest) {
       data: formData.data
     });
   } catch (error) {
-    console.error('Error saving form data:', error);
-    if (error.code === 'P2003') {
-      return NextResponse.json({ message: "Error saving form: User not found in the database.", error: error.toString() }, { status: 400 });
+    if (error instanceof Error) {
+      console.error('Error saving form data:', error.message);
+      // Type guard to check if error has a 'code' property
+      if ('code' in error && error.code === 'P2003') {
+        return NextResponse.json({ message: "Error saving form: User not found in the database.", error: error.message }, { status: 400 });
+      }
+      return NextResponse.json({ message: "Error saving form data", error: error.message }, { status: 500 });
+    } else {
+      console.error('Unknown error:', error);
+      return NextResponse.json({ message: "An unknown error occurred while saving the form data." }, { status: 500 });
     }
-    return NextResponse.json({ message: "Error saving form data", error: error.toString() }, { status: 500 });
   }
 }
