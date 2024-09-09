@@ -16,7 +16,7 @@ export default async function HomePage() {
       <Container>
         <Hero />
         <SectionTitle
-          preTitle="Nextly Benefits"
+          preTitle="Breezly"
           title=" Why should you use this landing page"
         >
           Nextly is a free landing page & marketing website template for startups

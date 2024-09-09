@@ -123,7 +123,9 @@ const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
 		<div className="mx-auto grid grid-cols-2 gap-x-8 gap-y-10">
 			{currentSubstep === 1 && (
 				<div className="col-span-2 sm:col-span-2">
-					<StateSelectionQuestion onStateSelect={handleStateSelect} />
+					<StateSelectionQuestion onStateSelect={handleStateSelect} formData={{
+						state: undefined
+					}} />
 				</div>
 			)}
 

@@ -10,6 +10,7 @@ import Step3 from './steps/Step3';
 import Step4 from './steps/Step4';
 import Step5 from './steps/Step5';
 import { FormData } from './types';
+import generatePDF from '../utils/generatePDF';
 
 const DEBUG = process.env.NODE_ENV === 'development';
 
@@ -116,7 +117,7 @@ const Form: React.FC = () => {
     } finally {
       setIsSaving(false);
     }
-  };
+  };  
 
   const handleInputChange = (name: string, value: string) => {
     setFormData(prevData => ({
@@ -189,6 +190,10 @@ const Form: React.FC = () => {
     }
   };
 
+  const handleGeneratePDF = () => {
+    generatePDF(formData);
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -234,22 +239,22 @@ const Form: React.FC = () => {
             >
               {isSaving ? 'Saving...' : 'Save Progress'}
             </button>
-            {currentStep < 5 || (currentStep === 5 && currentSubstep < getMaxSubsteps(5)) ? (
-              <button
-                onClick={nextSubstep}
-                className="bg-blue-500 text-white px-4 py-2 rounded"
-              >
-                Next
-              </button>
-            ) : (
-              <button
-                onClick={saveFormData}
-                disabled={isSaving}
-                className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-green-300"
-              >
-                {isSaving ? 'Saving...' : 'Save and Finish'}
-              </button>
-            )}
+            {currentStep === 5 ? (
+  <button
+    onClick={handleGeneratePDF}
+    disabled={isSaving}
+    className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-green-300"
+  >
+    Download Your Real Estate Offer
+  </button>
+) : (
+  <button
+    onClick={nextSubstep}
+    className="bg-blue-500 text-white px-4 py-2 rounded"
+  >
+    Next
+  </button>
+)}
           </div>
           {saveError && (
             <div className="text-red-500 mt-2">

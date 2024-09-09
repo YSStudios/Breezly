@@ -1,8 +1,9 @@
 // StateSelector.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface StateSelectorProps {
   onStateSelect: (state: string) => void;
+  formData: { state?: string };
 }
 
 const states = [
@@ -14,9 +15,16 @@ const states = [
   'Wisconsin', 'Wyoming'
 ];
 
-const StateSelector: React.FC<StateSelectorProps> = ({ onStateSelect }) => {
+const StateSelector: React.FC<StateSelectorProps> = ({ onStateSelect, formData }) => {
   const [showStateSelection, setShowStateSelection] = useState(false);
-  const [selectedState, setSelectedState] = useState('');
+  const [selectedState, setSelectedState] = useState(formData.state || '');
+
+  useEffect(() => {
+    if (formData.state) {
+      setSelectedState(formData.state);
+      onStateSelect(formData.state);
+    }
+  }, [formData.state, onStateSelect]);
 
   const handleStateSelect = (state: string) => {
     setSelectedState(state);
@@ -34,7 +42,7 @@ const StateSelector: React.FC<StateSelectorProps> = ({ onStateSelect }) => {
           onClick={() => setShowStateSelection(true)}
           className="mt-2 rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
-          Choose your state
+          {selectedState ? `Change state (${selectedState})` : 'Choose your state'}
         </button>
       </div>
       {selectedState && (
@@ -57,7 +65,11 @@ const StateSelector: React.FC<StateSelectorProps> = ({ onStateSelect }) => {
                   key={state}
                   type="button"
                   onClick={() => handleStateSelect(state)}
-                  className="rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-800 shadow-sm hover:bg-gray-300"
+                  className={`rounded-md px-4 py-2 text-sm font-semibold shadow-sm ${
+                    state === selectedState
+                      ? 'bg-indigo-500 text-white hover:bg-indigo-600'
+                      : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                  }`}
                 >
                   {state}
                 </button>
