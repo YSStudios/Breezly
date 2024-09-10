@@ -48,6 +48,11 @@ const Form: React.FC = () => {
     initForm();
   }, [searchParams]);
 
+  // New useEffect hook to log formData whenever it changes
+  useEffect(() => {
+    console.log('Current formData:', formData);
+  }, [formData]);
+
   const fetchFormData = async (id: string) => {
     setIsLoading(true);
     try {
