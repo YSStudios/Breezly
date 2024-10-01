@@ -15,13 +15,11 @@ export default async function HomePage() {
     <>
       <Container>
         <Hero />
-        <SectionTitle
-          preTitle="Breezly"
-          title=" Why should you use this landing page"
-        >
-          Nextly is a free landing page & marketing website template for startups
-          and indie projects. Its built with Next.js & TailwindCSS. And its
-          completely open-source.
+        <SectionTitle preTitle="Breezly" title=" Why should you Breezly">
+          With Breezly, you can create, customize, and send offers to buy your
+          dream home in just a few clicks. No more complex paperwork or
+          middlemen – just a streamlined process that empowers you to take
+          control of your home-buying journey.
         </SectionTitle>
         <Benefits data={benefitOne} />
         <Benefits imgPos="right" data={benefitTwo} />

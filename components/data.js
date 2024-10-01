@@ -7,12 +7,12 @@ import {
   SunIcon,
 } from "@heroicons/react/24/solid";
 
-import benefitOneImg from "../public/ordering.jpeg"
+import benefitOneImg from "../public/ordering.jpeg";
 import benefitTwoImg from "../public/gardening.jpeg";
 
 const benefitOne = {
   title: "Highlight your benefits",
-  desc: "You can use this space to highlight your first benefit or a feature of your product. It can also contain an image or Illustration like in the example along with some bullet points.",
+  desc: "Fast and Easy: Breeze through the offer process with intuitive tools that simplify every step. No need for in-depth knowledge – Breezly makes it easy for everyone.",
   image: benefitOneImg,
   bullets: [
     {
@@ -56,5 +56,4 @@ const benefitTwo = {
   ],
 };
 
-
-export {benefitOne, benefitTwo};
+export { benefitOne, benefitTwo };
