@@ -29,7 +29,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           <Suspense fallback="...">
             <Nav />
           </Suspense>
-          <main className="flex w-full h-full flex-col items-center justify-center">
+          <main className="flex w-full flex-col items-center justify-center pt-24">
             {children}
           </main>
           <Footer />
