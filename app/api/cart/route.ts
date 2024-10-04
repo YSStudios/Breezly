@@ -152,7 +152,7 @@ export async function DELETE(req: NextRequest) {
     await prisma.order.update({
       where: { id: orderItem.orderId },
       data: { 
-        total: { decrement: orderItem.price * orderItem.quantity },
+        total: { decrement: Number(orderItem.price) * Number(orderItem.quantity) },
       },
     });
 
