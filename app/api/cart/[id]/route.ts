@@ -38,6 +38,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).json({ message: "Item removed from cart successfully" });
   } catch (error) {
     console.error('Error removing item from cart:', error);
-    res.status(500).json({ message: "Error removing item from cart", error: error.message });
+    res.status(500).json({ message: "Error removing item from cart", error: (error as Error).message });
   }
 }
