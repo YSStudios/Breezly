@@ -204,15 +204,19 @@ const Form: React.FC = () => {
   }
 
   return (
-    <div className="container p-8 mx-auto xl:px-0 ">
-      <div className="lg:col-start-2 min-h-[50em] col-span-12 lg:col-span-10 grid grid-cols-6 gap-y-10 pb-12 mx-auto">
-        <Sidebar 
-          currentStep={currentStep}
-          currentSubstep={currentSubstep}
-          handleSetStep={handleSetStep}
-        />
-        <div className="p-10 col-span-6 md:col-span-4 bg-gray-100 rounded-r-2xl flex flex-col">
-		{getPreviousSubstepName() && (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row gap-8">
+        <div className="md:w-1/4">
+          <div className="sticky top-16">
+            <Sidebar 
+              currentStep={currentStep}
+              currentSubstep={currentSubstep}
+              handleSetStep={handleSetStep}
+            />
+          </div>
+        </div>
+        <div className="md:w-3/4">
+          {getPreviousSubstepName() && (
             <button
               onClick={() => handleSetStep(currentStep, currentSubstep - 1)}
               className="flex items-center text-emerald-600 hover:text-emerald-700 mb-4"
@@ -223,51 +227,64 @@ const Form: React.FC = () => {
               {getPreviousSubstepName()}
             </button>
           )}
-		  <div className="flex-grow">
-          	{renderStep()}
-		  </div>
-          <div className="mt-6 flex justify-between">
+          <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+            {renderStep()}
+          </div>
+          <div className="flex justify-between items-center">
             {currentStep > 1 || currentSubstep > 1 ? (
               <button
                 onClick={prevSubstep}
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
+                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-full font-bold hover:bg-gray-300 transition-colors duration-300 flex items-center"
               >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                </svg>
                 Previous
               </button>
             ) : (
               <div></div>
             )}
-            <button
-              onClick={saveFormData}
-              disabled={isSaving}
-              className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-green-300 mr-2"
-            >
-              {isSaving ? 'Saving...' : 'Save Progress'}
-            </button>
-            {currentStep === 5 ? (
-  <button
-    onClick={handleGeneratePDF}
-    disabled={isSaving}
-    className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-green-300"
-  >
-    Download Your Real Estate Offer
-  </button>
-) : (
-  <button
-    onClick={nextSubstep}
-    className="bg-blue-500 text-white px-4 py-2 rounded"
-  >
-    Next
-  </button>
-)}
+            <div className="flex space-x-4">
+              <button
+                onClick={saveFormData}
+                disabled={isSaving}
+                className={`px-6 py-3 bg-blue-500 text-white rounded-full font-bold hover:bg-blue-600 transition-colors duration-300 flex items-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
+                </svg>
+                {isSaving ? 'Saving...' : 'Save Progress'}
+              </button>
+              {currentStep === 5 ? (
+                <button
+                  onClick={handleGeneratePDF}
+                  className="px-6 py-3 bg-purple-500 text-white rounded-full font-bold hover:bg-purple-600 transition-colors duration-300 flex items-center"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                  Download Offer
+                </button>
+              ) : (
+                <button
+                  onClick={nextSubstep}
+                  className="px-6 py-3 bg-gradient-to-r from-emerald-400 to-teal-500 text-white rounded-full font-bold hover:from-emerald-500 hover:to-teal-600 transition-colors duration-300 flex items-center"
+                >
+                  Next
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
           {saveError && (
-            <div className="text-red-500 mt-2">
+            <div className="text-red-500 mt-4 p-4 bg-red-100 rounded-lg">
               <p>{saveError}</p>
               {DEBUG && (
-                <details>
-                  <summary>Debug Information</summary>
-                  <pre>{JSON.stringify({ session, formId, formData }, null, 2)}</pre>
+                <details className="mt-2">
+                  <summary className="cursor-pointer text-sm font-medium">Debug Information</summary>
+                  <pre className="mt-2 text-xs overflow-auto">{JSON.stringify({ session, formId, formData }, null, 2)}</pre>
                 </details>
               )}
             </div>
