@@ -1,6 +1,6 @@
 import "./globals.css";
 import cx from "classnames";
-import { sfPro, inter, argentCF } from "./fonts";
+import { sfPro, argentCF, quicksand } from "./fonts";
 import Nav from "@/components/layout/nav";
 import Footer from "@/components/layout/footer";
 import { Suspense, ReactNode } from "react";
@@ -24,7 +24,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
 
   return (
     <html lang="en">
-      <body className={cx(sfPro.variable, inter.variable, argentCF.variable)}>
+      <body className={cx(sfPro.variable, argentCF.variable, quicksand.variable)}>
         <ClientSessionProvider session={session}>
           <Suspense fallback="...">
             <Nav />
