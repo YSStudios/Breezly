@@ -10,3 +10,8 @@ export const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
 });
+
+export const argentCF = localFont({
+	src: "./ArgentCF-Regular.ttf",
+	variable: "--font-argent",
+});

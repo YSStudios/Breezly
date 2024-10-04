@@ -18,15 +18,11 @@ export const Hero = () => {
               saving thousands in commissions.
             </p>
             <div className="mt-3">
-              <button className="inline-block transform rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 px-10 py-5 text-lg font-bold text-white shadow-lg transition-all duration-300 ease-in-out hover:scale-105 hover:from-indigo-500 hover:to-purple-500 focus:outline-none focus:ring-4 focus:ring-teal-300">
-                <Link
-                  href={{
-                    pathname: "/offerform",
-                  }}
-                >
+              <Link href="/offerform">
+			  <button className="inline-block transform rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 px-10 py-5 text-lg font-bold text-white shadow-lg transition-all duration-300 ease-in-out hover:scale-105 hover:from-indigo-500 hover:to-purple-500 focus:outline-none focus:ring-4 focus:ring-teal-300">
                   Get Started
-                </Link>
               </button>
+			  </Link>
             </div>
           </div>
         </div>

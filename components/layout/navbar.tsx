@@ -26,13 +26,12 @@ export default function NavBar({ session }: { session: Session | null }) {
         <div className="flex h-16 items-center justify-between w-full">
           <Link href="/" className="flex items-center font-display text-2xl">
             <Image
-              src="/applogo.webp"
+              src="/breezlylogo.svg"
               alt="OfferApp"
-              width="30"
-              height="30"
+              width="200"
+              height="50"
               className="mr-2 rounded-sm"
             ></Image>
-            <p>OfferApp</p>
           </Link>
           <div>
             {session ? (
