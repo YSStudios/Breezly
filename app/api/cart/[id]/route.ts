@@ -1,20 +1,20 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/options";
 import prisma from '@/lib/prisma';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'DELETE') {
-    return res.status(405).json({ message: `Method ${req.method} Not Allowed` });
-  }
-
-  const session = await getServerSession(req, res, authOptions);
+export async function DELETE(req: NextRequest) {
+  const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
-    return res.status(401).json({ message: "You must be logged in." });
+    return NextResponse.json({ message: "You must be logged in." }, { status: 401 });
   }
 
-  const { id } = req.query;
+  const id = req.nextUrl.searchParams.get('id');
+
+  if (!id) {
+    return NextResponse.json({ message: "Item ID is required" }, { status: 400 });
+  }
 
   try {
     const deletedItem = await prisma.orderItem.delete({
@@ -35,9 +35,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-    res.status(200).json({ message: "Item removed from cart successfully" });
+    return NextResponse.json({ message: "Item removed from cart successfully" }, { status: 200 });
   } catch (error) {
     console.error('Error removing item from cart:', error);
-    res.status(500).json({ message: "Error removing item from cart", error: (error as Error).message });
+    return NextResponse.json({ message: "Error removing item from cart", error: (error as Error).message }, { status: 500 });
   }
 }
