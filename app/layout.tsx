@@ -7,6 +7,7 @@ import { Suspense, ReactNode } from "react";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import ClientSessionProvider from "@/components/ClientSessionProvider";
 import { getServerSession } from "next-auth/next";
+import { CartProvider } from "contexts/CartContext";
 
 export const metadata = {
   title: "OfferApp - Send real estate offers quick and easy",
@@ -24,16 +25,20 @@ export default async function RootLayout({ children }: RootLayoutProps) {
 
   return (
     <html lang="en">
-      <body className={cx(sfPro.variable, argentCF.variable, quicksand.variable)}>
+      <body
+        className={cx(sfPro.variable, argentCF.variable, quicksand.variable)}
+      >
         <ClientSessionProvider session={session}>
-          <Suspense fallback="...">
-            <Nav />
-          </Suspense>
-          <main className="flex w-full flex-col items-center justify-center pt-24">
-            {children}
-          </main>
-          <Footer />
-          <VercelAnalytics />
+          <CartProvider>
+            <Suspense fallback="...">
+              <Nav />
+            </Suspense>
+            <main className="flex w-full flex-col items-center justify-center pt-24">
+              {children}
+            </main>
+            <Footer />
+            <VercelAnalytics />
+          </CartProvider>
         </ClientSessionProvider>
       </body>
     </html>

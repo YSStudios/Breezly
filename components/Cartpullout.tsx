@@ -1,30 +1,16 @@
 import React from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-
-interface CartItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number | string;
-  quantity: number;
-}
+import { useCart } from "contexts/CartContext";
 
 interface CartPulloutProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  cartItems: CartItem[];
-  removeItem: (itemId: string) => Promise<void>;
-  updateCart: () => Promise<void>;
 }
 
-const CartPullout: React.FC<CartPulloutProps> = ({
-  isOpen,
-  setIsOpen,
-  cartItems,
-  removeItem,
-  updateCart,
-}) => {
+const CartPullout: React.FC<CartPulloutProps> = ({ isOpen, setIsOpen }) => {
+  const { cartItems, removeFromCart, refreshCart } = useCart();
+
   // Helper function to format price
   const formatPrice = (price: number | string): string => {
     const numPrice = typeof price === "string" ? parseFloat(price) : price;
@@ -32,7 +18,7 @@ const CartPullout: React.FC<CartPulloutProps> = ({
   };
 
   // Helper function to calculate total
-  const calculateTotal = (items: CartItem[]): number => {
+  const calculateTotal = (items: typeof cartItems): number => {
     return items.reduce((sum, item) => {
       const itemPrice =
         typeof item.price === "string" ? parseFloat(item.price) : item.price;
@@ -41,8 +27,8 @@ const CartPullout: React.FC<CartPulloutProps> = ({
   };
 
   const handleRemoveItem = async (itemId: string) => {
-    await removeItem(itemId);
-    await updateCart();
+    await removeFromCart(itemId);
+    await refreshCart();
   };
 
   return (

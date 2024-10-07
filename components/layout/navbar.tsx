@@ -1,8 +1,7 @@
 "use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import useScroll from "@/lib/hooks/use-scroll";
 import { useSignInModal } from "./sign-in-modal";
 import UserDropdown from "./user-dropdown";
@@ -10,38 +9,18 @@ import { Session } from "next-auth";
 import { Container } from "../Container";
 import CartPullout from "../Cartpullout";
 import { ShoppingCartIcon } from "@heroicons/react/24/outline";
-
-interface CartItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number | string;
-  quantity: number;
-}
+import { useCart } from "contexts/CartContext";
 
 export default function NavBar({ session }: { session: Session | null }) {
   const { SignInModal, setShowSignInModal } = useSignInModal();
   const scrolled = useScroll(50);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const { cartItems, updateCart } = useCart();
 
-  useEffect(() => {
-    if (session) {
-      fetchCartItems();
-    }
-  }, [session]);
-
-  const fetchCartItems = async () => {
-    try {
-      const response = await fetch("/api/cart");
-      if (response.ok) {
-        const data = await response.json();
-        setCartItems(data);
-      }
-    } catch (error) {
-      console.error("Error fetching cart items:", error);
-    }
-  };
+  const cartItemCount = useMemo(
+    () => cartItems.reduce((total, item) => total + item.quantity, 0),
+    [cartItems],
+  );
 
   const removeItem = async (itemId: string) => {
     try {
@@ -49,17 +28,12 @@ export default function NavBar({ session }: { session: Session | null }) {
         method: "DELETE",
       });
       if (response.ok) {
-        await fetchCartItems();
+        await updateCart();
       }
     } catch (error) {
       console.error("Error removing item from cart:", error);
     }
   };
-
-  const cartItemCount = cartItems.reduce(
-    (total, item) => total + item.quantity,
-    0,
-  );
 
   return (
     <>
@@ -69,7 +43,7 @@ export default function NavBar({ session }: { session: Session | null }) {
         setIsOpen={setIsCartOpen}
         cartItems={cartItems}
         removeItem={removeItem}
-        updateCart={fetchCartItems}
+        updateCart={updateCart}
       />
       <div
         className={`fixed top-0 flex w-full justify-center ${

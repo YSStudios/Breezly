@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
+import { useRouter } from "next/navigation";
 import { FormData } from "../types";
 
 interface Step5Props {
@@ -6,63 +7,13 @@ interface Step5Props {
 }
 
 const PDFPreview: React.FC<Step5Props> = ({ formData }) => {
-  const [isAdding, setIsAdding] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  const handleAddToCart = async () => {
-    setIsAdding(true);
-    setError(null);
-    try {
-      const response = await fetch("/api/cart", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: `Offer for ${formData.propertyAddress || "Unknown Property"}`,
-          description: "PDF Offer Document",
-          price: 9.99,
-          imageUrl: "/path/to/pdf-icon.png",
-        }),
-      });
-
-      console.log("Response status:", response.status);
-      console.log(
-        "Response headers:",
-        Object.fromEntries(response.headers.entries()),
-      );
-
-      const responseText = await response.text();
-      console.log("Raw response:", responseText);
-
-      if (!responseText) {
-        throw new Error("Empty response from server");
-      }
-
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (e) {
-        console.error("Error parsing JSON:", e);
-        throw new Error(`Invalid JSON response: ${responseText}`);
-      }
-
-      if (response.ok) {
-        alert(data.message || "Product added to cart successfully");
-        window.location.href = "/cart";
-      } else {
-        throw new Error(
-          data.message || `HTTP error! status: ${response.status}`,
-        );
-      }
-    } catch (error) {
-      console.error("Error adding PDF to cart:", error);
-      setError(
-        error instanceof Error ? error.message : "An unknown error occurred",
-      );
-    } finally {
-      setIsAdding(false);
-    }
+  const handleViewPlans = () => {
+    // Store the current form data in localStorage
+    localStorage.setItem("offerFormData", JSON.stringify(formData));
+    // Redirect to the plans page
+    router.push("/plans");
   };
 
   return (
@@ -87,13 +38,11 @@ const PDFPreview: React.FC<Step5Props> = ({ formData }) => {
           <p>Closing Date: {formData.closingDate || "N/A"}</p>
         </PreviewSection>
       </div>
-      {error && <p className="mt-4 text-red-600">{error}</p>}
       <button
-        className="mt-6 rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 disabled:bg-blue-300"
-        onClick={handleAddToCart}
-        disabled={isAdding}
+        className="mt-6 rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
+        onClick={handleViewPlans}
       >
-        {isAdding ? "Adding to Cart..." : "Add PDF to Cart"}
+        purchase my offer
       </button>
     </div>
   );

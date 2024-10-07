@@ -1,95 +1,128 @@
-"use client"
+"use client";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useCart } from "contexts/CartContext";
 
-import React, { useState } from 'react';
+interface Plan {
+  id: string;
+  name: string;
+  price: number;
+  features: string[];
+}
 
-const PricingPage = () => {
-  const [isYearly, setIsYearly] = useState(false);
+const plans: Plan[] = [
+  {
+    id: "basic",
+    name: "Basic",
+    price: 9.99,
+    features: ["PDF Download", "Basic Template"],
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    price: 19.99,
+    features: ["PDF Download", "Premium Template", "Email Support"],
+  },
+  {
+    id: "pro",
+    name: "Professional",
+    price: 29.99,
+    features: [
+      "PDF Download",
+      "Custom Template",
+      "Priority Support",
+      "Revisions",
+    ],
+  },
+];
 
-  const plans = [
-    {
-      name: 'FREE',
-      price: 0,
-      features: [
-        '1 user',
-        '2 Active Projects',
-      ],
-      buttonText: 'TRY IT',
-    },
-    {
-      name: 'PRO',
-      price: 10,
-      features: [
-        '1 user',
-        'Unlimited Projects',
-        'Download Prototypes',
-        'Remove Boxx Branding',
-        'Password Protection',
-      ],
-      buttonText: 'BUY IT',
-    },
-    {
-      name: 'TEAM',
-      price: 30,
-      features: [
-        'Unlimited users',
-        'Unlimited Projects',
-        'Download Prototypes',
-        'User roles and groups',
-        'Password Protection',
-      ],
-      buttonText: 'BUY IT',
-    },
-  ];
+const PlansPage: React.FC = () => {
+  const [formData, setFormData] = useState<any>(null);
+  const router = useRouter();
+  const { addToCart } = useCart();
+
+  useEffect(() => {
+    const storedFormData = localStorage.getItem("offerFormData");
+    if (storedFormData) {
+      setFormData(JSON.parse(storedFormData));
+    }
+  }, []);
+
+  const handleAddToCart = async (plan: Plan) => {
+    try {
+      const cartItem = {
+        id: plan.id,
+        name: `${plan.name} Plan - Offer for ${
+          formData?.propertyAddress || "Unknown Property"
+        }`,
+        description: `${plan.name} Plan for PDF Offer Document`,
+        price: plan.price,
+        quantity: 1,
+        planDetails: {
+          id: plan.id,
+          features: plan.features,
+        },
+        offerDetails: {
+          propertyAddress: formData?.propertyAddress,
+          propertyType: formData?.propertyType,
+          purchasePrice: formData?.purchasePrice,
+          closingDate: formData?.closingDate,
+        },
+        imageUrl: `/images/${plan.id}-plan-icon.png`, // Adjust this path as needed
+      };
+
+      await addToCart(cartItem);
+      router.push("/checkout");
+    } catch (error) {
+      console.error("Error adding plan to cart:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to add plan to cart. Please try again.",
+      );
+    }
+  };
 
   return (
-      <div className="bg-indigo-700 rounded-lg shadow-xl p-8 max-w-4xl w-full">
-        <h2 className="text-2xl font-bold text-center text-white mb-2">
-          FIND THE PERFECT PLAN FOR YOUR BUSINESS
-        </h2>
-        <p className="text-center text-indigo-200 mb-8">
-          Select the perfect plan for your needs.
-        </p>
-
-        <div className="flex items-center justify-center mb-8">
-          <span className={`text-white mr-3 ${!isYearly ? 'font-bold' : ''}`}>MONTHLY BILLING</span>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              className="sr-only peer"
-              checked={isYearly}
-              onChange={() => setIsYearly(!isYearly)}
-            />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-          </label>
-          <span className={`text-white ml-3 ${isYearly ? 'font-bold' : ''}`}>YEARLY BILLING</span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {plans.map((plan) => (
-            <div key={plan.name} className="bg-white rounded-lg p-6 flex flex-col">
-              <h3 className="text-indigo-600 font-bold text-xl mb-4">{plan.name}</h3>
-              <div className="text-4xl font-bold mb-4">
-                <span className="text-gray-900">${isYearly ? plan.price * 10 : plan.price}</span>
-                <span className="text-gray-500 text-base font-normal">/ {isYearly ? "year" : "month"}</span>
-              </div>
-              <ul className="mb-8 flex-grow">
-                {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-center mb-2">
-                    <svg className="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <button className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded">
-                {plan.buttonText}
-              </button>
-            </div>
-          ))}
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="mb-6 text-3xl font-bold">Choose a Plan</h1>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        {plans.map((plan) => (
+          <div key={plan.id} className="rounded-lg border p-6 shadow-md">
+            <h2 className="mb-4 text-2xl font-semibold">{plan.name}</h2>
+            <p className="mb-4 text-3xl font-bold">${plan.price.toFixed(2)}</p>
+            <ul className="mb-6">
+              {plan.features.map((feature, index) => (
+                <li key={index} className="mb-2 flex items-center">
+                  <svg
+                    className="mr-2 h-4 w-4 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    ></path>
+                  </svg>
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => handleAddToCart(plan)}
+              className="w-full rounded bg-blue-500 px-4 py-2 text-white transition duration-200 hover:bg-blue-600"
+            >
+              Select Plan
+            </button>
+          </div>
+        ))}
       </div>
+    </div>
   );
 };
 
-export default PricingPage;
+export default PlansPage;
