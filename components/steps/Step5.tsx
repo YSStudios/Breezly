@@ -7,9 +7,11 @@ interface Step5Props {
 
 const PDFPreview: React.FC<Step5Props> = ({ formData }) => {
   const [isAdding, setIsAdding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleAddToCart = async () => {
     setIsAdding(true);
+    setError(null);
     try {
       const response = await fetch("/api/cart", {
         method: "POST",
@@ -33,6 +35,10 @@ const PDFPreview: React.FC<Step5Props> = ({ formData }) => {
       const responseText = await response.text();
       console.log("Raw response:", responseText);
 
+      if (!responseText) {
+        throw new Error("Empty response from server");
+      }
+
       let data;
       try {
         data = JSON.parse(responseText);
@@ -51,7 +57,7 @@ const PDFPreview: React.FC<Step5Props> = ({ formData }) => {
       }
     } catch (error) {
       console.error("Error adding PDF to cart:", error);
-      alert(
+      setError(
         error instanceof Error ? error.message : "An unknown error occurred",
       );
     } finally {
@@ -81,8 +87,9 @@ const PDFPreview: React.FC<Step5Props> = ({ formData }) => {
           <p>Closing Date: {formData.closingDate || "N/A"}</p>
         </PreviewSection>
       </div>
+      {error && <p className="mt-4 text-red-600">{error}</p>}
       <button
-        className="mt-6 rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
+        className="mt-6 rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 disabled:bg-blue-300"
         onClick={handleAddToCart}
         disabled={isAdding}
       >

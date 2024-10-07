@@ -1,73 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../auth/[...nextauth]/options";
+import { authOptions } from '../auth/[...nextauth]/options';
 import prisma from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
-  console.log('Received GET request to /api/cart');
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user) {
+    return NextResponse.json({ message: "You must be logged in." }, { status: 401 });
+  }
 
   try {
-    const session = await getServerSession(authOptions);
-    console.log('Session:', session);
-
-    if (!session || !session.user) {
-      console.log('Unauthorized: No session found');
-      return NextResponse.json({ message: "You must be logged in." }, { status: 401 });
-    }
-
-    const order = await prisma.order.findFirst({
-      where: { userId: session.user.id, status: 'CART' },
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
+    const cartItems = await prisma.orderItem.findMany({
+      where: {
+        order: {
+          userId: session.user.id,
+          status: 'CART'
+        }
       },
+      include: {
+        product: true
+      }
     });
 
-    if (!order) {
-      return NextResponse.json([], { status: 200 });
-    }
-
-    const cartItems = order.items.map(item => ({
-      id: item.id,
-      name: item.product.name,
-      description: item.product.description,
-      price: parseFloat(item.price.toString()),
-      quantity: item.quantity,
-    }));
-
-    console.log('Cart items:', cartItems);
-    return NextResponse.json(cartItems, { status: 200 });
+    return NextResponse.json(cartItems);
   } catch (error) {
     console.error('Error fetching cart items:', error);
-    return NextResponse.json({ message: "Error fetching cart items", error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    return NextResponse.json({ message: "Error fetching cart items" }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
-  console.log('Received POST request to /api/cart');
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user) {
+    return NextResponse.json({ message: "You must be logged in." }, { status: 401 });
+  }
 
   try {
-    const session = await getServerSession(authOptions);
-    console.log('Session:', session);
-
-    if (!session || !session.user) {
-      console.log('Unauthorized: No session found');
-      return NextResponse.json({ message: "You must be logged in." }, { status: 401 });
-    }
-
-    const body = await req.json();
-    console.log('Request body:', body);
-
-    const { name, description, price, imageUrl } = body;
-
-    // Validate input
-    if (!name || !description || typeof price !== 'number') {
-      console.log('Invalid input data');
-      return NextResponse.json({ message: "Invalid input data" }, { status: 400 });
-    }
+    const { name, description, price, imageUrl } = await req.json();
 
     // Find or create a cart (order with status 'CART')
     let order = await prisma.order.findFirst({
@@ -82,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     // Create a new product
     const product = await prisma.product.create({
-      data: { name, description, price, imageUrl },
+      data: { name, description, price: parseFloat(price), imageUrl },
     });
 
     // Add the product to the order
@@ -91,75 +62,58 @@ export async function POST(req: NextRequest) {
         orderId: order.id,
         productId: product.id,
         quantity: 1,
-        price,
+        price: parseFloat(price),
       },
     });
 
     // Update the order total
     await prisma.order.update({
       where: { id: order.id },
-      data: { total: { increment: price } },
+      data: { total: { increment: parseFloat(price) } },
     });
 
-    console.log('Successfully added product to cart');
-    return NextResponse.json({ message: "Product added to cart successfully", product }, { status: 200 });
+    return NextResponse.json({ message: "Product added to cart successfully", product });
   } catch (error) {
-    console.error('Error in cart API route:', error);
+    console.error('Error adding product to cart:', error);
     return NextResponse.json({ message: "Error adding product to cart", error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
 
 export async function DELETE(req: NextRequest) {
-  console.log('Received DELETE request to /api/cart');
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user) {
+    return NextResponse.json({ message: "You must be logged in." }, { status: 401 });
+  }
+
+  const id = req.nextUrl.searchParams.get('id');
+
+  if (!id) {
+    return NextResponse.json({ message: "Item ID is required" }, { status: 400 });
+  }
 
   try {
-    const session = await getServerSession(authOptions);
-    console.log('Session:', session);
-
-    if (!session || !session.user) {
-      console.log('Unauthorized: No session found');
-      return NextResponse.json({ message: "You must be logged in." }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(req.url);
-    const itemId = searchParams.get('id');
-
-    if (!itemId) {
-      return NextResponse.json({ message: "Item ID is required" }, { status: 400 });
-    }
-
-    // Find the order item
-    const orderItem = await prisma.orderItem.findUnique({
-      where: { id: itemId },
-      include: { order: true },
-    });
-
-    if (!orderItem) {
-      return NextResponse.json({ message: "Item not found" }, { status: 404 });
-    }
-
-    // Ensure the order belongs to the current user
-    if (orderItem.order.userId !== session.user.id) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
-    }
-
-    // Delete the order item
-    await prisma.orderItem.delete({
-      where: { id: itemId },
+    const deletedItem = await prisma.orderItem.delete({
+      where: {
+        id: id as string,
+      },
     });
 
     // Update the order total
     await prisma.order.update({
-      where: { id: orderItem.orderId },
-      data: { 
-        total: { decrement: Number(orderItem.price) * Number(orderItem.quantity) },
+      where: {
+        id: deletedItem.orderId,
+      },
+      data: {
+        total: {
+          decrement: deletedItem.price,
+        },
       },
     });
 
-    console.log('Successfully removed item from cart');
     return NextResponse.json({ message: "Item removed from cart successfully" }, { status: 200 });
   } catch (error) {
-    console.error('Error in cart API route:', error);
-    return NextResponse.json({ message: "Error removing item from cart", error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    console.error('Error removing item from cart:', error);
+    return NextResponse.json({ message: "Error removing item from cart", error: (error as Error).message }, { status: 500 });
   }
 }

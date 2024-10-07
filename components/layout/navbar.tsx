@@ -2,51 +2,120 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import useScroll from "@/lib/hooks/use-scroll";
 import { useSignInModal } from "./sign-in-modal";
 import UserDropdown from "./user-dropdown";
 import { Session } from "next-auth";
 import { Container } from "../Container";
+import CartPullout from "../Cartpullout";
+import { ShoppingCartIcon } from "@heroicons/react/24/outline";
+
+interface CartItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number | string;
+  quantity: number;
+}
 
 export default function NavBar({ session }: { session: Session | null }) {
   const { SignInModal, setShowSignInModal } = useSignInModal();
   const scrolled = useScroll(50);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  useEffect(() => {
+    if (session) {
+      fetchCartItems();
+    }
+  }, [session]);
+
+  const fetchCartItems = async () => {
+    try {
+      const response = await fetch("/api/cart");
+      if (response.ok) {
+        const data = await response.json();
+        setCartItems(data);
+      }
+    } catch (error) {
+      console.error("Error fetching cart items:", error);
+    }
+  };
+
+  const removeItem = async (itemId: string) => {
+    try {
+      const response = await fetch(`/api/cart?id=${itemId}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        await fetchCartItems();
+      }
+    } catch (error) {
+      console.error("Error removing item from cart:", error);
+    }
+  };
+
+  const cartItemCount = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0,
+  );
 
   return (
     <>
       <SignInModal />
+      <CartPullout
+        isOpen={isCartOpen}
+        setIsOpen={setIsCartOpen}
+        cartItems={cartItems}
+        removeItem={removeItem}
+        updateCart={fetchCartItems}
+      />
       <div
-        className={`fixed top-0 w-full flex justify-center ${
+        className={`fixed top-0 flex w-full justify-center ${
           scrolled
             ? "border-b border-gray-200 bg-white/50 backdrop-blur-xl"
             : "bg-white/0"
         } z-30 transition-all`}
       >
-		<Container className="py-2">
-        <div className="flex h-16 items-center justify-between w-full">
-          <Link href="/" className="flex items-center font-display text-2xl">
-            <Image
-              src="/breezlylogo.svg"
-              alt="OfferApp"
-              width="200"
-              height="50"
-              className="mr-2 rounded-sm"
-            ></Image>
-          </Link>
-          <div>
-            {session ? (
-              <UserDropdown session={session} />
-            ) : (
-              <button
-                className="px-8 py-2 text-lg font-medium text-center text-white bg-emerald-500 rounded-md"
-                onClick={() => setShowSignInModal(true)}
-              >
-                Sign In
-              </button>
-            )}
+        <Container className="py-2">
+          <div className="flex h-16 w-full items-center justify-between">
+            <Link href="/" className="flex items-center font-display text-2xl">
+              <Image
+                src="/breezlylogo.svg"
+                alt="OfferApp"
+                width="200"
+                height="50"
+                className="mr-2 rounded-sm"
+              ></Image>
+            </Link>
+            <div className="flex items-center">
+              {session ? (
+                <>
+                  <button
+                    onClick={() => setIsCartOpen(true)}
+                    className="relative mr-4 p-2 text-gray-600 hover:text-gray-900"
+                  >
+                    <ShoppingCartIcon className="h-6 w-6" />
+                    {cartItemCount > 0 && (
+                      <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                        {cartItemCount}
+                      </span>
+                    )}
+                  </button>
+                  <UserDropdown session={session} />
+                </>
+              ) : (
+                <button
+                  className="rounded-md bg-emerald-500 px-8 py-2 text-center text-lg font-medium text-white"
+                  onClick={() => setShowSignInModal(true)}
+                >
+                  Sign In
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-		</Container>
+        </Container>
       </div>
     </>
   );

@@ -8,7 +8,7 @@ interface CartItem {
   id: string;
   name: string;
   description: string;
-  price: number;
+  price: number | string;
   quantity: number;
 }
 
@@ -53,12 +53,20 @@ const CartPage: React.FC = () => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+      const data = await response.json();
+      console.log(data.message); // Log the success message
       // Refresh the cart items after successful deletion
       fetchCartItems();
     } catch (error) {
       console.error("Error removing item from cart:", error);
       setError("Failed to remove item from cart. Please try again later.");
     }
+  };
+
+  // Helper function to format price
+  const formatPrice = (price: number | string): string => {
+    const numPrice = typeof price === "string" ? parseFloat(price) : price;
+    return isNaN(numPrice) ? "0.00" : numPrice.toFixed(2);
   };
 
   if (isLoading) {
@@ -85,7 +93,7 @@ const CartPage: React.FC = () => {
                 <h2 className="mb-2 text-xl font-semibold">{item.name}</h2>
                 <p className="mb-2 text-gray-600">{item.description}</p>
                 <p className="mb-2">
-                  <strong>Price:</strong> ${item.price.toFixed(2)}
+                  <strong>Price:</strong> ${formatPrice(item.price)}
                 </p>
                 <p className="mb-2">
                   <strong>Quantity:</strong> {item.quantity}
@@ -102,9 +110,17 @@ const CartPage: React.FC = () => {
           <div className="mt-6">
             <p className="text-xl font-bold">
               Total: $
-              {cartItems
-                .reduce((sum, item) => sum + item.price * item.quantity, 0)
-                .toFixed(2)}
+              {formatPrice(
+                cartItems.reduce((sum, item) => {
+                  const itemPrice =
+                    typeof item.price === "string"
+                      ? parseFloat(item.price)
+                      : item.price;
+                  return (
+                    sum + (isNaN(itemPrice) ? 0 : itemPrice) * item.quantity
+                  );
+                }, 0),
+              )}
             </p>
           </div>
         </div>
