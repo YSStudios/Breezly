@@ -1,9 +1,14 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { FormQuestionProps, Option, TextField } from '../types';
 
 const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title, initialValue, initialTextFieldValues = {} }) => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>(initialValue ? initialValue.split(',') : []);
   const [textFieldValues, setTextFieldValues] = useState<{ [key: number]: string }>(initialTextFieldValues);
+
+  // Update the parent state when selectedOptions or textFieldValues change
+  useEffect(() => {
+    updateParentState();
+  }, [selectedOptions, textFieldValues]);
 
   const updateParentState = useCallback(() => {
     if (question.options.length === 1 && question.options[0].textFields) {
@@ -23,28 +28,14 @@ const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title, 
       newSelectedOptions = [value];
     }
     
-    setSelectedOptions(newSelectedOptions);
-    
-    // Call updateParentState after state updates
-    setTimeout(() => {
-      updateParentState();
-    }, 0);
+    setSelectedOptions(newSelectedOptions);  // Trigger the state update
   };
 
   const handleTextFieldChange = (fieldIndex: number, textValue: string) => {
-    setTextFieldValues(prev => {
-      const newTextFieldValues = {
-        ...prev,
-        [fieldIndex]: textValue
-      };
-      
-      // Call updateParentState after state update
-      setTimeout(() => {
-        updateParentState();
-      }, 0);
-      
-      return newTextFieldValues;
-    });
+    setTextFieldValues(prev => ({
+      ...prev,
+      [fieldIndex]: textValue
+    }));
   };
 
   const renderTextField = (field: TextField, index: number) => {
