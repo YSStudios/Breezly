@@ -94,7 +94,11 @@ const CheckoutForm = () => {
       }
     } catch (err) {
       console.error("Error fetching client secret:", err);
-      setError(`Failed to initialize payment: ${err.message}`);
+      if (err instanceof Error) {
+        setError(`Failed to initialize payment: ${err.message}`);
+      } else {
+        setError("Failed to initialize payment: An unknown error occurred");
+      }
     }
   };
 
