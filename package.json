@@ -68,6 +68,7 @@
 		"@types/bcryptjs": "^2.4.6",
 		"@types/date-fns": "^2.6.0",
 		"@types/ms": "^0.7.32",
+		"@types/react-select-country-list": "^2.2.3",
 		"@types/uuid": "^10.0.0",
 		"autoprefixer": "^10.4.16",
 		"concurrently": "^7.6.0",
