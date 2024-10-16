@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 interface CartItem {
   id: string;
   name: string;
+  description: string; // Add this line
   price: number;
   quantity: number;
 }
