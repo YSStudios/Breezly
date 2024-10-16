@@ -13,8 +13,6 @@ const productSchema = z.object({
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log('Request method:', req.method); // Add this line for debugging
-
   const session = await getServerSession(req, res, authOptions);
 
   if (!session || !session.user) {
@@ -42,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         data: {
           name,
           description,
-          price: parseFloat(price),
+          price,  // price is already a number
           imageUrl,
           user: {
             connect: { id: session.user.id }
@@ -56,14 +54,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           orderId: order.id,
           productId: product.id,
           quantity: 1,
-          price: parseFloat(price),
+          price,  // Use price directly, it's already a number
         },
       });
 
       // Update the order total
       await prisma.order.update({
         where: { id: order.id },
-        data: { total: { increment: parseFloat(price) } },
+        data: { total: { increment: price } },
       });
 
       res.status(200).json({ message: "Product added to cart successfully", product });
@@ -74,12 +72,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error('Error adding product to cart:', error);
       res.status(500).json({ message: "Error adding product to cart", error: error instanceof Error ? error.message : String(error) });
     }
-  } else if (req.method === 'GET') {
-    // Existing GET logic...
-  } else if (req.method === 'DELETE') {
-    // Existing DELETE logic...
   } else {
-    res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
+    res.setHeader('Allow', ['POST']);
     res.status(405).json({ message: `Method ${req.method} Not Allowed` });
   }
 }
