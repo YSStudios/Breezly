@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, Dispatch, SetStateAction } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useCart } from "../contexts/CartContext";
