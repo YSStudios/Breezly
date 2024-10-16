@@ -4,9 +4,19 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 interface CartItem {
   id: string;
   name: string;
-  description: string; // Add this line
-  price: number;
+  description: string;
+  price: number | string;
   quantity: number;
+  planDetails?: {
+    id: string;
+    features: string[];
+  };
+  offerDetails?: {
+    propertyAddress: string;
+    propertyType: string;
+    purchasePrice: number | string;
+    closingDate: string;
+  };
 }
 
 interface CartContextType {
