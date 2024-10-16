@@ -62,6 +62,7 @@ model User {
   sessions      Session[]
   formData      FormData[]
   orders        Order[]
+  products      Product[]
 }
 
 model VerificationToken {
@@ -76,8 +77,10 @@ model Product {
   id          String   @id @default(cuid())
   name        String
   description String
-  price       Decimal
-  imageUrl    String?
+  price       Float
+  imageUrl    String
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   orderItems  OrderItem[]

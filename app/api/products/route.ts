@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
         description,
         price,
         imageUrl,
-        userId: session.user.id,
+        user: { connect: { id: session.user.id } },
       },
     });
     return NextResponse.json(product);
