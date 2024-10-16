@@ -13,7 +13,12 @@ import Select from "react-select";
 import countryList from "react-select-country-list";
 import { usStates } from "@/app/checkout/states";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
-import { CountryOption } from "react-select-country-list"; // Add this import at the top of your file
+
+// Add this type definition after your imports
+type CountryOption = {
+  label: string;
+  value: string;
+};
 
 interface FormData {
   email: string;
