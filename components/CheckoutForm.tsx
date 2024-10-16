@@ -13,6 +13,18 @@ import Select from "react-select";
 import countryList from "react-select-country-list";
 import { usStates } from "@/app/checkout/states";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
+import { CountryOption } from "react-select-country-list"; // Add this import at the top of your file
+
+interface FormData {
+  email: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  country: CountryOption | null;
+  state: { label: string; value: string } | null;
+  zip: string;
+  phone: string;
+}
 
 const CheckoutForm = () => {
   const router = useRouter();
@@ -25,7 +37,7 @@ const CheckoutForm = () => {
   const stripe = useStripe();
   const elements = useElements();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     email: "",
     firstName: "",
     lastName: "",
@@ -116,7 +128,7 @@ const CheckoutForm = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectChange = (name: string) => (option: any) => {
+  const handleSelectChange = (name: keyof FormData) => (option: any) => {
     setFormData((prev) => ({ ...prev, [name]: option }));
   };
 
