@@ -53,7 +53,15 @@ export async function POST(req: NextRequest) {
 
     // Create a new product
     const product = await prisma.product.create({
-      data: { name, description, price: parseFloat(price), imageUrl },
+      data: {
+        name,
+        description,
+        price: parseFloat(price),
+        imageUrl,
+        user: {
+          connect: { id: session.user.id }
+        }
+      },
     });
 
     // Add the product to the order
