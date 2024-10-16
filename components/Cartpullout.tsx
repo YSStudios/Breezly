@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { useCart } from "contexts/CartContext";
+import { useCart } from "../contexts/CartContext";
 import Link from "next/link";
 
 interface CartPulloutProps {
@@ -10,7 +10,7 @@ interface CartPulloutProps {
 }
 
 const CartPullout: React.FC<CartPulloutProps> = ({ isOpen, setIsOpen }) => {
-  const { cartItems, removeFromCart, refreshCart } = useCart();
+  const { cartItems, removeFromCart, updateCart } = useCart();
 
   // Helper function to format price
   const formatPrice = (price: number | string): string => {
@@ -29,8 +29,14 @@ const CartPullout: React.FC<CartPulloutProps> = ({ isOpen, setIsOpen }) => {
 
   const handleRemoveItem = async (itemId: string) => {
     await removeFromCart(itemId);
-    await refreshCart();
+    await updateCart();
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      updateCart();
+    }
+  }, [isOpen, updateCart]);
 
   return (
     <Transition.Root show={isOpen} as={React.Fragment}>
