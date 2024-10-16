@@ -8,7 +8,7 @@ import { useCart } from "contexts/CartContext";
 interface CartItem {
   id: string;
   name: string;
-  description: string; //added this
+  description: string; // Add this line
   price: number | string;
   quantity: number;
   planDetails?: {
