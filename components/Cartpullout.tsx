@@ -132,13 +132,11 @@ const CartPullout: React.FC<CartPulloutProps> = ({ isOpen, setIsOpen }) => {
                         Shipping and taxes calculated at checkout.
                       </p>
                       <div className="mt-6">
-                        <Link href="/checkout">
-                          <span
-                            href="#"
-                            className="flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700"
-                          >
-                            Checkout
-                          </span>
+                        <Link
+                          href="/checkout"
+                          className="flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700"
+                        >
+                          Checkout
                         </Link>
                       </div>
                       <div className="mt-6 flex justify-center text-center text-sm text-gray-500">
