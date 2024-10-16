@@ -8,7 +8,7 @@ import { z } from 'zod';
 const productSchema = z.object({
   name: z.string(),
   description: z.string(),
-  price: z.string().transform(val => parseFloat(val)),
+  price: z.number().positive(),
   imageUrl: z.string().url(),
 });
 
@@ -42,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         data: {
           name,
           description,
-          price: parseFloat(price),
+          price,  // Now price is already a number, no need for parseFloat
           imageUrl,
           user: {
             connect: { id: session.user.id }
