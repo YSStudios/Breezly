@@ -4,27 +4,16 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 interface CartItem {
   id: string;
   name: string;
-  description: string;
-  price: number | string;
+  price: number;
   quantity: number;
-  planDetails?: {
-    id: string;
-    features: string[];
-  };
-  offerDetails?: {
-    propertyAddress: string;
-    propertyType: string;
-    purchasePrice: number | string;
-    closingDate: string;
-  };
+  // ... other properties
 }
 
-interface CartContextType {
+export interface CartContextType {
   cartItems: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (itemId: string) => void;
-  clearCart: () => void;
-  refreshCart: () => void;
+  updateCart: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -48,36 +37,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [cartItems]);
 
   const addToCart = (item: CartItem) => {
-    setCartItems((prevItems) => {
-      const existingItem = prevItems.find((i) => i.id === item.id);
-      if (existingItem) {
-        return prevItems.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i,
-        );
-      }
-      return [...prevItems, { ...item, quantity: 1 }];
-    });
+    // Implementation
   };
 
   const removeFromCart = (itemId: string) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
-  };
-
-  const clearCart = () => {
-    setCartItems([]);
-  };
-
-  const refreshCart = () => {
     // Implementation
-    // This might involve fetching the latest cart data from an API
+  };
+
+  const updateCart = async () => {
+    // Implementation
   };
 
   const value: CartContextType = {
     cartItems,
     addToCart,
     removeFromCart,
-    clearCart,
-    refreshCart,
+    updateCart,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
