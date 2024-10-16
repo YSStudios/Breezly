@@ -56,7 +56,7 @@ const CartPage: React.FC = () => {
         <p>Your cart is empty.</p>
       ) : (
         <div>
-          {cartItems.map((item: CartItem) => (
+          {cartItems.map((item) => (
             <div
               key={item.id}
               className="mb-4 rounded-lg bg-white p-6 shadow-md"
