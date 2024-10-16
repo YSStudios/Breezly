@@ -106,7 +106,7 @@ model OrderItem {
   product   Product  @relation(fields: [productId], references: [id])
   productId String
   quantity  Int
-  price     Float    // Make sure this is Float, not String
+  price     Float    // Make sure this is Float, not Stringg
 
   @@index([orderId])
   @@index([productId])
