@@ -64,7 +64,9 @@ const CartPage: React.FC = () => {
               <div className="flex justify-between">
                 <div>
                   <h2 className="mb-2 text-xl font-semibold">{item.name}</h2>
-                  <p className="mb-2 text-gray-600">{item.description}</p>
+                  {item.description && (
+                    <p className="mb-2 text-gray-600">{item.description}</p>
+                  )}
                   <p className="mb-2">
                     <strong>Price:</strong> ${formatPrice(item.price)}
                   </p>

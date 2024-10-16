@@ -6,6 +6,7 @@ interface CartItem {
   name: string;
   price: number;
   quantity: number;
+  description?: string; // Add this line
   // ... other properties
 }
 
