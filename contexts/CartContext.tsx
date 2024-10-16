@@ -6,8 +6,17 @@ interface CartItem {
   name: string;
   price: number;
   quantity: number;
-  description?: string; // Add this line
-  // ... other properties
+  description?: string;
+  planDetails?: {
+    id: string;
+    features: string[];
+  };
+  offerDetails?: {
+    propertyAddress: string;
+    propertyType: string;
+    purchasePrice: number | string;
+    closingDate: string;
+  };
 }
 
 export interface CartContextType {
