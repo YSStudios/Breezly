@@ -42,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         data: {
           name,
           description,
-          price,  // Now price is already a number, no need for parseFloat
+          price,  // price is already a number
           imageUrl,
           user: {
             connect: { id: session.user.id }
@@ -56,14 +56,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           orderId: order.id,
           productId: product.id,
           quantity: 1,
-          price: parseFloat(price),
+          price,  // Use price directly, it's already a number
         },
       });
 
       // Update the order total
       await prisma.order.update({
         where: { id: order.id },
-        data: { total: { increment: parseFloat(price) } },
+        data: { total: { increment: price } },  // Use price directly here as well
       });
 
       res.status(200).json({ message: "Product added to cart successfully", product });
