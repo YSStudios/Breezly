@@ -26,15 +26,15 @@ interface CartItem {
 const CartPage: React.FC = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { cartItems, refreshCart, removeFromCart } = useCart();
+  const { cartItems, updateCart, removeFromCart } = useCart();
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
     } else if (status === "authenticated") {
-      refreshCart();
+      updateCart();
     }
-  }, [status, router, refreshCart]);
+  }, [status, router, updateCart]);
 
   const handleRemoveItem = async (itemId: string) => {
     await removeFromCart(itemId);
