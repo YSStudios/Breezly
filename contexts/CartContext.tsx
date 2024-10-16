@@ -12,6 +12,8 @@ interface CartContextType {
   cartItems: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (itemId: string) => void;
+  clearCart: () => void;
+  refreshCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -50,11 +52,24 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     setCartItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
   };
 
-  return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart }}>
-      {children}
-    </CartContext.Provider>
-  );
+  const clearCart = () => {
+    setCartItems([]);
+  };
+
+  const refreshCart = () => {
+    // Implementation
+    // This might involve fetching the latest cart data from an API
+  };
+
+  const value: CartContextType = {
+    cartItems,
+    addToCart,
+    removeFromCart,
+    clearCart,
+    refreshCart,
+  };
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
 
 export const useCart = () => {
