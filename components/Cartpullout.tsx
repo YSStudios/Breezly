@@ -6,7 +6,7 @@ import Link from "next/link";
 
 interface CartPulloutProps {
   isOpen: boolean;
-  setIsOpen: (isOpen: boolean) => void;
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 const CartPullout: React.FC<CartPulloutProps> = ({ isOpen, setIsOpen }) => {

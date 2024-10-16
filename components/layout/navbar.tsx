@@ -38,13 +38,7 @@ export default function NavBar({ session }: { session: Session | null }) {
   return (
     <>
       <SignInModal />
-      <CartPullout
-        isOpen={isCartOpen}
-        setIsOpen={setIsCartOpen}
-        cartItems={cartItems}
-        removeItem={removeItem}
-        updateCart={updateCart}
-      />
+      <CartPullout isOpen={isCartOpen} setIsOpen={setIsCartOpen} />
       <div
         className={`fixed top-0 flex w-full justify-center ${
           scrolled
