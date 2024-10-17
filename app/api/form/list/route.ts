@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
       select: {
         id: true,
         data: true,
-        updatedAt: true,
+        createdAt: true,
       },
     });
 
