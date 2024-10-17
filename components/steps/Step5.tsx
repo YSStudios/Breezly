@@ -9,11 +9,48 @@ interface Step5Props {
 const PDFPreview: React.FC<Step5Props> = ({ formData }) => {
   const router = useRouter();
 
-  const handleViewPlans = () => {
-    // Store the current form data in localStorage
-    localStorage.setItem("offerFormData", JSON.stringify(formData));
-    // Redirect to the plans page
-    router.push("/plans");
+  const saveOfferToDatabase = async (data: FormData) => {
+    try {
+      console.log("Attempting to save offer:", data);
+      const response = await fetch("/api/form/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          formId: data.id || undefined, // Use existing ID if available
+          data: data,
+          isPurchased: true, // Set to true when purchasing
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to save offer: ${response.status} ${errorText}`,
+        );
+      }
+
+      const result = await response.json();
+      console.log("Offer saved successfully:", result);
+      return result;
+    } catch (error) {
+      console.error("Error in saveOfferToDatabase:", error);
+      throw error;
+    }
+  };
+
+  const handlePurchaseOffer = async () => {
+    try {
+      console.log("handlePurchaseOffer called");
+      const savedOffer = await saveOfferToDatabase(formData);
+      console.log("Offer saved, proceeding to plans page");
+      localStorage.setItem("offerFormData", JSON.stringify(savedOffer));
+      router.push("/plans");
+    } catch (error) {
+      console.error("Failed to save offer:", error);
+      alert("Failed to save offer. Please try again.");
+    }
   };
 
   return (
@@ -40,9 +77,9 @@ const PDFPreview: React.FC<Step5Props> = ({ formData }) => {
       </div>
       <button
         className="mt-6 rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
-        onClick={handleViewPlans}
+        onClick={handlePurchaseOffer}
       >
-        purchase my offer
+        Purchase My Offer
       </button>
     </div>
   );
