@@ -59,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentStep, currentSubstep, handleSe
                 <div className="font-semibold text-white">{stepTitles[step - 1]}</div>
               </div>
               {isCurrentStep && (
-                <div className="mt-3 space-y-1 pl-[52px]">
+                <div className="space-y-1 pl-[52px]">
                   {Object.entries(substepNames[step]).map(([substep, name]) => (
                     <button
                       key={`substep-${step}-${substep}`}

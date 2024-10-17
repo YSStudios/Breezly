@@ -46,7 +46,7 @@ const Form: React.FC = () => {
     };
 
     initForm();
-  }, [searchParams]);
+  }, [searchParams, session]);
 
   // New useEffect hook to log formData whenever it changes
   useEffect(() => {
@@ -56,19 +56,30 @@ const Form: React.FC = () => {
   const fetchFormData = async (id: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/form/get?id=${id}`);
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Fetched form data:', data);
-        setFormData(data);
-      } else if (response.status === 404) {
-        console.log('Form not found, creating a new one');
-        const newFormId = uuidv4();
-        setFormId(newFormId);
-        localStorage.setItem('currentFormId', newFormId);
-        setFormData({});
+      if (session) {
+        // User is logged in, fetch from server
+        const response = await fetch(`/api/form/get?id=${id}`);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Fetched form data from server:', data);
+          setFormData(data);
+        } else if (response.status === 404) {
+          console.log('Form not found on server, creating a new one');
+          setFormData({});
+        } else {
+          console.error('Error fetching form data from server:', await response.text());
+        }
       } else {
-        console.error('Error fetching form data:', await response.text());
+        // User is not logged in, fetch from local storage
+        const storedData = localStorage.getItem(`form_${id}`);
+        if (storedData) {
+          const data = JSON.parse(storedData);
+          console.log('Fetched form data from local storage:', data);
+          setFormData(data);
+        } else {
+          console.log('Form not found in local storage, creating a new one');
+          setFormData({});
+        }
       }
     } catch (error) {
       console.error('Error fetching form data:', error);
@@ -80,41 +91,49 @@ const Form: React.FC = () => {
   const saveFormData = async () => {
     if (!formId) return;
 
-    if (!session) {
-      setSaveError("You must be logged in to save the form. Please log in and try again.");
-      return;
-    }
-
     setIsSaving(true);
     setSaveError(null);
     try {
-      console.log('Saving form data:');
-      console.log('FormId:', formId);
-      console.log('Form data:', JSON.stringify(formData, null, 2));
-      console.log('Session status:', status);
-      console.log('Session user:', JSON.stringify(session?.user, null, 2));
+      if (session) {
+        // User is logged in, save to server
+        console.log('Saving form data to server:');
+        console.log('FormId:', formId);
+        console.log('Form data:', JSON.stringify(formData, null, 2));
+        console.log('Session status:', status);
+        console.log('Session user:', JSON.stringify(session?.user, null, 2));
 
-      const response = await fetch('/api/form/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          formId, 
-          data: formData
-        }),
-      });
+        const response = await fetch('/api/form/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            formId, 
+            data: formData
+          }),
+        });
 
-      const result = await response.json();
+        const result = await response.json();
 
-      if (response.ok) {
-        console.log('Save response:', result);
-        router.push('/dashboard');
-      } else {
-        console.error('Error saving form:', result);
-        let errorMessage = `Failed to save form: ${result.message}`;
-        if (result.error) {
-          errorMessage += DEBUG ? `\nError details: ${result.error}` : '';
+        if (response.ok) {
+          console.log('Save response:', result);
+        } else {
+          console.error('Error saving form:', result);
+          let errorMessage = `Failed to save form: ${result.message}`;
+          if (result.error) {
+            errorMessage += DEBUG ? `\nError details: ${result.error}` : '';
+          }
+          setSaveError(errorMessage);
         }
-        setSaveError(errorMessage);
+      } else {
+        // User is not logged in, save to local storage
+        console.log('Saving form data to local storage:');
+        console.log('FormId:', formId);
+        console.log('Form data:', JSON.stringify(formData, null, 2));
+
+        // Add a small delay to make the saving process more visible
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        localStorage.setItem(`form_${formId}`, JSON.stringify(formData));
+        console.log('Form data saved to local storage');
       }
     } catch (error) {
       console.error('Error saving form data:', error);
@@ -244,39 +263,39 @@ const Form: React.FC = () => {
             ) : (
               <div></div>
             )}
-            <div className="flex space-x-4">
+            {currentStep === 5 ? (
               <button
-                onClick={saveFormData}
-                disabled={isSaving}
-                className={`px-6 py-3 bg-blue-500 text-white rounded-full font-bold hover:bg-blue-600 transition-colors duration-300 flex items-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={handleGeneratePDF}
+                className="px-6 py-3 bg-purple-500 text-white rounded-full font-bold hover:bg-purple-600 transition-colors duration-300 flex items-center"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
+                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
-                {isSaving ? 'Saving...' : 'Save Progress'}
+                Download Offer
               </button>
-              {currentStep === 5 ? (
-                <button
-                  onClick={handleGeneratePDF}
-                  className="px-6 py-3 bg-purple-500 text-white rounded-full font-bold hover:bg-purple-600 transition-colors duration-300 flex items-center"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                  Download Offer
-                </button>
-              ) : (
-                <button
-                  onClick={nextSubstep}
-                  className="px-6 py-3 bg-gradient-to-r from-emerald-400 to-teal-500 text-white rounded-full font-bold hover:from-emerald-500 hover:to-teal-600 transition-colors duration-300 flex items-center"
-                >
-                  Next
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              )}
-            </div>
+            ) : (
+              <button
+                onClick={async () => {
+                  setIsSaving(true);
+                  await saveFormData();
+                  setTimeout(async () => {
+                    await nextSubstep();
+                    setIsSaving(false);
+                  }, 500);
+                }}
+                disabled={isSaving}
+                className="px-6 py-3 bg-gradient-to-r from-emerald-400 to-teal-500 text-white rounded-full font-bold hover:from-emerald-500 hover:to-teal-600 transition-colors duration-300 flex items-center"
+              >
+                {isSaving ? 'Saving...' : (
+                  <>
+                    Next
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            )}
           </div>
           {saveError && (
             <div className="text-red-500 mt-4 p-4 bg-red-100 rounded-lg">
