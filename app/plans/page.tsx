@@ -44,48 +44,60 @@ const PlansPage: React.FC = () => {
   useEffect(() => {
     const storedFormData = localStorage.getItem("offerFormData");
     if (storedFormData) {
-      setFormData(JSON.parse(storedFormData));
+      const parsedData = JSON.parse(storedFormData);
+      setFormData(parsedData);
+      console.log("Form data retrieved from localStorage:", parsedData);
+    } else {
+      console.log("No form data found in localStorage");
+      // If no form data is found, redirect to the form page
+      router.push("/form");
     }
-  }, []);
+  }, [router]);
 
   const handleAddToCart = async (plan: Plan) => {
-    try {
-      const cartItem = {
-        id: plan.id,
-        name: `${plan.name} Plan - Offer for ${
-          formData?.propertyAddress || "Unknown Property"
-        }`,
-        description: `${plan.name} Plan for PDF Offer Document`,
-        price: plan.price,
-        quantity: 1,
-        planDetails: {
-          id: plan.id,
-          features: plan.features,
-        },
-        offerDetails: {
-          propertyAddress: formData?.propertyAddress,
-          propertyType: formData?.propertyType,
-          purchasePrice: formData?.purchasePrice,
-          closingDate: formData?.closingDate,
-        },
-        imageUrl: `/images/${plan.id}-plan-icon.png`, // Adjust this path as needed
-      };
-
-      await addToCart(cartItem);
-      router.push("/checkout");
-    } catch (error) {
-      console.error("Error adding plan to cart:", error);
-      alert(
-        error instanceof Error
-          ? error.message
-          : "Failed to add plan to cart. Please try again.",
-      );
+    if (!formData) {
+      console.log("No offer data available. Please create an offer first.");
+      alert("No offer data available. Please create an offer first.");
+      return;
     }
+
+    console.log("Adding to cart. Form data:", formData);
+    console.log("Selected plan:", plan);
+
+    const cartItem = {
+      id: `${plan.id}-${formData.id}`,
+      name: `${plan.name} Plan - Offer for ${
+        formData.propertyAddress || "Unknown Property"
+      }`,
+      description: `${plan.name} Plan for PDF Offer Document`,
+      price: plan.price,
+      quantity: 1,
+      planDetails: {
+        id: plan.id,
+        features: plan.features,
+      },
+      offerDetails: formData,
+      imageUrl: `/images/${plan.id}-plan-icon.png`,
+    };
+
+    console.log("Cart item being added:", cartItem);
+
+    addToCart(cartItem);
+    console.log("Item added to cart, navigating to checkout");
+
+    router.push("/checkout");
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="mb-6 text-3xl font-bold">Choose a Plan</h1>
+      {formData ? (
+        <p className="mb-4">
+          Offer data loaded for: {formData.propertyAddress}
+        </p>
+      ) : (
+        <p className="mb-4">Loading offer data...</p>
+      )}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {plans.map((plan) => (
           <div key={plan.id} className="rounded-lg border p-6 shadow-md">

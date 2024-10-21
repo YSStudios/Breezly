@@ -60,6 +60,12 @@ export default function NavBar({ session }: { session: Session | null }) {
             <div className="flex items-center">
               {session ? (
                 <>
+                  <Link
+                    href="/dashboard"
+                    className="mr-4 rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600"
+                  >
+                    Dashboard
+                  </Link>
                   <button
                     onClick={() => setIsCartOpen(true)}
                     className="relative mr-4 p-2 text-gray-600 hover:text-gray-900"
@@ -74,12 +80,20 @@ export default function NavBar({ session }: { session: Session | null }) {
                   <UserDropdown session={session} />
                 </>
               ) : (
-                <button
-                  className="rounded-md bg-emerald-500 px-8 py-2 text-center text-lg font-medium text-white"
-                  onClick={() => setShowSignInModal(true)}
-                >
-                  Sign In
-                </button>
+                <>
+                  <button
+                    className="mr-4 rounded-md bg-white px-4 py-2 text-sm font-medium text-blue-600 hover:bg-gray-50"
+                    onClick={() => setShowSignInModal(true)}
+                  >
+                    Log In
+                  </button>
+                  <button
+                    className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    onClick={() => setShowSignInModal(true)}
+                  >
+                    Register
+                  </button>
+                </>
               )}
             </div>
           </div>

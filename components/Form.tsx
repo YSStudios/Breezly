@@ -24,7 +24,7 @@ const Form: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const searchParams = useSearchParams();
   const [showSavingPopup, setShowSavingPopup] = useState(false);
 
@@ -272,6 +272,16 @@ const Form: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Debug information - always visible now */}
+      <div className="mb-4 rounded bg-gray-100 p-4 text-sm">
+        <h3 className="font-bold">Debug Info:</h3>
+        <p>User ID: {session?.user?.id || "Not logged in"}</p>
+        <p>User Email: {session?.user?.email || "No email"}</p>
+        <p>Form ID: {formId || "No form ID"}</p>
+        <p>DEBUG: {DEBUG.toString()}</p>
+        <p>Environment: {process.env.NODE_ENV}</p>
+      </div>
+
       <div className="flex flex-col gap-8 md:flex-row">
         <div className="md:w-1/4">
           <div className="sticky top-16">
@@ -380,7 +390,7 @@ const Form: React.FC = () => {
                   <summary className="cursor-pointer text-sm font-medium">
                     Debug Information
                   </summary>
-                  <pre className="mt-2 overflow-auto text-xs">
+                  <pre className="mt-2">
                     {JSON.stringify({ session, formId, formData }, null, 2)}
                   </pre>
                 </details>

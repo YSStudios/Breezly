@@ -1,6 +1,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { FormData } from "../types";
+import { v4 as uuidv4 } from "uuid";
 
 interface Step5Props {
   formData: FormData;
@@ -18,9 +19,9 @@ const PDFPreview: React.FC<Step5Props> = ({ formData }) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          formId: data.id || undefined, // Use existing ID if available
+          formId: data.id,
           data: data,
-          isPurchased: true, // Set to true when purchasing
+          isPurchased: false, // Set to false initially
         }),
       });
 
@@ -43,9 +44,20 @@ const PDFPreview: React.FC<Step5Props> = ({ formData }) => {
   const handlePurchaseOffer = async () => {
     try {
       console.log("handlePurchaseOffer called");
-      const savedOffer = await saveOfferToDatabase(formData);
+      let offerToSave = { ...formData };
+
+      if (!offerToSave.id) {
+        offerToSave.id = uuidv4(); // Generate a new UUID if id is missing
+        console.log("Generated new Form ID:", offerToSave.id);
+      }
+
+      const savedOffer = await saveOfferToDatabase(offerToSave);
       console.log("Offer saved, proceeding to plans page");
+
+      // Store the saved offer data in localStorage
       localStorage.setItem("offerFormData", JSON.stringify(savedOffer));
+
+      // Navigate to the plans page
       router.push("/plans");
     } catch (error) {
       console.error("Failed to save offer:", error);

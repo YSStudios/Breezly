@@ -35,20 +35,18 @@ const CheckoutForm = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
   const { cartItems, removeFromCart } = useCart();
-  const countries = countryList().getData();
   const [clientSecret, setClientSecret] = useState("");
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const stripe = useStripe();
   const elements = useElements();
+  const [checkoutData, setCheckoutData] = useState<any>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     email: "",
     firstName: "",
     lastName: "",
-    address: "",
-    country: null,
-    state: null,
     zip: "",
     phone: "",
   });
@@ -61,6 +59,14 @@ const CheckoutForm = () => {
       fetchClientSecret();
     }
   }, [status, cartItems]);
+
+  useEffect(() => {
+    const storedCheckoutData = localStorage.getItem("checkoutData");
+    if (storedCheckoutData) {
+      setCheckoutData(JSON.parse(storedCheckoutData));
+      console.log("Checkout data retrieved:", JSON.parse(storedCheckoutData));
+    }
+  }, []);
 
   const calculateTotal = () => {
     console.log("Cart items:", cartItems);
@@ -124,17 +130,15 @@ const CheckoutForm = () => {
     return isNaN(numPrice) ? "0.00" : numPrice.toFixed(2);
   };
 
-  const handleRemoveItem = async (itemId: string) => {
-    await removeFromCart(itemId);
+  const handleRemoveItem = (itemId: string) => {
+    removeFromCart(itemId);
+    setCheckoutData(null);
+    localStorage.removeItem("checkoutData");
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSelectChange = (name: keyof FormData) => (option: any) => {
-    setFormData((prev) => ({ ...prev, [name]: option }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -164,9 +168,6 @@ const CheckoutForm = () => {
             name: `${formData.firstName} ${formData.lastName}`,
             email: formData.email,
             address: {
-              line1: formData.address,
-              country: formData.country?.value,
-              state: formData.state?.value,
               postal_code: formData.zip,
             },
             phone: formData.phone,
@@ -181,13 +182,93 @@ const CheckoutForm = () => {
       setProcessing(false);
     } else if (paymentIntent && paymentIntent.status === "succeeded") {
       console.log("Payment succeeded:", paymentIntent);
-      alert("Payment successful!");
-      // Here you would typically clear the cart and redirect to a confirmation page
+      setShowConfirmation(true);
+      // Clear the cart here
+      // clearCart();
     } else {
       console.error("Unexpected payment result:", paymentIntent);
       setError("An unexpected error occurred. Please try again.");
       setProcessing(false);
     }
+  };
+
+  const handleCloseConfirmation = () => {
+    setShowConfirmation(false);
+    router.push("/dashboard"); // Or wherever you want to redirect after purchase
+  };
+
+  const ConfirmationModal = () => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden outline-none focus:outline-none">
+      <div className="relative mx-auto my-6 w-auto max-w-3xl">
+        <div className="relative flex w-full flex-col rounded-lg border-0 bg-white shadow-lg outline-none focus:outline-none">
+          <div className="flex items-start justify-between rounded-t border-b border-solid border-slate-200 p-5">
+            <h3 className="text-3xl font-semibold">Purchase Confirmed</h3>
+            <button
+              className="float-right ml-auto border-0 bg-transparent p-1 text-3xl font-semibold leading-none text-black opacity-5 outline-none focus:outline-none"
+              onClick={handleCloseConfirmation}
+            >
+              <span className="block h-6 w-6 bg-transparent text-2xl text-black opacity-5 outline-none focus:outline-none">
+                ×
+              </span>
+            </button>
+          </div>
+          <div className="relative flex-auto p-6">
+            <p className="my-4 text-lg leading-relaxed text-slate-500">
+              Your purchase has been successfully completed. Thank you for your
+              order!
+            </p>
+          </div>
+          <div className="flex items-center justify-end rounded-b border-t border-solid border-slate-200 p-6">
+            <button
+              className="background-transparent mb-1 mr-1 px-6 py-2 text-sm font-bold uppercase text-red-500 outline-none transition-all duration-150 ease-linear focus:outline-none"
+              type="button"
+              onClick={handleCloseConfirmation}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderOrderSummary = () => {
+    if (cartItems.length === 0) return <p>Your cart is empty.</p>;
+
+    return cartItems.map((item) => (
+      <div key={item.id} className="mb-4 rounded-lg bg-white p-6 shadow-md">
+        <h2 className="mb-4 text-xl font-semibold">{item.name}</h2>
+        <p className="text-sm text-gray-500">{item.description}</p>
+        <p className="mt-2 text-lg font-semibold">${item.price.toFixed(2)}</p>
+
+        <div className="mt-4">
+          <h4 className="text-sm font-medium">Plan Features:</h4>
+          <ul className="list-inside list-disc text-sm">
+            {item.planDetails.features.map((feature: string, index: number) => (
+              <li key={index}>{feature}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="mt-4">
+          <h4 className="text-sm font-medium">Offer Details:</h4>
+          <p className="text-sm">
+            Property: {item.offerDetails.propertyAddress}
+          </p>
+          <p className="text-sm">
+            Purchase Price: ${item.offerDetails.purchasePrice}
+          </p>
+          {/* Add more offer details as needed */}
+        </div>
+
+        <button
+          onClick={() => handleRemoveItem(item.id)}
+          className="mt-4 w-full rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600"
+        >
+          Remove Item
+        </button>
+      </div>
+    ));
   };
 
   return (
@@ -218,9 +299,10 @@ const CheckoutForm = () => {
                 />
               </div>
             </div>
-
             <div className="mb-6">
-              <h2 className="mb-4 text-xl font-semibold">Shipping Address</h2>
+              <h2 className="mb-4 text-xl font-semibold">
+                Personal Information
+              </h2>
               <div className="mb-4 grid grid-cols-2 gap-4">
                 <div>
                   <label
@@ -259,67 +341,20 @@ const CheckoutForm = () => {
               </div>
               <div className="mb-4">
                 <label
-                  htmlFor="address"
+                  htmlFor="zip"
                   className="mb-1 block text-sm font-medium text-gray-700"
                 >
-                  Address
+                  ZIP code
                 </label>
                 <input
                   type="text"
-                  id="address"
-                  name="address"
-                  value={formData.address}
+                  id="zip"
+                  name="zip"
+                  value={formData.zip}
                   onChange={handleInputChange}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
                   required
                 />
-              </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="country"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Country
-                </label>
-                <Select
-                  options={countries}
-                  value={formData.country}
-                  onChange={handleSelectChange("country")}
-                  className="rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                />
-              </div>
-              <div className="mb-4 grid grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="state"
-                    className="mb-1 block text-sm font-medium text-gray-700"
-                  >
-                    State
-                  </label>
-                  <Select
-                    options={usStates}
-                    value={formData.state}
-                    onChange={handleSelectChange("state")}
-                    className="rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="zip"
-                    className="mb-1 block text-sm font-medium text-gray-700"
-                  >
-                    ZIP code
-                  </label>
-                  <input
-                    type="text"
-                    id="zip"
-                    name="zip"
-                    value={formData.zip}
-                    onChange={handleInputChange}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-                    required
-                  />
-                </div>
               </div>
               <div className="mb-4">
                 <label
@@ -384,75 +419,17 @@ const CheckoutForm = () => {
         </div>
 
         <div className="mt-8 md:mt-0 md:w-1/3">
-          <div className="rounded-lg bg-white p-6 shadow-md">
-            <div className="mb-4 flex items-center">
-              <DocumentTextIcon className="mr-2 h-6 w-6 text-gray-500" />
-              <h2 className="text-xl font-semibold">Order Summary</h2>
+          {renderOrderSummary()}
+          {cartItems.length > 0 && (
+            <div className="mt-4 text-right">
+              <p className="text-xl font-bold">
+                Total: ${calculateTotal().toFixed(2)}
+              </p>
             </div>
-            {cartItems.map((item) => (
-              <div key={item.id} className="mb-4 border-b pb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-medium">{item.name}</h3>
-                    <p className="text-sm text-gray-500">{item.description}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-semibold">
-                      ${formatPrice(item.price)}
-                    </p>
-                    <button
-                      onClick={() => handleRemoveItem(item.id)}
-                      className="text-sm text-red-500 hover:text-red-700"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-                {item.planDetails && (
-                  <div className="mt-2">
-                    <h4 className="text-sm font-medium">Plan Features:</h4>
-                    <ul className="list-inside list-disc text-sm">
-                      {item.planDetails.features.map((feature, index) => (
-                        <li key={index}>{feature}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {item.offerDetails && (
-                  <div className="mt-2">
-                    <h4 className="text-sm font-medium">Offer Details:</h4>
-                    <p className="text-sm">
-                      Property: {item.offerDetails.propertyAddress}
-                    </p>
-                    <p className="text-sm">
-                      Type: {item.offerDetails.propertyType}
-                    </p>
-                    <p className="text-sm">
-                      Purchase Price: $
-                      {formatPrice(item.offerDetails.purchasePrice)}
-                    </p>
-                    <p className="text-sm">
-                      Closing Date: {item.offerDetails.closingDate}
-                    </p>
-                  </div>
-                )}
-              </div>
-            ))}
-            <div className="mb-4 flex items-center justify-between border-t pt-4">
-              <span className="text-base font-medium">Subtotal</span>
-              <span className="text-base font-semibold">
-                ${formatPrice(calculateTotal())}
-              </span>
-            </div>
-            <div className="mb-4 flex items-center justify-between border-t pt-4">
-              <span className="text-base font-medium">Total</span>
-              <span className="text-xl font-bold">
-                ${formatPrice(calculateTotal())}
-              </span>
-            </div>
-          </div>
+          )}
         </div>
       </div>
+      {showConfirmation && <ConfirmationModal />}
     </div>
   );
 };
