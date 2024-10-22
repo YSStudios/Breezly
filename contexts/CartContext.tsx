@@ -28,11 +28,8 @@ export interface CartItem {
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (item: CartItem) => void;
   removeFromCart: (id: string) => void;
-  updateCartItem: (id: string, quantity: number) => void;
   isCartOpen: boolean;
-  openCart: () => void;
   closeCart: () => void;
 }
 
@@ -43,42 +40,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const removeFromCart = (id: string) => {
+    setCartItems((items) => items.filter((item) => item.id !== id));
+  };
 
-  const addToCart = useCallback((item: CartItem) => {
-    setCartItems((prev) => [...prev, item]);
-  }, []);
-
-  const removeFromCart = useCallback((id: string) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
-  }, []);
-
-  const updateCartItem = useCallback((id: string, quantity: number) => {
-    setCartItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity } : item)),
-    );
-  }, []);
-
-  const openCart = useCallback(() => setIsCartOpen(true), []);
-  const closeCart = useCallback(() => setIsCartOpen(false), []);
-
-  if (!isClient) {
-    return <>{children}</>;
-  }
+  const closeCart = () => setIsCartOpen(false);
 
   return (
     <CartContext.Provider
       value={{
         cartItems,
-        addToCart,
         removeFromCart,
-        updateCartItem,
         isCartOpen,
-        openCart,
         closeCart,
       }}
     >
@@ -89,7 +63,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
 export const useCart = () => {
   const context = useContext(CartContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useCart must be used within a CartProvider");
   }
   return context;

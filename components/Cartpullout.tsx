@@ -7,6 +7,8 @@ const CartPullout: React.FC = () => {
   const router = useRouter();
   const { cartItems, removeFromCart, isCartOpen, closeCart } = useCart();
 
+  console.log("Cart Items:", cartItems);
+
   const handleCheckout = () => {
     closeCart();
     router.push("/checkout");
@@ -33,7 +35,7 @@ const CartPullout: React.FC = () => {
                 <div>
                   <div className="flex justify-between text-base font-medium text-gray-900">
                     <h3>{item.name}</h3>
-                    <p className="ml-4">${item.price.toFixed(2)}</p>
+                    <p className="ml-4">${Number(item.price).toFixed(2)}</p>
                   </div>
                   {item.description && (
                     <p className="mt-1 text-sm text-gray-500">
