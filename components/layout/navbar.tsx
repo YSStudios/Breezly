@@ -25,8 +25,8 @@ export default function NavBar({ session }: { session: Session | null }) {
     <>
       <SignInModal />
       <CartPullout />
-      <div
-        className={`fixed top-0 flex w-full justify-center ${
+      <nav
+        className={`fixed top-0 w-full ${
           scrolled
             ? "border-b border-gray-200 bg-white/50 backdrop-blur-xl"
             : "bg-white/0"
@@ -84,7 +84,7 @@ export default function NavBar({ session }: { session: Session | null }) {
             </div>
           </div>
         </Container>
-      </div>
+      </nav>
     </>
   );
 }
