@@ -5,16 +5,18 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCart } from "contexts/CartContext";
 
+interface PlanDetails {
+  id: string;
+  features: string[];
+}
+
 interface CartItem {
   id: string;
   name: string;
-  description: string; // Add this line
+  description: string;
   price: number | string;
   quantity: number;
-  planDetails?: {
-    id: string;
-    features: string[];
-  };
+  planDetails?: PlanDetails;
   offerDetails?: {
     propertyAddress: string;
     propertyType: string;
@@ -94,9 +96,11 @@ const CartPage: React.FC = () => {
                     <strong>Plan ID:</strong> {item.planDetails.id}
                   </p>
                   <ul className="list-inside list-disc">
-                    {item.planDetails.features.map((feature, index) => (
-                      <li key={index}>{feature}</li>
-                    ))}
+                    {item.planDetails.features.map(
+                      (feature: string, index: number) => (
+                        <li key={index}>{feature}</li>
+                      ),
+                    )}
                   </ul>
                 </div>
               )}
