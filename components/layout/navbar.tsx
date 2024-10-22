@@ -15,25 +15,12 @@ export default function NavBar({ session }: { session: Session | null }) {
   const { SignInModal, setShowSignInModal } = useSignInModal();
   const scrolled = useScroll(50);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const { cartItems, updateCart } = useCart();
+  const { cartItems, openCart } = useCart();
 
   const cartItemCount = useMemo(
     () => cartItems.reduce((total, item) => total + item.quantity, 0),
     [cartItems],
   );
-
-  const removeItem = async (itemId: string) => {
-    try {
-      const response = await fetch(`/api/cart?id=${itemId}`, {
-        method: "DELETE",
-      });
-      if (response.ok) {
-        await updateCart();
-      }
-    } catch (error) {
-      console.error("Error removing item from cart:", error);
-    }
-  };
 
   return (
     <>
@@ -67,7 +54,7 @@ export default function NavBar({ session }: { session: Session | null }) {
                     Dashboard
                   </Link>
                   <button
-                    onClick={() => setIsCartOpen(true)}
+                    onClick={openCart}
                     className="relative mr-4 p-2 text-gray-600 hover:text-gray-900"
                   >
                     <ShoppingCartIcon className="h-6 w-6" />

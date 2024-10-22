@@ -4,20 +4,17 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 interface CartItem {
   id: string;
   name: string;
-  description: string;
-  price: number;
   quantity: number;
-  planDetails: any;
-  offerDetails: any;
-  imageUrl: string;
+  price: number;
+  // ... other properties ...
 }
 
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (id: string) => void;
-  clearCart: () => void;
   updateCartItem: (id: string, quantity: number) => void;
+  clearCart: () => void;
   isCartOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
@@ -84,8 +81,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         cartItems,
         addToCart,
         removeFromCart,
-        clearCart,
         updateCartItem,
+        clearCart,
         isCartOpen,
         openCart,
         closeCart,
