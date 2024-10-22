@@ -3,8 +3,7 @@
 import React, { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useCart } from "contexts/CartContext";
-import { CartItem } from "contexts/CartContext"; // Import the CartItem interface
+import { useCart, CartItem } from "contexts/CartContext"; // Import CartItem along with useCart
 
 const CartPage: React.FC = () => {
   const { data: session, status } = useSession();
