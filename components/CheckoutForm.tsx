@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
@@ -71,19 +71,13 @@ const CheckoutForm = () => {
     }
   }, []);
 
-  const calculateTotal = () => {
-    console.log("Cart items:", cartItems);
-    const total = cartItems.reduce((sum, item) => {
-      const itemPrice =
-        typeof item.price === "string" ? parseFloat(item.price) : item.price;
-      console.log(
-        `Item: ${item.name}, Price: ${itemPrice}, Quantity: ${item.quantity}`,
-      );
-      return sum + (isNaN(itemPrice) ? 0 : itemPrice) * item.quantity;
-    }, 0);
-    console.log("Calculated total:", total);
-    return total;
-  };
+  const formatPrice = useCallback((price: number): string => {
+    return price.toFixed(2);
+  }, []);
+
+  const calculateTotal = useCallback(() => {
+    return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }, [cartItems]);
 
   const fetchClientSecret = async () => {
     try {
@@ -126,11 +120,6 @@ const CheckoutForm = () => {
         setError("Failed to initialize payment: An unknown error occurred");
       }
     }
-  };
-
-  const formatPrice = (price: number | string): string => {
-    const numPrice = typeof price === "string" ? parseFloat(price) : price;
-    return isNaN(numPrice) ? "0.00" : numPrice.toFixed(2);
   };
 
   const handleRemoveItem = (itemId: string) => {
@@ -242,24 +231,27 @@ const CheckoutForm = () => {
       <div key={item.id} className="mb-4 rounded-lg bg-white p-6 shadow-md">
         <h2 className="mb-4 text-xl font-semibold">{item.name}</h2>
         <p className="text-sm text-gray-500">{item.description}</p>
-        <p className="mt-2 text-lg font-semibold">${item.price.toFixed(2)}</p>
+        <p className="mt-2 text-lg font-semibold">${formatPrice(item.price)}</p>
 
         <div className="mt-4">
           <h4 className="text-sm font-medium">Plan Features:</h4>
           <ul className="list-inside list-disc text-sm">
-            {item.planDetails.features.map((feature: string, index: number) => (
-              <li key={index}>{feature}</li>
-            ))}
+            {item.planDetails?.features.map(
+              (feature: string, index: number) => (
+                <li key={index}>{feature}</li>
+              ),
+            )}
           </ul>
         </div>
 
         <div className="mt-4">
           <h4 className="text-sm font-medium">Offer Details:</h4>
           <p className="text-sm">
-            Property: {item.offerDetails.propertyAddress}
+            Property: {item.offerDetails?.propertyAddress}
           </p>
           <p className="text-sm">
-            Purchase Price: ${item.offerDetails.purchasePrice}
+            Purchase Price: $
+            {formatPrice(item.offerDetails?.purchasePrice || 0)}
           </p>
           {/* Add more offer details as needed */}
         </div>
@@ -426,7 +418,7 @@ const CheckoutForm = () => {
           {cartItems.length > 0 && (
             <div className="mt-4 text-right">
               <p className="text-xl font-bold">
-                Total: ${calculateTotal().toFixed(2)}
+                Total: ${formatPrice(calculateTotal())}
               </p>
             </div>
           )}

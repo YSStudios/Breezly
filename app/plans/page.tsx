@@ -6,7 +6,7 @@ import { useCart } from "contexts/CartContext";
 interface Plan {
   id: string;
   name: string;
-  price: number;
+  price: number; // Ensure this is typed as number
   features: string[];
 }
 
@@ -14,19 +14,19 @@ const plans: Plan[] = [
   {
     id: "basic",
     name: "Basic",
-    price: 9.99,
+    price: 9.99, // This is a number
     features: ["PDF Download", "Basic Template"],
   },
   {
     id: "premium",
     name: "Premium",
-    price: 19.99,
+    price: 19.99, // This is a number
     features: ["PDF Download", "Premium Template", "Email Support"],
   },
   {
     id: "pro",
     name: "Professional",
-    price: 29.99,
+    price: 29.99, // This is a number
     features: [
       "PDF Download",
       "Custom Template",
@@ -70,7 +70,8 @@ const PlansPage: React.FC = () => {
         formData.propertyAddress || "Unknown Property"
       }`,
       description: `${plan.name} Plan for PDF Offer Document`,
-      price: plan.price,
+      price:
+        typeof plan.price === "number" ? plan.price : parseFloat(plan.price),
       quantity: 1,
       planDetails: {
         id: plan.id,

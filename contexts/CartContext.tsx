@@ -5,7 +5,7 @@ export interface CartItem {
   id: string;
   name: string;
   description?: string; // Make this optional if not all items have a description
-  price: number | string;
+  price: number; // Changed from string | number to just number
   quantity: number;
   planDetails?: {
     id: string;
@@ -14,7 +14,7 @@ export interface CartItem {
   offerDetails?: {
     propertyAddress: string;
     propertyType: string;
-    purchasePrice: number | string;
+    purchasePrice: number; // Ensure this is also a number
     closingDate: string;
   };
 }
@@ -61,10 +61,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       const existingItem = prevItems.find((i) => i.id === item.id);
       if (existingItem) {
         return prevItems.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i,
+          i.id === item.id
+            ? { ...i, quantity: i.quantity + 1, price: Number(item.price) }
+            : i,
         );
       }
-      return [...prevItems, { ...item, quantity: 1 }];
+      return [
+        ...prevItems,
+        { ...item, price: Number(item.price), quantity: 1 },
+      ];
     });
   };
 
