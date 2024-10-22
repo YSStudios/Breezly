@@ -31,7 +31,7 @@ const NumberField: React.FC<NumberFieldProps> = ({ id, label, placeholder, prefi
         <input
           type="text"
           id={id}
-          className={`block w-full pr-12 sm:text-sm border-gray-300 rounded-md ${
+          className={`block w-full p-3 border-gray-300 rounded-md ${
             prefix ? 'pl-7' : ''
           }`}
           placeholder={placeholder}

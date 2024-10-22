@@ -226,12 +226,16 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold mb-4">Condition Details</h2>
-      {selectedConditions.map((condition) => (
-        <div key={condition} className="mb-6">
-          <h3 className="text-lg font-semibold mb-2">{condition}</h3>
-          {renderConditionDetails(condition)}
-        </div>
-      ))}
+      {selectedConditions.length === 0 ? (
+        <p className="text-gray-500">No conditions have been selected.</p>
+      ) : (
+        selectedConditions.map((condition) => (
+          <div key={condition} className="mb-6">
+            <h3 className="text-lg font-semibold mb-2">{condition}</h3>
+            {renderConditionDetails(condition)}
+          </div>
+        ))
+      )}
     </div>
   );
 };

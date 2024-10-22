@@ -141,7 +141,7 @@ const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
                                             : (partyType === 'buyer' ? 'e.g. ABC Ltd.' : 'e.g. XYZ Corp')}
                                         value={formData[`name-${partyType}-${partyIndex}`] || ''}
                                         onChange={(e) => onInputChange(`name-${partyType}-${partyIndex}`, e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                        className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     />
                                 </div>
                                 <div>
@@ -153,7 +153,7 @@ const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
                                         placeholder="e.g. Street, City, State ZIP Code"
                                         value={formData[`address-${partyType}-${partyIndex}`] || ''}
                                         onChange={(e) => onInputChange(`address-${partyType}-${partyIndex}`, e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                        className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     />
                                 </div>
                             </div>

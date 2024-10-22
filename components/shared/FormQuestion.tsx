@@ -46,7 +46,7 @@ const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title, 
           id={`text-field-${index}`}
           value={textFieldValues[index] || ''}
           onChange={(e) => handleTextFieldChange(index, e.target.value)}
-          className="mt-1 px-2 block w-full border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-lg"
+          className="mt-1 px-2 border-2 border-gray-300 bg-white text-gray-900 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 text-xl"
         />
       );
     }
@@ -64,7 +64,7 @@ const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title, 
           placeholder={field.placeholder}
           value={textFieldValues[index] || ''}
           onChange={(e) => handleTextFieldChange(index, e.target.value)}
-          className={`mt-1 px-2 block w-full border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-lg ${field.prefix ? 'pl-7' : ''}`}
+          className={`mt-1 px-2 py-2 block w-full border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 text-xl ${field.prefix ? 'pl-7' : ''}`}
         />
       </div>
     );
@@ -108,7 +108,7 @@ const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title, 
                 <div className="mt-4 space-y-4">
                   {option.textFields.map((field, fieldIndex) => (
                     <div key={fieldIndex}>
-                      {field.label && <label htmlFor={`text-field-${optionIndex}-${fieldIndex}`} className="block text-sm font-medium text-gray-700">{field.label}</label>}
+                      {field.label && <label htmlFor={`text-field-${optionIndex}-${fieldIndex}`} className="block font-medium text-gray-700">{field.label}</label>}
                       {renderTextField(field, fieldIndex)}
                     </div>
                   ))}

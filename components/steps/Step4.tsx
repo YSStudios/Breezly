@@ -294,7 +294,7 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
           <NumberField
             id="purchasePrice"
             label="What is the purchase price?"
-            placeholder="e.g. 250000"
+            placeholder="e.g. 250,000"
             prefix="$"
             value={purchasePrice}
             onChange={handlePurchasePriceChange}
