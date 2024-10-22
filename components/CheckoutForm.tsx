@@ -31,6 +31,22 @@ interface FormData {
   phone: string;
 }
 
+type CountryOption = {
+  label: string;
+  value: string;
+};
+
+interface FormData {
+  email: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  country: CountryOption | null;
+  state: { label: string; value: string } | null;
+  zip: string;
+  phone: string;
+}
+
 const CheckoutForm = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -47,6 +63,9 @@ const CheckoutForm = () => {
     email: "",
     firstName: "",
     lastName: "",
+    address: "", // Add this
+    country: null, // Add this
+    state: null, // Add this
     zip: "",
     phone: "",
   });
