@@ -1,4 +1,4 @@
-import React, { useEffect, Dispatch, SetStateAction } from "react";
+import React, { useCallback } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useCart } from "../contexts/CartContext";
@@ -6,11 +6,11 @@ import Link from "next/link";
 
 interface CartPulloutProps {
   isOpen: boolean;
-  setIsOpen: Dispatch<SetStateAction<boolean>>;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const CartPullout: React.FC<CartPulloutProps> = ({ isOpen, setIsOpen }) => {
-  const { cartItems, removeFromCart, updateCart } = useCart();
+  const { cartItems, removeFromCart, updateCartItem } = useCart();
 
   // Helper function to format price
   const formatPrice = (price: number | string): string => {
@@ -19,24 +19,25 @@ const CartPullout: React.FC<CartPulloutProps> = ({ isOpen, setIsOpen }) => {
   };
 
   // Helper function to calculate total
-  const calculateTotal = (items: typeof cartItems): number => {
-    return items.reduce((sum, item) => {
+  const calculateTotal = useCallback(() => {
+    return cartItems.reduce((sum, item) => {
       const itemPrice =
         typeof item.price === "string" ? parseFloat(item.price) : item.price;
       return sum + (isNaN(itemPrice) ? 0 : itemPrice) * item.quantity;
     }, 0);
+  }, [cartItems]);
+
+  const handleRemoveItem = (itemId: string) => {
+    removeFromCart(itemId);
   };
 
-  const handleRemoveItem = async (itemId: string) => {
-    await removeFromCart(itemId);
-    await updateCart();
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      updateCart();
+  const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
+    if (newQuantity > 0) {
+      updateCartItem(itemId, newQuantity);
+    } else {
+      removeFromCart(itemId);
     }
-  }, [isOpen, updateCart]);
+  };
 
   return (
     <Transition.Root show={isOpen} as={React.Fragment}>
@@ -132,7 +133,7 @@ const CartPullout: React.FC<CartPulloutProps> = ({ isOpen, setIsOpen }) => {
                     <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
                       <div className="flex justify-between text-base font-medium text-gray-900">
                         <p>Subtotal</p>
-                        <p>${formatPrice(calculateTotal(cartItems))}</p>
+                        <p>${formatPrice(calculateTotal())}</p>
                       </div>
                       <p className="mt-0.5 text-sm text-gray-500">
                         Shipping and taxes calculated at checkout.

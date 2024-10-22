@@ -3,11 +3,11 @@ import cx from "classnames";
 import { sfPro, argentCF, quicksand } from "./fonts";
 import Nav from "@/components/layout/nav";
 import Footer from "@/components/layout/footer";
-import { Suspense, ReactNode } from "react";
+import { Suspense } from "react";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import ClientSessionProvider from "@/components/ClientSessionProvider";
 import { getServerSession } from "next-auth/next";
-import { CartProvider } from "contexts/CartContext";
+import { CartProvider } from "../contexts/CartContext";
 
 export const metadata = {
   title: "OfferApp - Send real estate offers quick and easy",
@@ -17,7 +17,7 @@ export const metadata = {
 };
 
 interface RootLayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export default async function RootLayout({ children }: RootLayoutProps) {
