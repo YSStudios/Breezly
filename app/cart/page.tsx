@@ -4,26 +4,7 @@ import React, { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCart } from "contexts/CartContext";
-
-interface PlanDetails {
-  id: string;
-  features: string[];
-}
-
-interface CartItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number | string;
-  quantity: number;
-  planDetails?: PlanDetails;
-  offerDetails?: {
-    propertyAddress: string;
-    propertyType: string;
-    purchasePrice: number | string;
-    closingDate: string;
-  };
-}
+import { CartItem } from "contexts/CartContext"; // Import the CartItem interface
 
 const CartPage: React.FC = () => {
   const { data: session, status } = useSession();
@@ -64,7 +45,7 @@ const CartPage: React.FC = () => {
         <p>Your cart is empty.</p>
       ) : (
         <div>
-          {cartItems.map((item) => (
+          {cartItems.map((item: CartItem) => (
             <div
               key={item.id}
               className="mb-4 rounded-lg bg-white p-6 shadow-md"

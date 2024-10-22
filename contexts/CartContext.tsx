@@ -1,12 +1,22 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-interface CartItem {
+export interface CartItem {
   id: string;
   name: string;
+  description?: string; // Make this optional if not all items have a description
+  price: number | string;
   quantity: number;
-  price: number;
-  // ... other properties ...
+  planDetails?: {
+    id: string;
+    features: string[];
+  };
+  offerDetails?: {
+    propertyAddress: string;
+    propertyType: string;
+    purchasePrice: number | string;
+    closingDate: string;
+  };
 }
 
 interface CartContextType {
