@@ -71,9 +71,9 @@ const CheckoutForm = () => {
     }
   }, []);
 
-  const formatPrice = useCallback((price: number): string => {
+  const formatPrice = (price: number): string => {
     return price.toFixed(2);
-  }, []);
+  };
 
   const calculateTotal = useCallback(() => {
     return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -244,17 +244,18 @@ const CheckoutForm = () => {
           </ul>
         </div>
 
-        <div className="mt-4">
-          <h4 className="text-sm font-medium">Offer Details:</h4>
-          <p className="text-sm">
-            Property: {item.offerDetails?.propertyAddress}
-          </p>
-          <p className="text-sm">
-            Purchase Price: $
-            {formatPrice(item.offerDetails?.purchasePrice || 0)}
-          </p>
-          {/* Add more offer details as needed */}
-        </div>
+        {item.offerDetails && (
+          <div className="mt-4 border-t pt-4">
+            <h3 className="mb-2 text-lg font-semibold">Offer Details:</h3>
+            <p className="text-sm">
+              Property: {item.offerDetails.propertyAddress}
+            </p>
+            <p className="text-sm">
+              Purchase Price: ${formatPrice(item.offerDetails.purchasePrice)}
+            </p>
+            {/* Add more offer details as needed */}
+          </div>
+        )}
 
         <button
           onClick={() => handleRemoveItem(item.id)}

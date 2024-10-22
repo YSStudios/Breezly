@@ -15,7 +15,7 @@ export interface CartItem {
   offerDetails?: {
     propertyAddress: string;
     propertyType: string;
-    purchasePrice: number | string;
+    purchasePrice: number;
     closingDate: string;
   };
 }
@@ -38,9 +38,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const addToCart = useCallback((item: CartItem) => {
-    setCartItems((prev) => [...prev, item]);
-  }, []);
+  const addToCart = useCallback(
+    (item: Omit<CartItem, "price"> & { price: number | string }) => {
+      const newItem: CartItem = {
+        ...item,
+        price:
+          typeof item.price === "string" ? parseFloat(item.price) : item.price,
+      };
+      setCartItems((prev) => [...prev, newItem]);
+    },
+    [],
+  );
 
   const removeFromCart = useCallback((id: string) => {
     setCartItems((prev) => prev.filter((item) => item.id !== id));
