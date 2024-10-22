@@ -31,6 +31,14 @@ interface FormData {
   phone: string;
 }
 
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  // ... other properties
+}
+
 const CheckoutForm = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -71,12 +79,16 @@ const CheckoutForm = () => {
     }
   }, []);
 
-  const formatPrice = (price: number): string => {
-    return price.toFixed(2);
+  const formatPrice = (price: number | string | undefined): string => {
+    const numPrice = Number(price);
+    return isNaN(numPrice) ? "0.00" : numPrice.toFixed(2);
   };
 
   const calculateTotal = useCallback(() => {
-    return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    return cartItems.reduce(
+      (sum, item) => sum + Number(item.price) * item.quantity,
+      0,
+    );
   }, [cartItems]);
 
   const fetchClientSecret = async () => {

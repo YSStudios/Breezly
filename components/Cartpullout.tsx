@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../contexts/CartContext";
@@ -7,6 +9,7 @@ const CartPullout: React.FC = () => {
   const router = useRouter();
   const { cartItems, removeFromCart, isCartOpen, closeCart } = useCart();
 
+  console.log("CartPullout rendered, isCartOpen:", isCartOpen);
   console.log("Cart Items:", cartItems);
 
   const handleCheckout = () => {
@@ -29,34 +32,40 @@ const CartPullout: React.FC = () => {
           </button>
         </div>
         <ul className="mt-8 divide-y divide-gray-200">
-          {cartItems.map((item) => (
-            <li key={item.id} className="flex py-6">
-              <div className="ml-4 flex flex-1 flex-col">
-                <div>
-                  <div className="flex justify-between text-base font-medium text-gray-900">
-                    <h3>{item.name}</h3>
-                    <p className="ml-4">${Number(item.price).toFixed(2)}</p>
+          {Array.isArray(cartItems) &&
+            cartItems.map((item) => (
+              <li key={item.id} className="flex py-6">
+                <div className="ml-4 flex flex-1 flex-col">
+                  <div>
+                    <div className="flex justify-between text-base font-medium text-gray-900">
+                      <h3>{item.name || "Unnamed Item"}</h3>
+                      <p className="ml-4">
+                        $
+                        {typeof item.price === "number"
+                          ? item.price.toFixed(2)
+                          : "0.00"}
+                      </p>
+                    </div>
+                    {item.description && (
+                      <p className="mt-1 text-sm text-gray-500">
+                        {item.description}
+                      </p>
+                    )}
                   </div>
-                  {item.description && (
-                    <p className="mt-1 text-sm text-gray-500">
-                      {item.description}
-                    </p>
-                  )}
+                  <div className="flex flex-1 items-end justify-between text-sm">
+                    <p className="text-gray-500">Qty {item.quantity || 0}</p>
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      className="font-medium text-indigo-600 hover:text-indigo-500"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
-                <div className="flex flex-1 items-end justify-between text-sm">
-                  <p className="text-gray-500">Qty {item.quantity}</p>
-                  <button
-                    onClick={() => removeFromCart(item.id)}
-                    className="font-medium text-indigo-600 hover:text-indigo-500"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            </li>
-          ))}
+              </li>
+            ))}
         </ul>
-        {cartItems.length > 0 && (
+        {Array.isArray(cartItems) && cartItems.length > 0 && (
           <div className="mt-6">
             <button
               onClick={handleCheckout}
