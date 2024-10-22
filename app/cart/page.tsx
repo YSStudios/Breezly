@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useCart, CartItem } from "contexts/CartContext"; // Import CartItem along with useCart
+import { useCart } from "contexts/CartContext";
 
 const CartPage: React.FC = () => {
   const { data: session, status } = useSession();
@@ -20,11 +20,11 @@ const CartPage: React.FC = () => {
     removeFromCart(itemId);
   };
 
-  const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
+  const handleUpdateQuantity = (id: string, newQuantity: number) => {
     if (newQuantity > 0) {
-      updateCartItem(itemId, newQuantity);
+      updateCartItem(id, newQuantity);
     } else {
-      removeFromCart(itemId);
+      removeFromCart(id);
     }
   };
 
@@ -44,7 +44,7 @@ const CartPage: React.FC = () => {
         <p>Your cart is empty.</p>
       ) : (
         <div>
-          {cartItems.map((item: CartItem) => (
+          {cartItems.map((item: any) => (
             <div
               key={item.id}
               className="mb-4 rounded-lg bg-white p-6 shadow-md"
