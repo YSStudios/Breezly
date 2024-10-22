@@ -251,8 +251,21 @@ const Form: React.FC = () => {
     }
   };
 
-  const handleGeneratePDF = () => {
-    generatePDF(formData);
+  const handleGeneratePDF = async () => {
+	try {
+	  const pdfBlob = await generatePDF(formData); // Generate the PDF
+	  const url = URL.createObjectURL(pdfBlob); // Create a URL for the Blob
+  
+	  const link = document.createElement('a'); // Create a link element
+	  link.href = url; // Set the URL as the link's href
+	  link.download = 'offer.pdf'; // Set the default file name
+	  document.body.appendChild(link); // Append the link to the body
+	  link.click(); // Programmatically click the link to trigger the download
+	  document.body.removeChild(link); // Remove the link from the document
+	  URL.revokeObjectURL(url); // Clean up the URL object
+	} catch (error) {
+	  console.error("Error generating PDF:", error);
+	}
   };
 
   const handleNextClick = async () => {
