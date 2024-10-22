@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-	  "target": "es5",
+	  "target": "es2017",
 	  "lib": ["dom", "dom.iterable", "esnext"],
 	  "allowJs": true,
 	  "skipLibCheck": true,
@@ -11,12 +11,13 @@
 		"@/app/*": ["app/*"],
 		"@/lib/*": ["lib/*"],
 		"@/styles/*": ["styles/*"],
-		"@/types/*": ["types/*"]  // Add this line
+		"@/types/*": ["types/*"]
 	  },
 	  "strict": true,
 	  "forceConsistentCasingInFileNames": true,
 	  "noEmit": true,
 	  "esModuleInterop": true,
+	  "allowSyntheticDefaultImports": true,
 	  "module": "esnext",
 	  "moduleResolution": "node",
 	  "resolveJsonModule": true,
@@ -34,7 +35,7 @@
 	  "**/*.ts",
 	  "**/*.tsx",
 	  ".next/types/**/*.ts",
-	  "types/**/*.d.ts"  // Add this line
+	  "types/**/*.d.ts"
 	],
 	"exclude": ["node_modules"]
   }

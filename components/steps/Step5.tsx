@@ -1,6 +1,13 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FormData } from "../types";
+import generatePDF from "../../utils/generatePDF";
+import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist';
+
+// Set the workerSrc to the path of the worker file
+if (typeof window !== 'undefined') {
+  GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
+}
 
 interface Step5Props {
   formData: FormData;
@@ -8,6 +15,38 @@ interface Step5Props {
 
 const PDFPreview: React.FC<Step5Props> = ({ formData }) => {
   const router = useRouter();
+  const [pdfPreview, setPdfPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPdfPreview = async () => {
+      try {
+        const pdfBlob = await generatePDF(formData);
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+
+        const pdf = await getDocument(pdfUrl).promise;
+        const page = await pdf.getPage(1);
+
+        const viewport = page.getViewport({ scale: 1 });
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        if (!context) {
+          throw new Error("Failed to get 2D context");
+        }
+
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        await page.render({ canvasContext: context, viewport }).promise;
+
+        setPdfPreview(canvas.toDataURL());
+      } catch (error) {
+        console.error("Error generating PDF preview:", error);
+      }
+    };
+
+    fetchPdfPreview();
+  }, [formData]);
 
   const saveOfferToDatabase = async (data: FormData) => {
     try {
@@ -18,17 +57,15 @@ const PDFPreview: React.FC<Step5Props> = ({ formData }) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          formId: data.id || undefined, // Use existing ID if available
+          formId: data.id || undefined,
           data: data,
-          isPurchased: true, // Set to true when purchasing
+          isPurchased: true,
         }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(
-          `Failed to save offer: ${response.status} ${errorText}`,
-        );
+        throw new Error(`Failed to save offer: ${response.status} ${errorText}`);
       }
 
       const result = await response.json();
@@ -55,28 +92,14 @@ const PDFPreview: React.FC<Step5Props> = ({ formData }) => {
 
   return (
     <div className="rounded-lg bg-white p-6 shadow-lg">
-      <h2 className="mb-4 text-2xl font-bold">Offer Summary</h2>
-      <div className="space-y-4">
-        <PreviewSection title="Property Details">
-          <p>Address: {formData.propertyAddress || "N/A"}</p>
-          <p>Type: {formData.propertyType || "N/A"}</p>
-        </PreviewSection>
-        <PreviewSection title="Buyer Information">
-          <p>Name: {formData.buyerName || "N/A"}</p>
-          <p>Contact: {formData.buyerPhone || "N/A"}</p>
-        </PreviewSection>
-        <PreviewSection title="Seller Information">
-          <p>Name: {formData.sellerName || "N/A"}</p>
-          <p>Contact: {formData.sellerPhone || "N/A"}</p>
-        </PreviewSection>
-        <PreviewSection title="Offer Details">
-          <p>Purchase Price: ${formData.purchasePrice || "N/A"}</p>
-          <p>Deposit Amount: ${formData.depositAmount || "N/A"}</p>
-          <p>Closing Date: {formData.closingDate || "N/A"}</p>
-        </PreviewSection>
-      </div>
+      <h2 className="mb-4 text-2xl font-bold">PDF Preview</h2>
+      {pdfPreview ? (
+        <img src={pdfPreview} alt="PDF Preview" className="w-full h-auto" />
+      ) : (
+        <p>Loading preview...</p>
+      )}
       <button
-        className="mt-6 rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
+        className="mt-6 rounded bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-700"
         onClick={handlePurchaseOffer}
       >
         Purchase My Offer
@@ -84,15 +107,5 @@ const PDFPreview: React.FC<Step5Props> = ({ formData }) => {
     </div>
   );
 };
-
-const PreviewSection: React.FC<{
-  title: string;
-  children: React.ReactNode;
-}> = ({ title, children }) => (
-  <div>
-    <h3 className="mb-2 text-lg font-semibold">{title}</h3>
-    <div className="border-l-2 border-gray-200 pl-4">{children}</div>
-  </div>
-);
 
 export default PDFPreview;
