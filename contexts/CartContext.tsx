@@ -1,5 +1,11 @@
 "use client";
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 
 // Export the CartItem interface
 export interface CartItem {
@@ -37,6 +43,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const addToCart = useCallback((item: CartItem) => {
     setCartItems((prev) => [...prev, item]);
@@ -54,6 +65,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const openCart = useCallback(() => setIsCartOpen(true), []);
   const closeCart = useCallback(() => setIsCartOpen(false), []);
+
+  if (!isClient) {
+    return <>{children}</>;
+  }
 
   return (
     <CartContext.Provider
