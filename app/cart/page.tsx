@@ -26,18 +26,24 @@ interface CartItem {
 const CartPage: React.FC = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { cartItems, updateCart, removeFromCart } = useCart();
+  const { cartItems, removeFromCart, updateCartItem } = useCart();
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
-    } else if (status === "authenticated") {
-      updateCart();
     }
-  }, [status, router, updateCart]);
+  }, [status, router]);
 
   const handleRemoveItem = async (itemId: string) => {
-    await removeFromCart(itemId);
+    removeFromCart(itemId);
+  };
+
+  const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
+    if (newQuantity > 0) {
+      updateCartItem(itemId, newQuantity);
+    } else {
+      removeFromCart(itemId);
+    }
   };
 
   const formatPrice = (price: number | string): string => {

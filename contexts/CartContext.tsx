@@ -18,6 +18,9 @@ interface CartContextType {
   removeFromCart: (id: string) => void;
   clearCart: () => void;
   updateCartItem: (id: string, quantity: number) => void;
+  isCartOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -26,7 +29,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Load cart items from localStorage when the component mounts
   useEffect(() => {
@@ -35,16 +38,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     if (storedCart) {
       setCartItems(JSON.parse(storedCart));
     }
-    setIsLoaded(true);
+    setIsCartOpen(true);
   }, []);
 
   // Update localStorage whenever cartItems changes
   useEffect(() => {
-    if (isLoaded) {
+    if (isCartOpen) {
       console.log("Saving cart to localStorage:", cartItems);
       localStorage.setItem("cart", JSON.stringify(cartItems));
     }
-  }, [cartItems, isLoaded]);
+  }, [cartItems, isCartOpen]);
 
   const addToCart = (item: CartItem) => {
     setCartItems((prevItems) => {
@@ -72,6 +75,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   };
 
+  const openCart = () => setIsCartOpen(true);
+  const closeCart = () => setIsCartOpen(false);
+
   return (
     <CartContext.Provider
       value={{
@@ -80,6 +86,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         removeFromCart,
         clearCart,
         updateCartItem,
+        isCartOpen,
+        openCart,
+        closeCart,
       }}
     >
       {children}
