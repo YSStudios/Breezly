@@ -7,7 +7,7 @@ import { useSignInModal } from "./sign-in-modal";
 import UserDropdown from "./user-dropdown";
 import { Session } from "next-auth";
 import { Container } from "../Container";
-import CartPullout from "../CartPullout";
+import CartPullout from "../Cartpullout";
 import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { useCart } from "contexts/CartContext";
 
