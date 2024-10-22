@@ -7,14 +7,12 @@ import { useSignInModal } from "./sign-in-modal";
 import UserDropdown from "./user-dropdown";
 import { Session } from "next-auth";
 import { Container } from "../Container";
-import CartPullout from "../Cartpullout";
 import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { useCart } from "contexts/CartContext";
 
 export default function NavBar({ session }: { session: Session | null }) {
   const { SignInModal, setShowSignInModal } = useSignInModal();
   const scrolled = useScroll(50);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const { cartItems, openCart } = useCart();
 
   const cartItemCount = useMemo(
@@ -25,7 +23,7 @@ export default function NavBar({ session }: { session: Session | null }) {
   return (
     <>
       <SignInModal />
-      <CartPullout isOpen={isCartOpen} setIsOpen={setIsCartOpen} />
+      <CartPullout />
       <div
         className={`fixed top-0 flex w-full justify-center ${
           scrolled
