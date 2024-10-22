@@ -35,9 +35,11 @@ const CartPullout: React.FC = () => {
                     <h3>{item.name}</h3>
                     <p className="ml-4">${item.price.toFixed(2)}</p>
                   </div>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {item.description}
-                  </p>
+                  {item.description && (
+                    <p className="mt-1 text-sm text-gray-500">
+                      {item.description}
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-1 items-end justify-between text-sm">
                   <p className="text-gray-500">Qty {item.quantity}</p>
