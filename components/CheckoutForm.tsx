@@ -14,23 +14,7 @@ import countryList from "react-select-country-list";
 import { usStates } from "@/app/checkout/states";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 
-// Add this type definition after your imports
-type CountryOption = {
-  label: string;
-  value: string;
-};
-
-interface FormData {
-  email: string;
-  firstName: string;
-  lastName: string;
-  address: string;
-  country: CountryOption | null;
-  state: { label: string; value: string } | null;
-  zip: string;
-  phone: string;
-}
-
+// Define types
 type CountryOption = {
   label: string;
   value: string;
@@ -63,9 +47,9 @@ const CheckoutForm = () => {
     email: "",
     firstName: "",
     lastName: "",
-    address: "", // Add this
-    country: null, // Add this
-    state: null, // Add this
+    address: "",
+    country: null,
+    state: null,
     zip: "",
     phone: "",
   });
