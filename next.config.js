@@ -14,6 +14,17 @@ const nextConfig = {
       },
     ];
   },
+  webpack: (config, { dev, isServer }) => {
+    if (dev && !isServer) {
+      config.resolve.alias["react"] = path.resolve(
+        __dirname,
+        ".",
+        "node_modules",
+        "react",
+      );
+    }
+    return config;
+  },
 };
 
 module.exports = nextConfig;
