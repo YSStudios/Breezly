@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
@@ -12,6 +12,7 @@ import Step5 from "./steps/Step5";
 import { FormData } from "./types";
 import generatePDF from "../utils/generatePDF";
 import SavingPopup from "./SavingPopup";
+import LoadingSpinner from "./LoadingSpinner";
 
 const DEBUG = process.env.NODE_ENV === "development";
 
@@ -27,6 +28,48 @@ const Form: React.FC = () => {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const [showSavingPopup, setShowSavingPopup] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
+
+  const fetchFormData = useCallback(
+    async (id: string) => {
+      setIsLoading(true);
+      try {
+        if (session) {
+          // User is logged in, fetch from server
+          const response = await fetch(`/api/form/get?id=${id}`);
+          if (response.ok) {
+            const data = await response.json();
+            console.log("Fetched form data from server:", data);
+            setFormData(data);
+          } else if (response.status === 404) {
+            console.log("Form not found on server, creating a new one");
+            setFormData({});
+          } else {
+            console.error(
+              "Error fetching form data from server:",
+              await response.text(),
+            );
+          }
+        } else {
+          // User is not logged in, fetch from local storage
+          const storedData = localStorage.getItem(`form_${id}`);
+          if (storedData) {
+            const data = JSON.parse(storedData);
+            console.log("Fetched form data from local storage:", data);
+            setFormData(data);
+          } else {
+            console.log("Form not found in local storage, creating a new one");
+            setFormData({});
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching form data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [session],
+  ); // Add session as a dependency
 
   useEffect(() => {
     const initForm = async () => {
@@ -48,114 +91,29 @@ const Form: React.FC = () => {
     };
 
     initForm();
-  }, [searchParams, session]);
+  }, [searchParams, fetchFormData]); // Add fetchFormData to the dependency array
 
   // New useEffect hook to log formData whenever it changes
   useEffect(() => {
     console.log("Current formData:", formData);
   }, [formData]);
 
-  const fetchFormData = async (id: string) => {
-    setIsLoading(true);
-    try {
-      if (session) {
-        // User is logged in, fetch from server
-        const response = await fetch(`/api/form/get?id=${id}`);
-        if (response.ok) {
-          const data = await response.json();
-          console.log("Fetched form data from server:", data);
-          setFormData(data);
-        } else if (response.status === 404) {
-          console.log("Form not found on server, creating a new one");
-          setFormData({});
-        } else {
-          console.error(
-            "Error fetching form data from server:",
-            await response.text(),
-          );
-        }
-      } else {
-        // User is not logged in, fetch from local storage
-        const storedData = localStorage.getItem(`form_${id}`);
-        if (storedData) {
-          const data = JSON.parse(storedData);
-          console.log("Fetched form data from local storage:", data);
-          setFormData(data);
-        } else {
-          console.log("Form not found in local storage, creating a new one");
-          setFormData({});
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching form data:", error);
-    } finally {
-      setIsLoading(false);
+  const saveFormData = () => {
+    if (formId) {
+      localStorage.setItem(`form_${formId}`, JSON.stringify(formData));
+      console.log("Saved complete form data:", formData);
     }
   };
 
-  const saveFormData = async () => {
-    if (!formId) return;
-
-    setIsSaving(true);
-    setSaveError(null);
-    try {
-      if (session) {
-        // User is logged in, save to server
-        console.log("Saving form data to server:");
-        console.log("FormId:", formId);
-        console.log("Form data:", JSON.stringify(formData, null, 2));
-        console.log("Session status:", status);
-        console.log("Session user:", JSON.stringify(session?.user, null, 2));
-
-        const response = await fetch("/api/form/save", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            formId,
-            data: formData,
-          }),
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-          console.log("Save response:", result);
-        } else {
-          console.error("Error saving form:", result);
-          let errorMessage = `Failed to save form: ${result.message}`;
-          if (result.error) {
-            errorMessage += DEBUG ? `\nError details: ${result.error}` : "";
-          }
-          setSaveError(errorMessage);
-        }
-      } else {
-        // User is not logged in, save to local storage
-        console.log("Saving form data to local storage:");
-        console.log("FormId:", formId);
-        console.log("Form data:", JSON.stringify(formData, null, 2));
-
-        // Add a small delay to make the saving process more visible
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        localStorage.setItem(`form_${formId}`, JSON.stringify(formData));
-        console.log("Form data saved to local storage");
-      }
-    } catch (error) {
-      console.error("Error saving form data:", error);
-      setSaveError("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsSaving(false);
-    }
+  const handleInputChange = (name: string, value: any) => {
+    setFormData((prevData) => {
+      const newData = { ...prevData, [name]: value };
+      console.log("Updated form data:", newData);
+      return newData;
+    });
   };
 
-  const handleInputChange = (name: string, value: string) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-
-  const handleSetStep = (step: number, substep: number = 1) => {
+  const handleSetStep = (step: number, substep: number) => {
     setCurrentStep(step);
     setCurrentSubstep(substep);
   };
@@ -178,6 +136,7 @@ const Form: React.FC = () => {
     if (currentSubstep < maxSubsteps) {
       setCurrentSubstep(currentSubstep + 1);
     } else if (currentStep < 5) {
+      // Assuming you have 5 steps total
       setCurrentStep(currentStep + 1);
       setCurrentSubstep(1);
     }
@@ -193,6 +152,7 @@ const Form: React.FC = () => {
   };
 
   const getMaxSubsteps = (step: number): number => {
+    // Define the number of substeps for each step
     switch (step) {
       case 1:
         return 1;
@@ -218,6 +178,7 @@ const Form: React.FC = () => {
             currentSubstep={currentSubstep}
             onInputChange={handleInputChange}
             formData={formData}
+            onPropertySelect={handlePropertySelection}
           />
         );
       case 2:
@@ -245,27 +206,27 @@ const Form: React.FC = () => {
           />
         );
       case 5:
-        return <Step5 formData={formData} />;
+        return <Step5 formData={formData} formId={formId} />; // Pass formId here
       default:
         return null;
     }
   };
 
   const handleGeneratePDF = async () => {
-	try {
-	  const pdfBlob = await generatePDF(formData); // Generate the PDF
-	  const url = URL.createObjectURL(pdfBlob); // Create a URL for the Blob
-  
-	  const link = document.createElement('a'); // Create a link element
-	  link.href = url; // Set the URL as the link's href
-	  link.download = 'offer.pdf'; // Set the default file name
-	  document.body.appendChild(link); // Append the link to the body
-	  link.click(); // Programmatically click the link to trigger the download
-	  document.body.removeChild(link); // Remove the link from the document
-	  URL.revokeObjectURL(url); // Clean up the URL object
-	} catch (error) {
-	  console.error("Error generating PDF:", error);
-	}
+    try {
+      const pdfBlob = await generatePDF(formData); // Generate the PDF
+      const url = URL.createObjectURL(pdfBlob); // Create a URL for the Blob
+
+      const link = document.createElement("a"); // Create a link element
+      link.href = url; // Set the URL as the link's href
+      link.download = "offer.pdf"; // Set the default file name
+      document.body.appendChild(link); // Append the link to the body
+      link.click(); // Programmatically click the link to trigger the download
+      document.body.removeChild(link); // Remove the link from the document
+      URL.revokeObjectURL(url); // Clean up the URL object
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    }
   };
 
   const handleNextClick = async () => {
@@ -279,10 +240,41 @@ const Form: React.FC = () => {
     }, 500); // Adjust this time to match your animation duration
   };
 
+  const handlePropertySelection = (propertyData: any) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      "property-type": propertyData.value,
+    }));
+    nextSubstep();
+  };
+
+  const confirmPropertySelection = () => {
+    if (selectedProperty) {
+      setFormData((prevData) => ({
+        ...prevData,
+        propertyAddress: selectedProperty.address,
+        propertyType: selectedProperty.type,
+        // Add any other relevant property data
+      }));
+      nextSubstep();
+      setSelectedProperty(null);
+    }
+  };
+
+  const handleComplete = () => {
+    saveFormData();
+    if (formId) {
+      console.log("Navigating to plans page with formId:", formId);
+      console.log("Complete form data being passed:", formData);
+      router.push(`/plans?formId=${formId}`);
+    } else {
+      console.error("No formId available");
+    }
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col gap-8 md:flex-row">
@@ -402,6 +394,7 @@ const Form: React.FC = () => {
           )}
         </div>
       </div>
+      {/* Remove any submit button if it exists */}
     </div>
   );
 };
