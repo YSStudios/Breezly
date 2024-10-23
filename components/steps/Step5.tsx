@@ -21,19 +21,19 @@ const Step5: React.FC<Step5Props> = ({ formData }) => {
 	  <div className="rounded-lg bg-white p-6 shadow-lg">
       <div className="scrollable-container">
         <h2 className="font-bold text-center mb-10">Offer to Purchase Real Estate</h2>
-        <p className="font-bold mb-5">THIS OFFER TO PURCHASE REAL ESTATE (the "Offer")</p>
+        <p className="font-bold mb-5">THIS OFFER TO PURCHASE REAL ESTATE (the &quot;Offer&quot;)</p>
         <p className="font-bold mb-5">IS MADE BY:</p>
         <p className="text-center mb-0">{formData['name-buyer-0']} of {formData['address-buyer-0']}</p>
-        <p className="text-center mb-10">(the "Buyer")</p>
-        <p className="font-bold text-right mb-5">OF THE FIRST PART</p>
+        <p className="text-center mb-10">(the &quot;Buyer&quot;)</p>
+        <p className="font-bold text-right mb-15">OF THE FIRST PART</p>
         <p className="font-bold text-center mb-5">- TO -</p>
         <p className="text-center mb-0">{formData['name-seller-0']} of {formData['address-seller-0']}</p>
-        <p className="text-center mb-10">(the "Seller")</p>
+        <p className="text-center mb-10">(the &quot;Seller&quot;)</p>
         <p className="font-bold text-right mb-15">OF THE SECOND PART</p>
         
         <h3 className="mb-10 ">Background</h3>
         <p className="mb-10">The Buyer wishes to submit an offer to purchase a certain completed home from the Seller under the terms stated below.</p>
-        <p className="mb-15"><strong>IN CONSIDERATION OF</strong> and as a condition of the Seller selling the Property and the Buyer purchasing the Property (collectively the "Parties") and other valuable consideration the receipt of which is hereby acknowledged, the Parties to this Offer to Purchase Real Estate agree as follows:</p>
+        <p className="mb-15"><strong>IN CONSIDERATION OF</strong> and as a condition of the Seller selling the Property and the Buyer purchasing the Property (collectively the &quot;Parties&quot;) and other valuable consideration the receipt of which is hereby acknowledged, the Parties to this Offer to Purchase Real Estate agree as follows:</p>
         
         <ol>
           <li>
