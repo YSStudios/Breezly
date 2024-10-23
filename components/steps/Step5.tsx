@@ -1,111 +1,78 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { FormData } from "../types";
-import generatePDF from "../../utils/generatePDF";
-import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist';
-
-// Set the workerSrc to the path of the worker file
-if (typeof window !== 'undefined') {
-  GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
-}
 
 interface Step5Props {
   formData: FormData;
 }
 
-const PDFPreview: React.FC<Step5Props> = ({ formData }) => {
+const Step5: React.FC<Step5Props> = ({ formData }) => {
   const router = useRouter();
-  const [pdfPreview, setPdfPreview] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchPdfPreview = async () => {
-      try {
-        const pdfBlob = await generatePDF(formData);
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-
-        const pdf = await getDocument(pdfUrl).promise;
-        const page = await pdf.getPage(1);
-
-        const viewport = page.getViewport({ scale: 1 });
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-
-        if (!context) {
-          throw new Error("Failed to get 2D context");
-        }
-
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        await page.render({ canvasContext: context, viewport }).promise;
-
-        setPdfPreview(canvas.toDataURL());
-      } catch (error) {
-        console.error("Error generating PDF preview:", error);
-      }
-    };
-
-    fetchPdfPreview();
-  }, [formData]);
-
-  const saveOfferToDatabase = async (data: FormData) => {
-    try {
-      console.log("Attempting to save offer:", data);
-      const response = await fetch("/api/form/save", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          formId: data.id || undefined,
-          data: data,
-          isPurchased: true,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to save offer: ${response.status} ${errorText}`);
-      }
-
-      const result = await response.json();
-      console.log("Offer saved successfully:", result);
-      return result;
-    } catch (error) {
-      console.error("Error in saveOfferToDatabase:", error);
-      throw error;
-    }
-  };
-
-  const handlePurchaseOffer = async () => {
-    try {
-      console.log("handlePurchaseOffer called");
-      const savedOffer = await saveOfferToDatabase(formData);
-      console.log("Offer saved, proceeding to plans page");
-      localStorage.setItem("offerFormData", JSON.stringify(savedOffer));
-      router.push("/plans");
-    } catch (error) {
-      console.error("Failed to save offer:", error);
-      alert("Failed to save offer. Please try again.");
-    }
+  const handlePurchaseOffer = () => {
+    console.log("Offer details:", formData);
+    // You can add any additional logic for handling the purchase here
+    router.push("/plans");
   };
 
   return (
-    <div className="rounded-lg bg-white p-6 shadow-lg">
-      <h2 className="mb-4 text-2xl font-bold">PDF Preview</h2>
-      {pdfPreview ? (
-        <img src={pdfPreview} alt="PDF Preview" className="w-full h-auto" />
-      ) : (
-        <p>Loading preview...</p>
-      )}
+    <div>
+      <h2 className="mb-4 text-2xl font-bold">Offer Summary</h2>
+	  <div className="rounded-lg bg-white p-6 shadow-lg">
+      <div className="scrollable-container">
+        <h2 className="font-bold text-center mb-10">Offer to Purchase Real Estate</h2>
+        <p className="font-bold mb-5">THIS OFFER TO PURCHASE REAL ESTATE (the "Offer")</p>
+        <p className="font-bold mb-5">IS MADE BY:</p>
+        <p className="text-center mb-0">{formData['name-buyer-0']} of {formData['address-buyer-0']}</p>
+        <p className="text-center mb-10">(the "Buyer")</p>
+        <p className="font-bold text-right mb-5">OF THE FIRST PART</p>
+        <p className="font-bold text-center mb-5">- TO -</p>
+        <p className="text-center mb-0">{formData['name-seller-0']} of {formData['address-seller-0']}</p>
+        <p className="text-center mb-10">(the "Seller")</p>
+        <p className="font-bold text-right mb-15">OF THE SECOND PART</p>
+        
+        <h3 className="mb-10 ">Background</h3>
+        <p className="mb-10">The Buyer wishes to submit an offer to purchase a certain completed home from the Seller under the terms stated below.</p>
+        <p className="mb-15"><strong>IN CONSIDERATION OF</strong> and as a condition of the Seller selling the Property and the Buyer purchasing the Property (collectively the "Parties") and other valuable consideration the receipt of which is hereby acknowledged, the Parties to this Offer to Purchase Real Estate agree as follows:</p>
+        
+        <ol>
+          <li>
+            <h3 className="mb-10">Real Property</h3>
+            <p className="mb-15">The Property is located at: {formData['property-address']}. The legal land description is as follows: {formData['legal-land-description'] || 'N/A'}. All Property included within this Offer is referred to as the "Property".</p>
+          </li>
+          <li>
+            <h3 className="mb-10">Chattels, Fixtures & Improvements</h3>
+            <p className="mb-15">The following chattels, fixtures, and improvements are to be included as part of the sale of the Property:</p>
+            <p className="mb-15">{formData['additional-features-text'] || 'N/A'}</p>
+          </li>
+          <li>
+            <h3 className="mb-10">Sales Price</h3>
+            <p className="mb-10">The total purchase price of ${Number(formData['purchasePrice'] || 0).toLocaleString()} (the "Purchase Price") that is to be paid for the Property by the Buyer is payable as follows:</p>
+            <p className="ml-20 mb-10">a. The initial earnest money deposit (the "Deposit") accompanying this offer is ${formData['depositAmount']}. The Deposit will be paid by {formData['depositMethod']} on or before {formData['depositDueDate']}. The Deposit will be held in escrow by {formData['escrowAgentName']} until the sale is closed, at which time this money will be credited to the Buyer, or until this Offer is otherwise terminated; and</p>
+            <p className="ml-20 mb-15">b. The balance of the Purchase Price will be paid in cash or equivalent in financing at closing unless otherwise provided in this Offer. The balance will be subject to adjustments.</p>
+          </li>
+          {/* Add more list items as needed */}
+        </ol>
+        
+        <h3 className="mb-10 text-center">Buyer's Offer</h3>
+        <p className="mb-15">This is an offer to purchase the Property on the above terms and conditions. The Seller has the right to continue to offer the Property for sale and to accept any other offer at any time prior to acceptance by the Seller. If the Seller does not accept this offer from the Buyer by {formData['acceptanceDeadline']}, this offer will lapse and become of no force or effect.</p>
+        
+        <p className="mb-5">Buyer's Signature: __________________________</p>
+        <p className="mb-5">Buyer's Name: {formData['name-buyer-0']}</p>
+        <p className="mb-5">Address: {formData['address-buyer-0']}</p>
+        <p className="mb-5">Date: ____________________________</p>
+        <p className="mb-20">Email: {formData['email']}</p>
+      </div>
+      
       <button
         className="mt-6 rounded bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-700"
         onClick={handlePurchaseOffer}
       >
         Purchase My Offer
       </button>
+	  </div>
     </div>
   );
 };
 
-export default PDFPreview;
+export default Step5;
