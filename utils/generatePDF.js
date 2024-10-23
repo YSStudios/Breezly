@@ -22,8 +22,8 @@ const generatePDF = async (formData) => {
   // Add the new styles
   const styles = `
     <style>
-      body { font-family: Times New Roman, serif; font-size: 17px; line-height: 1.5; }
-      .container { padding: 20px; }
+      body { }
+      .container {  }
       .text-center { text-align: center; }
       .text-right { text-align: right; }
       .mb-5 { margin-bottom: 5px; }
@@ -282,8 +282,20 @@ const generatePDF = async (formData) => {
     );
   }
 
+  // Construct the filename using the property address
+  const propertyAddress = safeGet(formData, 'property-address', 'Property'); // Default to 'Property' if not found
+  const filename = `Offer to Purchase ${propertyAddress}.pdf`; // Constructed filename
+
   // Generate PDF blob
   const pdfBlob = pdf.output('blob');
+
+  // Create a link element to trigger the download
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(pdfBlob);
+  link.download = filename; // Use the constructed filename
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 
   // Remove the container from the DOM
   document.body.removeChild(container);
