@@ -10,6 +10,7 @@ import { Container } from "../Container";
 import CartPullout from "../Cartpullout";
 import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { useCart } from "contexts/CartContext";
+import { RectangleGroupIcon } from "@heroicons/react/24/outline";
 
 export default function NavBar({ session }: { session: Session | null }) {
   const { SignInModal, setShowSignInModal } = useSignInModal();
@@ -57,9 +58,16 @@ export default function NavBar({ session }: { session: Session | null }) {
                 className="mr-2 rounded-sm"
               ></Image>
             </Link>
+
             <div className="flex items-center">
               {session ? (
                 <>
+                  <Link
+                    href="/dashboard"
+                    className="mr-4 rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+                  >
+                    Dashboard
+                  </Link>
                   <button
                     onClick={() => setIsCartOpen(true)}
                     className="relative mr-4 p-2 text-gray-600 hover:text-gray-900"
