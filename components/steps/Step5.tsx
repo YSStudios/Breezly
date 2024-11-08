@@ -1,4 +1,5 @@
-import React from "react";
+// components/Step5.tsx
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormData } from "../types";
 
@@ -9,12 +10,33 @@ interface Step5Props {
 
 const Step5: React.FC<Step5Props> = ({ formData, formId }) => {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleDownloadOffer = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ test: true }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send email");
+      }
+
+      alert("Offer has been sent via email!");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Failed to send offer via email. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handlePurchaseOffer = () => {
-    // Save the form data to localStorage
-    localStorage.setItem(`form_${formId}`, JSON.stringify(formData));
-
-    // Navigate to the plans page with the formId
     router.push(`/plans?formId=${formId}`);
   };
 
@@ -99,7 +121,6 @@ const Step5: React.FC<Step5Props> = ({ formData, formId }) => {
                 this Offer. The balance will be subject to adjustments.
               </p>
             </li>
-            {/* Add more list items as needed */}
           </ol>
 
           <h3 className="mb-10 text-center">Buyer&apos;s Offer</h3>
@@ -121,12 +142,26 @@ const Step5: React.FC<Step5Props> = ({ formData, formId }) => {
           <p className="mb-20">Email: {formData["email"]}</p>
         </div>
 
-        <button
-          className="mt-6 rounded bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-700"
-          onClick={handlePurchaseOffer}
-        >
-          Purchase My Offer
-        </button>
+        <div className="mt-6 flex gap-4">
+          <button
+            className={`rounded px-4 py-2 font-bold text-white ${
+              isLoading
+                ? "cursor-not-allowed bg-blue-300"
+                : "bg-blue-500 hover:bg-blue-700"
+            }`}
+            onClick={handleDownloadOffer}
+            disabled={isLoading}
+          >
+            {isLoading ? "Sending..." : "Download My Offer"}
+          </button>
+
+          <button
+            className="rounded bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-700"
+            onClick={handlePurchaseOffer}
+          >
+            Purchase My Offer
+          </button>
+        </div>
       </div>
     </div>
   );
