@@ -13,6 +13,9 @@ const Step5: React.FC<Step5Props> = ({ formData, formId }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDownloadOffer = async () => {
+    console.log('Template:', 'offer-sent');
+    console.log('Form Data:', formData);
+    
     setIsLoading(true);
     try {
       const response = await fetch("/api/send-email", {
@@ -20,10 +23,12 @@ const Step5: React.FC<Step5Props> = ({ formData, formId }) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ test: true }),
+        body: JSON.stringify({ template: "offer-sent", data: formData }),
       });
 
       if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Email API Error:', errorData);
         throw new Error("Failed to send email");
       }
 
