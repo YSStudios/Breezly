@@ -1,45 +1,19 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useMemo } from "react";
 import useScroll from "@/lib/hooks/use-scroll";
 import { useSignInModal } from "./sign-in-modal";
 import UserDropdown from "./user-dropdown";
 import { Session } from "next-auth";
 import { Container } from "../Container";
-import CartPullout from "../Cartpullout";
-import { ShoppingCartIcon } from "@heroicons/react/24/outline";
-import { useCart } from "contexts/CartContext";
-import { RectangleGroupIcon } from "@heroicons/react/24/outline";
 
 export default function NavBar({ session }: { session: Session | null }) {
   const { SignInModal, setShowSignInModal } = useSignInModal();
   const scrolled = useScroll(50);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const { cartItems, updateCart } = useCart();
-
-  const cartItemCount = useMemo(
-    () => cartItems.reduce((total, item) => total + item.quantity, 0),
-    [cartItems],
-  );
-
-  const removeItem = async (itemId: string) => {
-    try {
-      const response = await fetch(`/api/cart?id=${itemId}`, {
-        method: "DELETE",
-      });
-      if (response.ok) {
-        await updateCart();
-      }
-    } catch (error) {
-      console.error("Error removing item from cart:", error);
-    }
-  };
 
   return (
     <>
       <SignInModal />
-      <CartPullout isOpen={isCartOpen} setIsOpen={setIsCartOpen} />
       <div
         className={`fixed top-0 flex w-full justify-center ${
           scrolled
@@ -68,17 +42,6 @@ export default function NavBar({ session }: { session: Session | null }) {
                   >
                     Dashboard
                   </Link>
-                  <button
-                    onClick={() => setIsCartOpen(true)}
-                    className="relative mr-4 p-2 text-gray-600 hover:text-gray-900"
-                  >
-                    <ShoppingCartIcon className="h-6 w-6" />
-                    {cartItemCount > 0 && (
-                      <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                        {cartItemCount}
-                      </span>
-                    )}
-                  </button>
                   <UserDropdown session={session} />
                 </>
               ) : (

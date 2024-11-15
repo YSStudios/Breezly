@@ -1,34 +1,30 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import {
-  LockClosedIcon,
-  DocumentTextIcon,
-  HomeIcon,
-} from "@heroicons/react/24/solid";
-import { useCart } from "contexts/CartContext";
 import Select from "react-select";
 import countryList from "react-select-country-list";
 import { usStates } from "@/app/checkout/states";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
-
-// Add this type definition after your imports
-type CountryOption = {
-  label: string;
-  value: string;
-};
+import { useCart } from "contexts/CartContext";
+import { ChevronDownIcon } from "lucide-react";
 
 interface FormData {
   email: string;
   firstName: string;
   lastName: string;
   address: string;
-  country: CountryOption | null;
+  country: { label: string; value: string } | null;
   state: { label: string; value: string } | null;
   zip: string;
   phone: string;
+  cardLast4?: string;
+}
+
+interface BillingInfo {
+  firstName: string;
+  lastName: string;
+  zipCode: string;
 }
 
 const CheckoutForm = () => {
@@ -51,36 +47,32 @@ const CheckoutForm = () => {
     state: null,
     zip: "",
     phone: "",
+    cardLast4: "8727", // Example card number display
+  });
+
+  const [billingInfo, setBillingInfo] = useState<BillingInfo>({
+    firstName: "",
+    lastName: "",
+    zipCode: "",
   });
 
   useEffect(() => {
-    console.log("CheckoutForm useEffect triggered");
-    console.log("Authentication status:", status);
-    console.log("Cart items:", cartItems);
     if (status === "authenticated") {
       fetchClientSecret();
     }
   }, [status, cartItems]);
 
   const calculateTotal = () => {
-    console.log("Cart items:", cartItems);
-    const total = cartItems.reduce((sum, item) => {
+    return cartItems.reduce((sum, item) => {
       const itemPrice =
         typeof item.price === "string" ? parseFloat(item.price) : item.price;
-      console.log(
-        `Item: ${item.name}, Price: ${itemPrice}, Quantity: ${item.quantity}`,
-      );
       return sum + (isNaN(itemPrice) ? 0 : itemPrice) * item.quantity;
     }, 0);
-    console.log("Calculated total:", total);
-    return total;
   };
 
   const fetchClientSecret = async () => {
     try {
       const total = calculateTotal();
-      console.log("Calculated total for PaymentIntent:", total);
-
       if (total <= 0) {
         setError("Your cart is empty. Please add items before checkout.");
         return;
@@ -89,7 +81,7 @@ const CheckoutForm = () => {
       const response = await fetch("/api/create-payment-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: Math.round(total * 100) }), // Stripe expects amount in cents
+        body: JSON.stringify({ amount: Math.round(total * 100) }),
       });
 
       if (!response.ok) {
@@ -102,8 +94,6 @@ const CheckoutForm = () => {
       }
 
       const data = await response.json();
-      console.log("Response from create-payment-intent:", data);
-
       if (data.clientSecret) {
         setClientSecret(data.clientSecret);
       } else {
@@ -111,21 +101,20 @@ const CheckoutForm = () => {
       }
     } catch (err) {
       console.error("Error fetching client secret:", err);
-      if (err instanceof Error) {
-        setError(`Failed to initialize payment: ${err.message}`);
-      } else {
-        setError("Failed to initialize payment: An unknown error occurred");
-      }
+      setError(
+        err instanceof Error
+          ? `Failed to initialize payment: ${err.message}`
+          : "Failed to initialize payment",
+      );
     }
   };
 
-  const formatPrice = (price: number | string): string => {
-    const numPrice = typeof price === "string" ? parseFloat(price) : price;
-    return isNaN(numPrice) ? "0.00" : numPrice.toFixed(2);
-  };
-
-  const handleRemoveItem = async (itemId: string) => {
-    await removeFromCart(itemId);
+  const handleBillingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setBillingInfo((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -135,6 +124,11 @@ const CheckoutForm = () => {
 
   const handleSelectChange = (name: keyof FormData) => (option: any) => {
     setFormData((prev) => ({ ...prev, [name]: option }));
+  };
+
+  const formatPrice = (price: number | string): string => {
+    const numPrice = typeof price === "string" ? parseFloat(price) : price;
+    return isNaN(numPrice) ? "0.00" : numPrice.toFixed(2);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -155,301 +149,329 @@ const CheckoutForm = () => {
       return;
     }
 
-    const { error, paymentIntent } = await stripe.confirmCardPayment(
-      clientSecret,
-      {
-        payment_method: {
-          card: cardElement,
-          billing_details: {
-            name: `${formData.firstName} ${formData.lastName}`,
-            email: formData.email,
-            address: {
-              line1: formData.address,
-              country: formData.country?.value,
-              state: formData.state?.value,
-              postal_code: formData.zip,
+    try {
+      const { error, paymentIntent } = await stripe.confirmCardPayment(
+        clientSecret,
+        {
+          payment_method: {
+            card: cardElement,
+            billing_details: {
+              name: `${billingInfo.firstName} ${billingInfo.lastName}`,
+              email: formData.email,
+              address: {
+                line1: formData.address,
+                postal_code: billingInfo.zipCode,
+                state: formData.state?.value,
+                country: formData.country?.value,
+              },
+              phone: formData.phone,
             },
-            phone: formData.phone,
           },
         },
-      },
-    );
+      );
 
-    if (error) {
-      console.error("Payment confirmation error:", error);
-      setError(`Payment failed: ${error.message}`);
-      setProcessing(false);
-    } else if (paymentIntent && paymentIntent.status === "succeeded") {
-      console.log("Payment succeeded:", paymentIntent);
-      alert("Payment successful!");
-      // Here you would typically clear the cart and redirect to a confirmation page
-    } else {
-      console.error("Unexpected payment result:", paymentIntent);
-      setError("An unexpected error occurred. Please try again.");
+      if (error) {
+        throw error;
+      }
+
+      if (paymentIntent && paymentIntent.status === "succeeded") {
+        alert("Payment successful!");
+        // Handle post-payment success (clear cart, redirect, etc.)
+      }
+    } catch (err) {
+      console.error("Payment error:", err);
+      setError(err instanceof Error ? err.message : "Payment failed");
+    } finally {
       setProcessing(false);
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row md:space-x-8">
-        <div className="md:w-2/3">
-          <h1 className="mb-4 text-2xl font-bold">Checkout</h1>
-          <form onSubmit={handleSubmit}>
-            <div className="mb-6">
-              <h2 className="mb-4 text-xl font-semibold">
-                Contact Information
-              </h2>
-              <div className="mb-4">
-                <label
-                  htmlFor="email"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-                  required
-                />
+    <div className="min-h-screen bg-gray-50 py-4">
+      <div className="mx-auto max-w-[1300px] px-4">
+        <div className="flex flex-row gap-8">
+          {/* Main Checkout Column */}
+          <div className="max-w-[800px] flex-grow space-y-4">
+            <div className="rounded border border-gray-200 bg-white p-4">
+              <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-lg font-medium">Sending offer to</h2>
+                <button className="text-sm text-teal-600 hover:text-teal-700 hover:underline">
+                  Change
+                </button>
+              </div>
+
+              <div className="rounded bg-gray-50 p-4">
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-sm text-gray-500">Recipient</div>
+                    <div className="font-medium">
+                      {formData.firstName} {formData.lastName}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-sm text-gray-500">Email</div>
+                    <div className="font-medium">
+                      {formData.email || "Not provided"}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-sm text-gray-500">Property</div>
+                    <div className="font-medium">
+                      {formData.propertyAddress || "Not provided"}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="mb-6">
-              <h2 className="mb-4 text-xl font-semibold">Shipping Address</h2>
-              <div className="mb-4 grid grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="firstName"
-                    className="mb-1 block text-sm font-medium text-gray-700"
-                  >
-                    First name
-                  </label>
-                  <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="lastName"
-                    className="mb-1 block text-sm font-medium text-gray-700"
-                  >
-                    Last name
-                  </label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-                    required
-                  />
-                </div>
+            {/* Payment Method */}
+            <div className="rounded border border-gray-200 bg-white p-4">
+              <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-lg font-medium">
+                  Paying with Visa {formData.cardLast4}
+                </h2>
+                <button className="text-sm text-teal-600 hover:text-teal-700 hover:underline">
+                  Change
+                </button>
               </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="address"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Address
-                </label>
-                <input
-                  type="text"
-                  id="address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="country"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Country
-                </label>
-                <Select
-                  options={countries}
-                  value={formData.country}
-                  onChange={handleSelectChange("country")}
-                  className="rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                />
-              </div>
-              <div className="mb-4 grid grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="state"
-                    className="mb-1 block text-sm font-medium text-gray-700"
-                  >
-                    State
-                  </label>
-                  <Select
-                    options={usStates}
-                    value={formData.state}
-                    onChange={handleSelectChange("state")}
-                    className="rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="zip"
-                    className="mb-1 block text-sm font-medium text-gray-700"
-                  >
-                    ZIP code
-                  </label>
-                  <input
-                    type="text"
-                    id="zip"
-                    name="zip"
-                    value={formData.zip}
-                    onChange={handleInputChange}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="phone"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Phone number
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <h2 className="mb-4 text-xl font-semibold">
-                Payment Information
-              </h2>
-              <div className="mb-4">
-                <label
-                  htmlFor="card-element"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Credit or debit card
-                </label>
-                <div className="mt-1">
+              <div className="space-y-4">
+                <div className="rounded border border-gray-200 pt-4">
                   <CardElement
                     options={{
                       style: {
                         base: {
-                          fontSize: "16px",
+                          fontSize: "14px",
                           color: "#424770",
-                          "::placeholder": {
-                            color: "#aab7c4",
-                          },
-                        },
-                        invalid: {
-                          color: "#9e2146",
+                          "::placeholder": { color: "#aab7c4" },
                         },
                       },
                     }}
                   />
                 </div>
-              </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={!stripe || processing || !clientSecret}
-              className="w-full rounded bg-indigo-600 px-4 py-2 text-white transition duration-200 hover:bg-indigo-700 disabled:opacity-50"
-            >
-              {processing ? "Processing..." : "Pay Now"}
-            </button>
-            {error && <div className="mt-4 text-red-500">{error}</div>}
-          </form>
-        </div>
-
-        <div className="mt-8 md:mt-0 md:w-1/3">
-          <div className="rounded-lg bg-white p-6 shadow-md">
-            <div className="mb-4 flex items-center">
-              <DocumentTextIcon className="mr-2 h-6 w-6 text-gray-500" />
-              <h2 className="text-xl font-semibold">Order Summary</h2>
-            </div>
-            {cartItems.map((item) => (
-              <div key={item.id} className="mb-4 border-b pb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-medium">{item.name}</h3>
-                    <p className="text-sm text-gray-500">{item.description}</p>
+                {/* Billing Information */}
+                <div className="border-t pt-4">
+                  <div className="mb-3 text-sm font-medium">Name on card</div>
+                  <div className="mb-4 grid grid-cols-2 gap-4">
+                    <div>
+                      <input
+                        type="text"
+                        name="firstName"
+                        placeholder="First name"
+                        value={billingInfo.firstName}
+                        onChange={handleBillingChange}
+                        className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        name="lastName"
+                        placeholder="Last name"
+                        value={billingInfo.lastName}
+                        onChange={handleBillingChange}
+                        className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        required
+                      />
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-semibold">
-                      ${formatPrice(item.price)}
-                    </p>
-                    <button
-                      onClick={() => handleRemoveItem(item.id)}
-                      className="text-sm text-red-500 hover:text-red-700"
-                    >
-                      Remove
-                    </button>
+                  <div className="mb-4">
+                    <div className="mb-1 text-sm font-medium">ZIP Code</div>
+                    <input
+                      type="text"
+                      name="zipCode"
+                      placeholder="ZIP Code"
+                      value={billingInfo.zipCode}
+                      onChange={handleBillingChange}
+                      className="w-48 rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      required
+                    />
                   </div>
                 </div>
-                {item.planDetails && (
-                  <div className="mt-2">
-                    <h4 className="text-sm font-medium">Plan Features:</h4>
-                    <ul className="list-inside list-disc text-sm">
-                      {item.planDetails.features.map((feature, index) => (
-                        <li key={index}>{feature}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {item.offerDetails && (
-                  <div className="mt-2">
-                    <h4 className="text-sm font-medium">Offer Details:</h4>
-                    <p className="text-sm">
-                      Property: {item.offerDetails.propertyAddress}
-                    </p>
-                    <p className="text-sm">
-                      Type: {item.offerDetails.propertyType}
-                    </p>
-                    <p className="text-sm">
-                      Purchase Price: $
-                      {formatPrice(item.offerDetails.purchasePrice)}
-                    </p>
-                    <p className="text-sm">
-                      Closing Date: {item.offerDetails.closingDate}
-                    </p>
-                  </div>
-                )}
+
+                <button className="text-sm text-teal-600 hover:text-teal-700 hover:underline">
+                  Use a gift card, voucher, or promo code
+                </button>
               </div>
-            ))}
-            <div className="mb-4 flex items-center justify-between border-t pt-4">
-              <span className="text-base font-medium">Subtotal</span>
-              <span className="text-base font-semibold">
-                ${formatPrice(calculateTotal())}
-              </span>
             </div>
-            <div className="mb-4 flex items-center justify-between border-t pt-4">
-              <span className="text-base font-medium">Total</span>
-              <span className="text-xl font-bold">
-                ${formatPrice(calculateTotal())}
-              </span>
+
+            <div className="rounded border border-gray-200 bg-white p-4">
+              <h2 className="mb-4 text-lg font-medium">Form Preview</h2>
+
+              <div className="space-y-4">
+                {/* Contact Information */}
+                <div className="rounded bg-gray-50 p-4">
+                  <h3 className="mb-2 text-sm font-medium text-gray-600">
+                    Contact Information
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm text-gray-500">Email</div>
+                      <div className="font-medium">
+                        {formData.email || "Not provided"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-500">Phone</div>
+                      <div className="font-medium">
+                        {formData.phone || "Not provided"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Shipping Address */}
+                <div className="rounded bg-gray-50 p-4">
+                  <h3 className="mb-2 text-sm font-medium text-gray-600">
+                    Shipping Address
+                  </h3>
+                  <div className="space-y-2">
+                    <div>
+                      <div className="text-sm text-gray-500">Name</div>
+                      <div className="font-medium">
+                        {formData.firstName} {formData.lastName}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-500">Address</div>
+                      <div className="font-medium">{formData.address}</div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <div className="text-sm text-gray-500">State</div>
+                        <div className="font-medium">
+                          {formData.state?.label || "Not selected"}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-500">Country</div>
+                        <div className="font-medium">
+                          {formData.country?.label || "Not selected"}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-500">ZIP Code</div>
+                        <div className="font-medium">{formData.zip}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* Order Items */}
+                {cartItems.map((item) => (
+                  <div key={item.id} className="rounded border bg-white p-4">
+                    <div className="flex gap-4">
+                      <img
+                        src="/api/placeholder/96/96"
+                        alt={item.name}
+                        className="h-24 w-24 object-contain"
+                      />
+                      <div className="flex-grow">
+                        <h3 className="mb-1 font-medium">{item.name}</h3>
+                        <div className="mb-1 inline-block bg-red-600 px-2 py-0.5 text-xs text-white">
+                          33% off
+                        </div>
+                        <div className="mb-1 text-xs text-red-600">
+                          Limited time deal
+                        </div>
+                        <div className="text-lg font-medium">
+                          ${formatPrice(item.price)}
+                        </div>
+                        <div className="mt-1 flex items-center gap-2">
+                          <span className="text-sm">
+                            Quantity: {item.quantity}
+                          </span>
+                          <button className="text-sm text-teal-600 hover:text-teal-700 hover:underline">
+                            Change
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {/* Bottom Info */}
+            <div className="rounded border border-gray-200 bg-white p-4">
+              <div className="space-y-4 text-sm text-gray-600">
+                <p>
+                  Do you need help? Explore our{" "}
+                  <a href="#" className="text-teal-600 hover:underline">
+                    Help pages
+                  </a>{" "}
+                  or{" "}
+                  <a href="#" className="text-teal-600 hover:underline">
+                    contact us
+                  </a>
+                </p>
+
+                <p>
+                  For an item sold by Breezly When you click the "Place your
+                  order" button, we'll send you an email message acknowledging
+                  receipt of your order.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Order Summary Column */}
+          <div className="w-[300px]">
+            <div className="sticky top-4 rounded border border-gray-200 bg-white p-4">
+              <button
+                onClick={handleSubmit}
+                disabled={!stripe || processing || !clientSecret}
+                className="mb-3 w-full rounded bg-yellow-400 px-4 py-2 text-sm font-medium hover:bg-yellow-500"
+              >
+                Place your order
+              </button>
+
+              <p className="mb-6 text-xs">
+                By placing your order, you agree to Amazon's{" "}
+                <a href="#" className="text-teal-600 hover:underline">
+                  privacy notice
+                </a>{" "}
+                and{" "}
+                <a href="#" className="text-teal-600 hover:underline">
+                  conditions of use
+                </a>
+                .
+              </p>
+
+              <div className="space-y-2">
+                <h3 className="mb-3 border-b pb-2 text-lg font-bold">
+                  Order Summary
+                </h3>
+                <div className="flex justify-between text-sm">
+                  <span>Items:</span>
+                  <span>${formatPrice(calculateTotal())}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Shipping & handling:</span>
+                  <span>$2.99</span>
+                </div>
+                <div className="flex justify-between text-sm text-green-700">
+                  <span>Free Shipping:</span>
+                  <span>-$2.99</span>
+                </div>
+                <div className="flex justify-between border-b pb-2 text-sm">
+                  <span>Estimated tax to be collected:</span>
+                  <span>$2.26</span>
+                </div>
+                <div className="flex justify-between pt-1 text-lg font-bold">
+                  <span>Order total:</span>
+                  <span>${formatPrice(calculateTotal() + 2.26)}</span>
+                </div>
+              </div>
+            </div>
+
+            {error && (
+              <div className="mt-4 rounded bg-red-50 p-4 text-red-700">
+                {error}
+              </div>
+            )}
           </div>
         </div>
       </div>

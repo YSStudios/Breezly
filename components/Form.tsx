@@ -12,7 +12,6 @@ import Step5 from "./steps/Step5";
 import { FormData } from "./types";
 import generatePDF from "../utils/generatePDF";
 import SavingPopup from "./SavingPopup";
-import LoadingSpinner from "./LoadingSpinner";
 
 const DEBUG = process.env.NODE_ENV === "development";
 
@@ -271,6 +270,34 @@ const Form: React.FC = () => {
       console.error("No formId available");
     }
   };
+  const handleDownloadOffer = async () => {
+    console.log("Template:", "offer-sent");
+    console.log("Form Data:", formData);
+
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ template: "offer-sent", data: formData }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Email API Error:", errorData);
+        throw new Error("Failed to send email");
+      }
+
+      alert("Offer has been sent via email!");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Failed to send offer via email. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -335,24 +362,19 @@ const Form: React.FC = () => {
               <div></div>
             )}
             {currentStep === 5 ? (
-              <button
-                onClick={handleGeneratePDF}
-                className="flex items-center rounded-full bg-purple-500 px-6 py-3 font-bold text-white transition-colors duration-300 hover:bg-purple-600"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="mr-2 h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
+              <div className="mt-6 flex gap-4">
+                <button
+                  className={`rounded px-4 py-2 font-bold text-white ${
+                    isLoading
+                      ? "cursor-not-allowed bg-blue-300"
+                      : "bg-blue-500 hover:bg-blue-700"
+                  }`}
+                  onClick={handleDownloadOffer}
+                  disabled={isLoading}
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                Download Offer
-              </button>
+                  {isLoading ? "Sending..." : "Download My Offer"}
+                </button>
+              </div>
             ) : (
               <div className="relative">
                 <button
