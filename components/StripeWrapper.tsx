@@ -4,29 +4,47 @@ import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { ReactNode, useEffect, useState } from "react";
 
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
-);
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+
+const appearance = {
+  theme: 'stripe',
+  variables: {
+    colorPrimary: '#0f766e',
+  },
+};
 
 export default function StripeWrapper({ children }: { children: ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string>("");
 
   useEffect(() => {
-    if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
-      console.error("Stripe publishable key is not set");
-      setError("Stripe configuration error");
-    }
-    setMounted(true);
+    // Create PaymentIntent as soon as the component loads
+    fetch("/api/create-payment-intent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: 2000 }), // $20.00
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.clientSecret) {
+          setClientSecret(data.clientSecret);
+        }
+      });
   }, []);
 
-  if (!mounted) {
-    return null;
+  if (!clientSecret) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-teal-600 border-t-transparent"></div>
+          <p className="text-gray-600">Preparing checkout...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  return <Elements stripe={stripePromise}>{children}</Elements>;
+  return (
+    <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
+      {children}
+    </Elements>
+  );
 }
