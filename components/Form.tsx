@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
-import Sidebar, { substepNames } from "./Sidebar";
+import Sidebar, { substepNames, stepTitles } from "./Sidebar";
 import Step1 from "./steps/Step1";
 import Step2 from "./steps/Step2";
 import Step3 from "./steps/Step3";
@@ -74,16 +74,23 @@ const Form: React.FC = () => {
   useEffect(() => {
     const initForm = async () => {
       const urlFormId = searchParams?.get("id");
+      console.log("URL Form ID:", urlFormId); // Add debug log
+      
       if (urlFormId) {
+        console.log("Using URL Form ID:", urlFormId);
         setFormId(urlFormId);
         await fetchFormData(urlFormId);
       } else {
         const storedFormId = localStorage.getItem("currentFormId");
+        console.log("Stored Form ID:", storedFormId); // Add debug log
+        
         if (storedFormId) {
+          console.log("Using stored Form ID:", storedFormId);
           setFormId(storedFormId);
           await fetchFormData(storedFormId);
         } else {
           const newFormId = uuidv4();
+          console.log("Generated new Form ID:", newFormId);
           setFormId(newFormId);
           localStorage.setItem("currentFormId", newFormId);
         }
@@ -99,16 +106,31 @@ const Form: React.FC = () => {
   }, [formData]);
 
   const saveFormData = () => {
-    if (formId) {
-      localStorage.setItem(`form_${formId}`, JSON.stringify(formData));
-      console.log("Saved complete form data:", formData);
+    if (!formId) {
+      console.error("No formId available for saving");
+      return;
+    }
+
+    console.log("Saving form data with ID:", formId);
+    localStorage.setItem(`form_${formId}`, JSON.stringify(formData));
+    
+    if (session) {
+      console.log("Saving to server with ID:", formId);
+      fetch('/api/form/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ formId, data: formData }),
+      }).catch(error => console.error('Error saving form data:', error));
     }
   };
 
   const handleInputChange = (name: string, value: any) => {
+    console.log(`Saving form data - ${name}:`, value);
     setFormData((prevData) => {
       const newData = { ...prevData, [name]: value };
-      console.log("Updated form data:", newData);
+      console.log("Updated complete form data:", newData);
       return newData;
     });
   };
@@ -120,13 +142,21 @@ const Form: React.FC = () => {
 
   const getPreviousSubstepName = (): string | null => {
     if (currentSubstep > 1) {
+      // If we're not on the first substep of current step
       return substepNames[currentStep]?.[currentSubstep - 1] || null;
     } else if (currentStep > 1) {
-      const previousStepSubsteps = substepNames[currentStep - 1];
-      const lastSubstepOfPreviousStep = Math.max(
-        ...Object.keys(previousStepSubsteps).map(Number),
-      );
-      return previousStepSubsteps[lastSubstepOfPreviousStep] || null;
+      // If we're on first substep of any step after step 1
+      const previousStep = currentStep - 1;
+      // Use stepTitles for steps without substeps
+      if (Object.keys(substepNames[previousStep]).length === 1 && !substepNames[previousStep][1]) {
+        return stepTitles[previousStep - 1];
+      } else {
+        // Get the last substep of the previous step
+        const lastSubstepNumber = Math.max(
+          ...Object.keys(substepNames[previousStep]).map(Number)
+        );
+        return substepNames[previousStep][lastSubstepNumber] || null;
+      }
     }
     return null;
   };
@@ -146,8 +176,11 @@ const Form: React.FC = () => {
     if (currentSubstep > 1) {
       setCurrentSubstep(currentSubstep - 1);
     } else if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-      setCurrentSubstep(getMaxSubsteps(currentStep - 1));
+      const previousStep = currentStep - 1;
+      setCurrentStep(previousStep);
+      // Get the max substeps for the previous step and set it as the current substep
+      const maxSubstepsForPreviousStep = getMaxSubsteps(previousStep);
+      setCurrentSubstep(maxSubstepsForPreviousStep);
     }
   };
 
@@ -258,8 +291,10 @@ const Form: React.FC = () => {
   };
 
   const handlePropertySelection = (propertyData: any) => {
+    console.log("Selected property data:", propertyData);
     setFormData((prevData) => ({
       ...prevData,
+      "property-address": propertyData.address,
       "property-type": propertyData.value,
     }));
     nextSubstep();
@@ -269,8 +304,8 @@ const Form: React.FC = () => {
     if (selectedProperty) {
       setFormData((prevData) => ({
         ...prevData,
-        propertyAddress: selectedProperty.address,
-        propertyType: selectedProperty.type,
+        "property-address": selectedProperty.address,
+        "property-type": selectedProperty.type,
         // Add any other relevant property data
       }));
       nextSubstep();
@@ -279,14 +314,14 @@ const Form: React.FC = () => {
   };
 
   const handleComplete = () => {
-    saveFormData();
-    if (formId) {
-      console.log("Navigating to plans page with formId:", formId);
-      console.log("Complete form data being passed:", formData);
-      router.push(`/plans?formId=${formId}`);
-    } else {
+    if (!formId) {
       console.error("No formId available");
+      return;
     }
+    
+    saveFormData();
+    console.log("Navigating to plans page with formId:", formId);
+    router.push(`/plans?formId=${formId}`);
   };
   const handleDownloadOffer = async () => {
     console.log("Template:", "offer-sent");
@@ -317,6 +352,20 @@ const Form: React.FC = () => {
     }
   };
 
+  const renderFormHeader = () => {
+    console.log("Form Data in header:", formData);
+    if (formData["property-address"]) {
+      return (
+        <div className="mb-6 border-gray-200 pb-4">
+          <h2 className="text-xl font-semibold text-gray-800 capitalize">
+            Offer for: {formData["property-address"]}
+          </h2>
+        </div>
+      );
+    }
+    return null;
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -333,9 +382,10 @@ const Form: React.FC = () => {
           </div>
         </div>
         <div className="md:w-3/4">
+          {renderFormHeader()}
           {getPreviousSubstepName() && (
             <button
-              onClick={() => handleSetStep(currentStep, currentSubstep - 1)}
+              onClick={prevSubstep}
               className="mb-4 flex items-center text-emerald-600 hover:text-emerald-700"
             >
               <svg

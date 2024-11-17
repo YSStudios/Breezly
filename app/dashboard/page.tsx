@@ -29,6 +29,7 @@ const Dashboard = () => {
           const response = await fetch("/api/form/list");
           if (response.ok) {
             const data = await response.json();
+            console.log('Fetched forms data:', data);
             setSavedForms(data);
           } else {
             console.error("Failed to fetch forms:", response.statusText);
@@ -177,12 +178,16 @@ const Dashboard = () => {
                     <tr key={form.id} className="hover:bg-gray-50">
                       <td className="whitespace-nowrap px-6 py-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {form.data["property-address"] || "N/A"}
+                          {form.data && typeof form.data === 'object' 
+                            ? form.data["property-address"] || "N/A"
+                            : "N/A"}
                         </div>
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">
                         <div className="text-sm text-gray-500">
-                          {form.data["property-location"] || "N/A"}
+                          {form.data && typeof form.data === 'object'
+                            ? form.data["property-location"] || "N/A"
+                            : "N/A"}
                         </div>
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">

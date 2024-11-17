@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { FormQuestionProps, Option, TextField } from '../types';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title, initialValue, initialTextFieldValues = {} }) => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>(initialValue ? initialValue.split(',') : []);
@@ -95,6 +95,48 @@ const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title, 
     }
   };
 
+  const checkboxVariants = {
+    checked: { 
+      backgroundColor: "#10B981",
+      border: "2px solid #10B981",
+      transition: {
+        duration: 0.4,
+        ease: [0.4, 0, 0.2, 1]
+      }
+    },
+    unchecked: { 
+      backgroundColor: "white",
+      border: "2px solid #D1D5DB",
+      transition: {
+        duration: 0.4,
+        ease: [0.4, 0, 0.2, 1]
+      }
+    }
+  };
+
+  const optionVariants = {
+    checked: {
+      backgroundColor: "rgb(236 253 245)", // emerald-50
+      borderColor: "rgb(16 185 129)", // emerald-500
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15,
+        duration: 0.6
+      }
+    },
+    unchecked: {
+      backgroundColor: "white",
+      borderColor: "rgb(229 231 235)", // gray-200
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15,
+        duration: 0.6
+      }
+    }
+  };
+
   return (
     <motion.div 
       className="space-y-4"
@@ -127,41 +169,91 @@ const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title, 
           className="grid grid-cols-1 md:grid-cols-2 gap-4"
           variants={containerVariants}
         >
-          {question.options.map((option: Option, optionIndex: number) => (
-            <motion.div
-              key={option.value}
-              variants={itemVariants}
-              className={`flex flex-col p-4 border rounded-lg cursor-pointer ${
-                selectedOptions.includes(option.value) ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:bg-gray-50'
-              }`}
-              onClick={() => handleOptionChange(option.value)}
-            >
-              <div className="flex items-start">
-                <input
-                  type={question.multiSelect ? "checkbox" : "radio"}
-                  name={question.id}
-                  value={option.value}
-                  checked={selectedOptions.includes(option.value)}
-                  onChange={() => {}}
-                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 mt-1.5"
-                />
-                <label className="ml-3 flex items-start">
-                  {option.icon && <option.icon className="h-8 w-8 text-emerald-500 mr-2 flex-shrink-0" />}
-                  <span className="text-lg font-medium text-gray-900">{option.label}</span>
-                </label>
-              </div>
-              {selectedOptions.includes(option.value) && option.textFields && (
-                <div className="mt-4">
-                  {option.textFields.map((field, fieldIndex) => (
-                    <div key={fieldIndex} className="mt-2">
-                      {field.label && <label htmlFor={`text-field-${optionIndex}-${fieldIndex}`} className="block font-medium text-gray-700">{field.label}</label>}
-                      {renderTextField(field, fieldIndex)}
-                    </div>
-                  ))}
+          <AnimatePresence>
+            {question.options.map((option: Option, optionIndex: number) => (
+              <motion.div
+                key={option.value}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.4,
+                  ease: [0.4, 0, 0.2, 1],
+                  delay: optionIndex * 0.1
+                }}
+                className="flex flex-col p-4 border-2 rounded-lg cursor-pointer"
+                onClick={() => handleOptionChange(option.value)}
+                style={{
+                  backgroundColor: selectedOptions.includes(option.value) ? "rgb(236 253 245)" : "white",
+                  borderColor: selectedOptions.includes(option.value) ? "rgb(16 185 129)" : "rgb(229 231 235)",
+                }}
+              >
+                <div className="flex items-start">
+                  <motion.div
+                    variants={checkboxVariants}
+                    initial="unchecked"
+                    animate={selectedOptions.includes(option.value) ? "checked" : "unchecked"}
+                    className="relative h-5 w-5 rounded-full flex-shrink-0"
+                  >
+                    <input
+                      type={question.multiSelect ? "checkbox" : "radio"}
+                      name={question.id}
+                      value={option.value}
+                      checked={selectedOptions.includes(option.value)}
+                      onChange={() => {}}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                    {selectedOptions.includes(option.value) && (
+                      <motion.svg
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute inset-0 h-full w-full text-white p-1"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </motion.svg>
+                    )}
+                  </motion.div>
+                  <label className="ml-3 text-lg font-medium text-gray-700 cursor-pointer">
+                    {option.label}
+                  </label>
                 </div>
-              )}
-            </motion.div>
-          ))}
+                {option.textFields && (
+                  <motion.div 
+                    initial={{ height: 0 }}
+                    animate={{ height: selectedOptions.includes(option.value) ? "auto" : 0 }}
+                    transition={{ 
+                      duration: 0.7,
+                      ease: [0.4, 0, 0.2, 1],
+                      delay: 0.2
+                    }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-4">
+                      {option.textFields.map((field, fieldIndex) => (
+                        <div key={fieldIndex} className="mt-2">
+                          {field.label && (
+                            <label 
+                              htmlFor={`text-field-${optionIndex}-${fieldIndex}`} 
+                              className="block text-lg font-medium text-gray-700"
+                            >
+                              {field.label}
+                            </label>
+                          )}
+                          {renderTextField(field, fieldIndex)}
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </motion.div>
       )}
     </motion.div>

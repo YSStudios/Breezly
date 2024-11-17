@@ -16,18 +16,11 @@ const Step2: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
 	}, [onInputChange]);
 
 	const handleInputChange = useCallback((questionId: string, value: string, textFieldValues?: { [key: number]: string }) => {
-		if (questionId === 'address-option' && value === 'now' && textFieldValues) {
-			const propertyAddress = textFieldValues[0]; // Assuming the property address is in the first text field
-			onInputChange('property-address', propertyAddress);
-		} else if (questionId === 'additional-features') {
-			onInputChange(questionId, value);
-			if (value === 'specify' && textFieldValues) {
-				onInputChange('additional-features-text', textFieldValues[0]);
-			}
-		} else if (questionId === 'legal-land-description') {
-			onInputChange(questionId, value);
-			if (value === 'specify' && textFieldValues) {
-				onInputChange('legal-land-description-text', textFieldValues[0]);
+		if (questionId === 'address-option') {
+			onInputChange('address-option', value);
+			if (value === 'now' && textFieldValues && textFieldValues[0]) {
+				onInputChange('property-address', textFieldValues[0]);
+				console.log('Saving property address:', textFieldValues[0]);
 			}
 		} else {
 			onInputChange(questionId, value);
