@@ -370,10 +370,10 @@ const Form: React.FC = () => {
     return <div>Loading...</div>;
   }
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-4 mt-8">
       <div className="flex flex-col gap-8 md:flex-row">
         <div className="md:w-1/4">
-          <div className="sticky top-16">
+          <div className="sticky top-24">
             <Sidebar
               currentStep={currentStep}
               currentSubstep={currentSubstep}
