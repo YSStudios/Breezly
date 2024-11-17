@@ -18,7 +18,7 @@ const NumberField: React.FC<NumberFieldProps> = ({ id, label, placeholder, prefi
   return (
     <div>
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-gray-700">
+        <label htmlFor={id} className="text-lg text-gray-600">
           {label}
         </label>
       )}

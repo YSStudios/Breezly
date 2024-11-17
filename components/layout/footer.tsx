@@ -18,7 +18,7 @@ export default function Footer() {
 								className="flex items-center space-x-2 text-2xl font-medium text-emerald-500"
 							>
 								<Image
-									src="/breezlylogo.svg"
+									src="/breezlylogo-green.svg"
 									alt="OfferApp"
 									width="200"
 									height="50"

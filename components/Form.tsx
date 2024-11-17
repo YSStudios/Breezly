@@ -12,6 +12,7 @@ import Step5 from "./steps/Step5";
 import { FormData } from "./types";
 import generatePDF from "../utils/generatePDF";
 import SavingPopup from "./SavingPopup";
+import { motion, AnimatePresence } from "framer-motion";
 
 const DEBUG = process.env.NODE_ENV === "development";
 
@@ -112,9 +113,9 @@ const Form: React.FC = () => {
     });
   };
 
-  const handleSetStep = (step: number, substep: number) => {
+  const handleSetStep = (step: number, substep?: number) => {
     setCurrentStep(step);
-    setCurrentSubstep(substep);
+    setCurrentSubstep(substep || 1);
   };
 
   const getPreviousSubstepName = (): string | null => {
@@ -170,45 +171,62 @@ const Form: React.FC = () => {
 
   const renderStep = () => {
     console.log("Rendering step, formData:", formData);
-    switch (currentStep) {
-      case 1:
-        return (
-          <Step1
-            currentSubstep={currentSubstep}
-            onInputChange={handleInputChange}
-            formData={formData}
-            onPropertySelect={handlePropertySelection}
-          />
-        );
-      case 2:
-        return (
-          <Step2
-            currentSubstep={currentSubstep}
-            onInputChange={handleInputChange}
-            formData={formData}
-          />
-        );
-      case 3:
-        return (
-          <Step3
-            currentSubstep={currentSubstep}
-            onInputChange={handleInputChange}
-            formData={formData}
-          />
-        );
-      case 4:
-        return (
-          <Step4
-            currentSubstep={currentSubstep}
-            onInputChange={handleInputChange}
-            formData={formData}
-          />
-        );
-      case 5:
-        return <Step5 formData={formData} formId={formId} />; // Pass formId here
-      default:
-        return null;
-    }
+    const stepContent = (
+      <motion.div
+        key={`step-${currentStep}-${currentSubstep}`}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        transition={{ duration: 0.3 }}
+      >
+        {(() => {
+          switch (currentStep) {
+            case 1:
+              return (
+                <Step1
+                  currentSubstep={currentSubstep}
+                  onInputChange={handleInputChange}
+                  formData={formData}
+                  onPropertySelect={handlePropertySelection}
+                />
+              );
+            case 2:
+              return (
+                <Step2
+                  currentSubstep={currentSubstep}
+                  onInputChange={handleInputChange}
+                  formData={formData}
+                  onPropertySelect={handlePropertySelection}
+                />
+              );
+            case 3:
+              return (
+                <Step3
+                  currentSubstep={currentSubstep}
+                  onInputChange={handleInputChange}
+                  formData={formData}
+                  onPropertySelect={handlePropertySelection}
+                />
+              );
+            case 4:
+              return (
+                <Step4
+                  currentSubstep={currentSubstep}
+                  onInputChange={handleInputChange}
+                  formData={formData}
+                  onPropertySelect={handlePropertySelection}
+                />
+              );
+            case 5:
+              return <Step5 formData={formData} formId={formId || ''} />; // Pass formId here with a default value if null
+            default:
+              return null;
+          }
+        })()}
+      </motion.div>
+    );
+
+    return <AnimatePresence mode="wait">{stepContent}</AnimatePresence>;
   };
 
   const handleGeneratePDF = async () => {
@@ -379,7 +397,7 @@ const Form: React.FC = () => {
               <div className="relative">
                 <button
                   onClick={handleNextClick}
-                  className="flex items-center rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 px-6 py-3 font-bold text-white transition-colors duration-300 hover:from-emerald-500 hover:to-teal-600"
+                  className="flex items-center rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 px-6 py-3 font-bold text-white transition-all duration-300 hover:from-purple-500 hover:to-indigo-600"
                 >
                   Next
                   <svg

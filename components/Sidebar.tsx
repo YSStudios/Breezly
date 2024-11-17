@@ -41,7 +41,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentStep, currentSubstep, handleSe
   ];
 
   return (
-    <div className="bg-emerald-500 rounded-lg p-4">
+    <div className="bg-gradient-to-r from-emerald-400 to-teal-500 rounded-lg p-4">
       <div className="space-y-4">
         {[1, 2, 3, 4, 5].map((step) => {
           const Icon = stepIcons[step - 1];

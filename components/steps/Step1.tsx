@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { StepProps } from "../types";
 import {
   HomeIcon,
@@ -28,8 +28,10 @@ const Step1: React.FC<StepProps> = ({
   onPropertySelect,
 }) => {
   const handlePropertyClick = (property: any) => {
-    onInputChange("property-type", property.value);
-    onPropertySelect(property);
+    setTimeout(() => {
+      onInputChange("property-type", property.value);
+      onPropertySelect(property);
+    }, 500);
   };
 
   return (
@@ -38,7 +40,7 @@ const Step1: React.FC<StepProps> = ({
         Offer to Purchase Real Estate
       </h1>
       {currentSubstep === 1 && (
-        <>
+        <div>
           <p className="mb-6 text-lg text-gray-600">
             What type of property is this offer for?
           </p>
@@ -57,7 +59,7 @@ const Step1: React.FC<StepProps> = ({
                     ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-teal-300
                     ${
                       isSelected
-                        ? "bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-lg"
+                        ? "bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-lg animate-gradient-pulse"
                         : "bg-white text-gray-700 shadow"
                     }
                   `}
@@ -83,7 +85,7 @@ const Step1: React.FC<StepProps> = ({
               );
             })}
           </div>
-        </>
+        </div>
       )}
     </div>
   );

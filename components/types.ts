@@ -1,16 +1,26 @@
 // types.ts
 import { ElementType } from 'react';
 
+// Add Stripe Pricing Table type declaration
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'stripe-pricing-table': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & {
+        'pricing-table-id'?: string;
+        'publishable-key'?: string;
+      }, HTMLElement>;
+    }
+  }
+}
+
+// Basic Types
+export type EmailTemplate = 'offer-confirmation' | 'offer-notification' | 'welcome' | 'reset-password';
+
 export interface FormData {
   [key: string]: string;
 }
 
-export interface StepProps {
-  currentSubstep: number;
-  onInputChange: (name: string, value: string) => void;
-  formData: FormData;
-}
-
+// Field Types
 export interface TextField {
   label?: string;
   placeholder?: string;
@@ -28,6 +38,7 @@ export interface NumberFieldProps {
   onChange: (value: number | null) => void;
 }
 
+// Form and Question Types
 export interface Option {
   value: string;
   label: string;
@@ -52,6 +63,13 @@ export interface FormQuestionProps {
   title?: string;
   initialValue?: string;
   initialTextFieldValues?: { [key: number]: string };
+}
+
+export interface StepProps {
+  currentSubstep: number;
+  onInputChange: (name: string, value: string) => void;
+  formData: FormData;
+  onPropertySelect: (property: any) => void;
 }
 
 export interface ConditionDetailsProps {

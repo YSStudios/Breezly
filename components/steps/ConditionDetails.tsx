@@ -2,6 +2,7 @@
 import React from 'react';
 import FormQuestion from '../shared/FormQuestion';
 import { Question, FormData } from '../types';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ConditionDetailsProps {
   selectedConditions: string[];
@@ -10,6 +11,42 @@ interface ConditionDetailsProps {
 }
 
 const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions, onInputChange, formData }) => {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        duration: 0.6
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  const textFieldsVariants = {
+    hidden: { 
+      height: 0,
+      opacity: 0,
+      transition: { duration: 0.3 }
+    },
+    visible: { 
+      height: "auto",
+      opacity: 1,
+      transition: { duration: 0.5, ease: "easeOut" }
+    }
+  };
+
   const renderConditionDetails = (condition: string) => {
     switch (condition) {
       case 'The buyer sells their property':
@@ -224,19 +261,58 @@ const ConditionDetails: React.FC<ConditionDetailsProps> = ({ selectedConditions,
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold mb-4">Condition Details</h2>
-      {selectedConditions.length === 0 ? (
-        <p className="text-gray-500">No conditions have been selected.</p>
-      ) : (
-        selectedConditions.map((condition) => (
-          <div key={condition} className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">{condition}</h3>
-            {renderConditionDetails(condition)}
-          </div>
-        ))
-      )}
-    </div>
+    <motion.div 
+      className="space-y-8"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.h2 
+        className="text-2xl font-bold mb-6"
+        variants={itemVariants}
+      >
+        Condition Details
+      </motion.h2>
+      <AnimatePresence>
+        {selectedConditions.length === 0 ? (
+          <motion.p 
+            className="text-gray-500"
+            variants={itemVariants}
+          >
+            No conditions have been selected.
+          </motion.p>
+        ) : (
+          <motion.div
+            variants={containerVariants}
+            className="space-y-12"
+          >
+            {selectedConditions.map((condition) => (
+              <motion.div 
+                key={condition} 
+                className="p-6 bg-white rounded-lg shadow-sm border border-gray-100"
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+              >
+                <h3 className="text-xl font-semibold mb-4 pb-2 border-b border-gray-200">
+                  {condition}
+                </h3>
+                <motion.div
+                  variants={textFieldsVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                  className="space-y-6"
+                >
+                  {renderConditionDetails(condition)}
+                </motion.div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 

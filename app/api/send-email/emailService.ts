@@ -1,23 +1,37 @@
-const sgMail = require("@sendgrid/mail");
+import sgMail from '@sendgrid/mail';
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY); // Ensure your SendGrid API key is set in environment variables
+sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
-function sendEmail(to, subject, text) {
+interface EmailResponse {
+  success: boolean;
+  message: string;
+}
+
+export async function sendEmail(
+  to: string,
+  subject: string,
+  text: string
+): Promise<EmailResponse> {
   const msg = {
-    to: to,
-    from: "info@breezly.co", // Use your verified SendGrid email
-    subject: subject,
-    text: text,
+    to,
+    from: 'info@breezly.co',
+    subject,
+    text,
   };
 
-  sgMail
-    .send(msg)
-    .then(() => {
-      console.log("Email sent");
-    })
-    .catch((error) => {
-      console.error("Error sending email:", error);
-    });
+  try {
+    await sgMail.send(msg);
+    return {
+      success: true,
+      message: 'Email sent successfully'
+    };
+  } catch (error) {
+    console.error('Error sending email:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to send email'
+    };
+  }
 }
 
 module.exports = { sendEmail }; // Export the function for use in other parts of your application

@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { FormQuestionProps, Option, TextField } from '../types';
+import { motion } from 'framer-motion';
 
 const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title, initialValue, initialTextFieldValues = {} }) => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>(initialValue ? initialValue.split(',') : []);
@@ -46,7 +47,7 @@ const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title, 
           id={`text-field-${index}`}
           value={textFieldValues[index] || ''}
           onChange={(e) => handleTextFieldChange(index, e.target.value)}
-          className="mt-1 px-2 border-2 border-gray-300 bg-white text-gray-900 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 text-xl"
+          className="w-full mt-1 px-2 border-2 border-gray-300 bg-white text-gray-900 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 text-xl"
         />
       );
     }
@@ -72,53 +73,98 @@ const FormQuestion: React.FC<FormQuestionProps> = ({ question, onChange, title, 
 
   const isSingleTextField = question.options.length === 1 && question.options[0].textFields;
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.4,
+        ease: "easeOut"
+      }
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      {title && <h2 className="text-3xl font-bold text-gray-900">{title}</h2>}
-      {question.description && <p className="text-lg text-gray-600">{question.description}</p>}
+    <motion.div 
+      className="space-y-4"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      {title && (
+        <motion.h2 variants={itemVariants} className="text-3xl font-bold text-gray-900">
+          {title}
+        </motion.h2>
+      )}
+      {question.description && (
+        <motion.p variants={itemVariants} className="text-lg text-gray-600">
+          {question.description}
+        </motion.p>
+      )}
       
       {isSingleTextField ? (
-        <div className="space-y-4">
+        <motion.div variants={itemVariants} className="space-y-4">
           {question.options[0].textFields?.map((field, index) => (
             <div key={index}>
               {field.label && <label htmlFor={`text-field-${index}`} className="block text-sm font-medium text-gray-700">{field.label}</label>}
               {renderTextField(field, index)}
             </div>
           ))}
-        </div>
+        </motion.div>
       ) : (
-        <div className="space-y-4">
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          variants={containerVariants}
+        >
           {question.options.map((option: Option, optionIndex: number) => (
-            <div key={option.value} className={`flex flex-col p-4 border rounded-lg cursor-pointer ${selectedOptions.includes(option.value) ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:bg-gray-50'}`} onClick={() => handleOptionChange(option.value)}>
-              <div className="flex items-center">
+            <motion.div
+              key={option.value}
+              variants={itemVariants}
+              className={`flex flex-col p-4 border rounded-lg cursor-pointer ${
+                selectedOptions.includes(option.value) ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:bg-gray-50'
+              }`}
+              onClick={() => handleOptionChange(option.value)}
+            >
+              <div className="flex items-start">
                 <input
                   type={question.multiSelect ? "checkbox" : "radio"}
                   name={question.id}
                   value={option.value}
                   checked={selectedOptions.includes(option.value)}
                   onChange={() => {}}
-                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
+                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 mt-1.5"
                 />
-                <label className="ml-3 flex items-center">
-                  {option.icon && <option.icon className="h-8 w-8 text-emerald-500 mr-2" />}
+                <label className="ml-3 flex items-start">
+                  {option.icon && <option.icon className="h-8 w-8 text-emerald-500 mr-2 flex-shrink-0" />}
                   <span className="text-lg font-medium text-gray-900">{option.label}</span>
                 </label>
               </div>
               {selectedOptions.includes(option.value) && option.textFields && (
-                <div className="mt-4 space-y-4">
+                <div className="mt-4">
                   {option.textFields.map((field, fieldIndex) => (
-                    <div key={fieldIndex}>
+                    <div key={fieldIndex} className="mt-2">
                       {field.label && <label htmlFor={`text-field-${optionIndex}-${fieldIndex}`} className="block font-medium text-gray-700">{field.label}</label>}
                       {renderTextField(field, fieldIndex)}
                     </div>
                   ))}
                 </div>
               )}
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

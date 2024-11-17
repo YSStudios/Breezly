@@ -25,7 +25,7 @@ export default function NavBar({ session }: { session: Session | null }) {
           <div className="flex h-16 w-full items-center justify-between">
             <Link href="/" className="flex items-center font-display text-2xl">
               <Image
-                src="/breezlylogo.svg"
+                src="/breezlylogo-green.svg"
                 alt="OfferApp"
                 width="200"
                 height="50"

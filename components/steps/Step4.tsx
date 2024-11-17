@@ -251,18 +251,18 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
     description: 'Which conditions must be satisfied?',
     multiSelect: true,
     options: [
-      { value: 'Satisfactory home inspection', label: 'Satisfactory home inspection' },
-      { value: 'Local ordinance documents', label: 'Local ordinance documents' },
-      { value: 'Proof of marketable title', label: 'Proof of marketable title' },
-      { value: 'Loan approval', label: 'Loan approval' },
-      { value: 'Market value appraisal', label: 'Market value appraisal' },
-      { value: 'Disclosure form', label: 'Disclosure form' },
-      { value: 'The buyer sells their property', label: 'The buyer sells their property' },
-      { value: 'Property is properly zoned', label: 'Property is properly zoned' },
-      { value: 'Specific property repairs', label: 'Specific property repairs' },
       { value: 'Buyer must obtain a new loan', label: 'Buyer must obtain a new loan' },
       { value: 'Buyer must receive approval to assume existing loan', label: 'Buyer must receive approval to assume existing loan' },
       { value: 'Buyer must receive third party approval', label: 'Buyer must receive third party approval' },
+	  { value: 'Buyer sells their property', label: 'Buyer sells their property' },
+      { value: 'Disclosure form', label: 'Disclosure form' },
+      { value: 'Loan approval', label: 'Loan approval' },
+      { value: 'Local ordinance documents', label: 'Local ordinance documents' },
+      { value: 'Market value appraisal', label: 'Market value appraisal' },
+      { value: 'Proof of marketable title', label: 'Proof of marketable title' },
+      { value: 'Property is properly zoned', label: 'Property is properly zoned' },
+      { value: 'Satisfactory home inspection', label: 'Satisfactory home inspection' },
+      { value: 'Specific property repairs', label: 'Specific property repairs' },
       { value: 'Other conditions not listed here', label: 'Other conditions not listed here' },
     ],
   };
@@ -309,7 +309,7 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
             <NumberField
               id="depositAmount"
               label="How much is the initial deposit?"
-              placeholder="e.g. 20000"
+              placeholder="e.g. 20,000"
               prefix="$"
               value={depositAmount}
               onChange={handleDepositAmountChange}
