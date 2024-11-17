@@ -23,7 +23,7 @@ export interface CartItem {
 export interface CartContextType {
   cartItems: CartItem[];
   addToCart: (item: CartItem) => void;
-  removeFromCart: (id: string, formId: string) => void;
+  removeFromCart: (id: string, formId?: string) => void;
   updateCart: () => Promise<void>;
   getCartItemsByFormId: (formId: string) => CartItem[];
 }
@@ -63,7 +63,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
-  const removeFromCart = (id: string, formId: string) => {
+  const removeFromCart = (id: string, formId?: string) => {
     setCartItems((prevItems) =>
       prevItems.filter((item) => !(item.id === id && item.formId === formId)),
     );

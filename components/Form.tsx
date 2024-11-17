@@ -294,10 +294,8 @@ const Form: React.FC = () => {
     console.log("Selected property data:", propertyData);
     setFormData((prevData) => ({
       ...prevData,
-      "property-address": propertyData.address,
       "property-type": propertyData.value,
     }));
-    nextSubstep();
   };
 
   const confirmPropertySelection = () => {

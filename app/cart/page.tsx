@@ -30,14 +30,14 @@ const CartPage: React.FC = () => {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/login");
+      router.replace("/login");
     } else if (status === "authenticated") {
       updateCart();
     }
   }, [status, router, updateCart]);
 
   const handleRemoveItem = async (itemId: string) => {
-    await removeFromCart(itemId);
+    await removeFromCart(itemId, "");
   };
 
   const formatPrice = (price: number | string): string => {

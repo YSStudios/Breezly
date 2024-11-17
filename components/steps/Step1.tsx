@@ -28,10 +28,8 @@ const Step1: React.FC<StepProps> = ({
   onPropertySelect,
 }) => {
   const handlePropertyClick = (property: any) => {
-    setTimeout(() => {
-      onInputChange("property-type", property.value);
-      onPropertySelect(property);
-    }, 500);
+    onInputChange("property-type", property.value);
+    onPropertySelect(property);
   };
 
   return (
