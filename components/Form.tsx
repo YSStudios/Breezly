@@ -13,6 +13,7 @@ import { FormData } from "./types";
 import generatePDF from "../utils/generatePDF";
 import SavingPopup from "./SavingPopup";
 import { motion, AnimatePresence } from "framer-motion";
+import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
 const DEBUG = process.env.NODE_ENV === "development";
 
@@ -29,6 +30,7 @@ const Form: React.FC = () => {
   const searchParams = useSearchParams();
   const [showSavingPopup, setShowSavingPopup] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const fetchFormData = useCallback(
     async (id: string) => {
@@ -369,8 +371,48 @@ const Form: React.FC = () => {
   }
   return (
     <div className="container mx-auto px-4 py-4 mt-8">
+      {/* Mobile Progress Bar */}
+      <div className="md:hidden mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium text-gray-700">
+            Step {currentStep} of 5: {stepTitles[currentStep - 1]}
+          </span>
+          <button
+            onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+            className="flex items-center text-emerald-600 font-medium"
+          >
+            {isMobileSidebarOpen ? (
+              <>Hide Steps <ChevronUpIcon className="w-5 h-5 ml-1" /></>
+            ) : (
+              <>Show Steps <ChevronDownIcon className="w-5 h-5 ml-1" /></>
+            )}
+          </button>
+        </div>
+        <div className="bg-gray-200 rounded-full h-2">
+          <div
+            className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${(currentStep / 5) * 100}%` }}
+          />
+        </div>
+        
+        {/* Collapsible Mobile Sidebar */}
+        <div className={`transition-all duration-300 overflow-hidden ${
+          isMobileSidebarOpen ? 'max-h-[500px] mt-4' : 'max-h-0'
+        }`}>
+          <Sidebar
+            currentStep={currentStep}
+            currentSubstep={currentSubstep}
+            handleSetStep={(step, substep) => {
+              handleSetStep(step, substep);
+              setIsMobileSidebarOpen(false);
+            }}
+          />
+        </div>
+      </div>
+
       <div className="flex flex-col gap-8 md:flex-row">
-        <div className="md:w-1/4">
+        {/* Desktop Sidebar - Hide on mobile */}
+        <div className="hidden md:block md:w-1/4">
           <div className="sticky top-24">
             <Sidebar
               currentStep={currentStep}
@@ -379,6 +421,8 @@ const Form: React.FC = () => {
             />
           </div>
         </div>
+
+        {/* Rest of the form content */}
         <div className="md:w-3/4">
           {renderFormHeader()}
           {getPreviousSubstepName() && (
