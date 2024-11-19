@@ -1,7 +1,11 @@
 "use client";
-
+import React from "react";
 import { useState } from "react";
-import { useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js";
+import {
+  useStripe,
+  useElements,
+  PaymentElement,
+} from "@stripe/react-stripe-js";
 
 export default function CheckoutForm() {
   const stripe = useStripe();
@@ -29,15 +33,13 @@ export default function CheckoutForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto p-6">
+    <form onSubmit={handleSubmit} className="mx-auto max-w-md p-6">
       <PaymentElement />
-      {error && (
-        <div className="text-red-500 text-sm mt-4">{error}</div>
-      )}
+      {error && <div className="mt-4 text-sm text-red-500">{error}</div>}
       <button
         type="submit"
         disabled={!stripe || processing}
-        className="w-full bg-teal-600 text-white py-2 px-4 rounded mt-4 hover:bg-teal-700 disabled:bg-gray-400"
+        className="mt-4 w-full rounded bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:bg-gray-400"
       >
         {processing ? "Processing..." : "Pay Now"}
       </button>
