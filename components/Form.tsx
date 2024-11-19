@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSession } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import Sidebar, { substepNames, stepTitles } from "./Sidebar";
 import Step1 from "./steps/Step1";
@@ -26,7 +26,7 @@ const DEBUG = process.env.NODE_ENV === "development";
 
 const Form: React.FC = () => {
   const dispatch = useDispatch();
-  // const router = useRouter();
+  const router = useRouter();
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
 
@@ -102,10 +102,34 @@ const Form: React.FC = () => {
     initForm();
   }, [searchParams, fetchFormData, dispatch]);
 
-  // Update handlers to use Redux
+  // Add this useEffect to handle URL changes
+  useEffect(() => {
+    const step = searchParams?.get("step");
+    const substep = searchParams?.get("substep");
+
+    if (step) {
+      const stepNum = parseInt(step);
+      const substepNum = substep ? parseInt(substep) : 1;
+
+      // Only update if the step/substep is different from current
+      if (stepNum !== currentStep || substepNum !== currentSubstep) {
+        dispatch(setStep(stepNum));
+        dispatch(setSubstep(substepNum));
+      }
+    }
+  }, [searchParams, dispatch, currentStep, currentSubstep]);
+
+  // Modify handleSetStep to update URL
   const handleSetStep = (step: number, substep?: number) => {
+    const newSubstep = substep || 1;
     dispatch(setStep(step));
-    dispatch(setSubstep(substep || 1));
+    dispatch(setSubstep(newSubstep));
+
+    // Update URL without full page reload
+    const params = new URLSearchParams(searchParams?.toString());
+    params.set("step", step.toString());
+    params.set("substep", newSubstep.toString());
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   const handleInputChange = (name: string, value: any) => {
@@ -183,26 +207,39 @@ const Form: React.FC = () => {
     return null;
   };
 
+  // Modify nextSubstep and prevSubstep to update URL
   const nextSubstep = () => {
     const maxSubsteps = getMaxSubsteps(currentStep);
+    const params = new URLSearchParams(searchParams?.toString());
+
     if (currentSubstep < maxSubsteps) {
       dispatch(setSubstep(currentSubstep + 1));
+      params.set("substep", (currentSubstep + 1).toString());
     } else if (currentStep < 5) {
-      // Assuming you have 5 steps total
       dispatch(setStep(currentStep + 1));
       dispatch(setSubstep(1));
+      params.set("step", (currentStep + 1).toString());
+      params.set("substep", "1");
     }
+
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   const prevSubstep = () => {
+    const params = new URLSearchParams(searchParams?.toString());
+
     if (currentSubstep > 1) {
       dispatch(setSubstep(currentSubstep - 1));
+      params.set("substep", (currentSubstep - 1).toString());
     } else if (currentStep > 1) {
-      dispatch(setStep(currentStep - 1));
-      // Get the max substeps for the previous step and set it as the current substep
       const maxSubstepsForPreviousStep = getMaxSubsteps(currentStep - 1);
+      dispatch(setStep(currentStep - 1));
       dispatch(setSubstep(maxSubstepsForPreviousStep));
+      params.set("step", (currentStep - 1).toString());
+      params.set("substep", maxSubstepsForPreviousStep.toString());
     }
+
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   const getMaxSubsteps = (step: number): number => {
