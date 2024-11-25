@@ -4,50 +4,28 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Container } from "@/components/Container";
 import heroImg from "../public/hero.jpeg";
-import { v4 as uuidv4 } from "uuid";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 export const Hero = () => {
   const router = useRouter();
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleGetStarted = async () => {
+  const handleGetStarted = () => {
     setIsLoading(true);
     try {
-      if (!session) {
-        // If not logged in, redirect to login
-        router.push("/login");
-        return;
-      }
-
-      // Create a new form ID
+      // Generate a new form ID regardless of auth status
       const newFormId = uuidv4();
 
-      // Create a new form in the database
-      const response = await fetch("/api/forms", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          formId: newFormId,
-          data: {}, // Empty initial data
-        }),
-      });
+      // Store the form ID in localStorage for persistence
+      localStorage.setItem("currentFormId", newFormId);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create form");
-      }
-
-      const { formId } = await response.json();
-
-      // Redirect to the form page with the new ID
-      router.push(`/offerform?id=${formId}`);
+      // Redirect to form page with the new ID
+      router.push(`/offerform?id=${newFormId}`);
     } catch (error) {
-      console.error("Error creating form:", error);
+      console.error("Error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -70,9 +48,9 @@ export const Hero = () => {
               <button
                 onClick={handleGetStarted}
                 disabled={isLoading}
-                className="inline-block transform rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 px-10 py-5 text-lg font-bold text-white shadow-lg transition-all duration-300 ease-in-out hover:scale-105 hover:from-indigo-500 hover:to-purple-500 focus:outline-none focus:ring-4 focus:ring-teal-300"
+                className="inline-block transform rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 px-10 py-5 text-lg font-bold text-white shadow-lg transition-all duration-300 ease-in-out hover:scale-105 hover:from-indigo-500 hover:to-purple-500 focus:outline-none focus:ring-4 focus:ring-teal-300 disabled:opacity-50"
               >
-                Get Started
+                {isLoading ? "Loading..." : "Get Started"}
               </button>
             </div>
           </div>
