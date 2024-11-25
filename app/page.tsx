@@ -3,13 +3,12 @@ import { Hero } from "@/components/Hero";
 import { SectionTitle } from "@/components/SectionTitle";
 import { Benefits } from "@/components/Benefits";
 import { benefitOne, benefitTwo } from "@/components/data";
-import { Testimonials } from "@/components/Testimonials";
 import { Faq } from "@/components/Faq";
 import { Cta } from "@/components/Cta";
-import { getServerSession } from "next-auth/next";
+// import { getServerSession } from "next-auth/next";
 
 export default async function HomePage() {
-  const session = await getServerSession();
+  // const session = await getServerSession();
 
   return (
     <>

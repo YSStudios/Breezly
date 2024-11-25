@@ -21,7 +21,6 @@ import type { RootState } from "../app/store/store";
 // import generatePDF from "../utils/generatePDF";
 import SavingPopup from "./SavingPopup";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 
 const DEBUG = process.env.NODE_ENV === "development";
 
@@ -43,28 +42,22 @@ const Form: React.FC = () => {
   const [showSavingPopup, setShowSavingPopup] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  // const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const fetchFormData = useCallback(
     async (id: string) => {
       setIsLoading(true);
-      setSaveError(null); // Clear any existing errors
+      setSaveError(null);
       try {
         if (session) {
           const response = await fetch(`/api/form/get?id=${id}`);
-          if (response.ok) {
-            const data = await response.json();
-            dispatch(setFormData(data));
-          } else {
+          if (!response.ok) {
             throw new Error(
               `Failed to fetch form data: ${response.statusText}`,
             );
           }
-        } else {
-          const storedData = localStorage.getItem(`form_${id}`);
-          if (storedData) {
-            dispatch(setFormData(JSON.parse(storedData)));
-          }
+          const data = await response.json();
+          dispatch(setFormData(data));
         }
       } catch (error) {
         console.error("Error fetching form data:", error);
@@ -88,21 +81,37 @@ const Form: React.FC = () => {
         dispatch(setFormId(urlFormId));
         await fetchFormData(urlFormId);
       } else {
-        const storedFormId = localStorage.getItem("currentFormId");
+        const newFormId = uuidv4();
+        dispatch(setFormId(newFormId));
 
-        if (storedFormId) {
-          dispatch(setFormId(storedFormId));
-          await fetchFormData(storedFormId);
-        } else {
-          const newFormId = uuidv4();
-          dispatch(setFormId(newFormId));
-          localStorage.setItem("currentFormId", newFormId);
+        dispatch(setFormData({}));
+
+        if (session) {
+          try {
+            const response = await fetch("/api/forms", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                formId: newFormId,
+                data: {},
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error("Failed to create new form");
+            }
+          } catch (error) {
+            console.error("Error creating new form:", error);
+            setSaveError("Failed to initialize new form");
+          }
         }
       }
     };
 
     initForm();
-  }, [searchParams, fetchFormData, dispatch]);
+  }, [searchParams, fetchFormData, dispatch, session]);
 
   // Update handlers to use Redux
   const handleSetStep = (step: number, substep?: number) => {

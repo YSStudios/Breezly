@@ -1,12 +1,51 @@
 // components/Step5.tsx
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import { addItem } from "@/app/store/slices/cartSlice";
 import { FormData } from "../types";
+import type { RootState } from "@/app/store/store";
 
 interface Step5Props {
   formData: FormData;
   formId: string;
 }
 
-const Step5 = ({ formData }: Step5Props) => {
+const Step5: React.FC<Step5Props> = ({ formData, formId }) => {
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+
+  const handleAddToCart = () => {
+    const cartItem = {
+      id: formId,
+      formId: formId,
+      name: `Offer for ${formData["property-address"]}`,
+      price: parseFloat(formData.purchasePrice || "0"),
+      quantity: 1,
+      description: `Offer for property at ${formData["property-address"]}`,
+      offerDetails: {
+        id: formId,
+        propertyAddress: formData["property-address"] || "",
+        propertyType: formData["property-type"] || "",
+        purchasePrice: formData.purchasePrice || "",
+        closingDate: formData.closingDate || "",
+      },
+    };
+
+    // Log before adding to cart
+    console.log("Adding item to cart:", cartItem);
+
+    // Add to Redux store
+    dispatch(addItem(cartItem));
+
+    // Log updated cart items
+    console.log("Cart items after adding:", cartItems);
+
+    // Redirect to plans page
+    router.push("/plans");
+  };
+
   return (
     <div>
       <h2 className="mb-4 text-2xl font-bold">Offer Summary</h2>
@@ -31,7 +70,7 @@ const Step5 = ({ formData }: Step5Props) => {
           <p className="mb-10 text-center">(the &quot;Seller&quot;)</p>
           <p className="mb-15 text-right font-bold">OF THE SECOND PART</p>
 
-          <h3 className="mb-10 ">Background</h3>
+          <h3 className="mb-10">Background</h3>
           <p className="mb-10">
             The Buyer wishes to submit an offer to purchase a certain completed
             home from the Seller under the terms stated below.
@@ -108,6 +147,14 @@ const Step5 = ({ formData }: Step5Props) => {
           <p className="mb-5">Date: ____________________________</p>
           <p className="mb-20">Email: {formData["email"]}</p>
         </div>
+      </div>
+      <div className="mt-6">
+        <button
+          onClick={handleAddToCart}
+          className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        >
+          Add Offer to Cart
+        </button>
       </div>
     </div>
   );

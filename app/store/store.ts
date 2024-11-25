@@ -1,19 +1,20 @@
 'use client';
 
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist';
+import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import formReducer from './slices/formSlice';
+import cartReducer from './slices/cartSlice';
 
 const rootReducer = combineReducers({
   form: formReducer,
+  cart: cartReducer,
 });
 
 const persistConfig = {
   key: 'root',
-  version: 1,
   storage,
-  whitelist: ['form'], // Only persist the form reducer
+  whitelist: ['form', 'cart'], // Add cart to persisted reducers
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -22,9 +23,7 @@ export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-      },
+      serializableCheck: false, // This helps avoid serialization issues
     }),
 });
 
