@@ -21,6 +21,7 @@ import type { RootState } from "../app/store/store";
 // import generatePDF from "../utils/generatePDF";
 import SavingPopup from "./SavingPopup";
 import { motion, AnimatePresence } from "framer-motion";
+import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 
 const DEBUG = process.env.NODE_ENV === "development";
 
@@ -42,6 +43,7 @@ const Form: React.FC = () => {
   const [showSavingPopup, setShowSavingPopup] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const fetchFormData = useCallback(
     async (id: string) => {
@@ -372,7 +374,8 @@ const Form: React.FC = () => {
   return (
     <div className="container mx-auto mt-8 px-4 py-4">
       <div className="flex flex-col gap-8 md:flex-row">
-        <div className="md:w-1/4">
+        {/* Desktop Sidebar - Hide on mobile */}
+        <div className="hidden md:block md:w-1/4">
           <div className="sticky top-24">
             <Sidebar
               currentStep={currentStep}
@@ -381,6 +384,8 @@ const Form: React.FC = () => {
             />
           </div>
         </div>
+
+        {/* Rest of the form content */}
         <div className="md:w-3/4">
           {renderFormHeader()}
           {getPreviousSubstepName() && (
