@@ -42,17 +42,19 @@ const Form: React.FC = () => {
   const [showSavingPopup, setShowSavingPopup] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [submittedAddress, setSubmittedAddress] = useState<string | null>(null);
 
   const fetchFormData = useCallback(
     async (id: string) => {
       setIsLoading(true);
-      setSaveError(null); // Clear any existing errors
+      setSaveError(null);
       try {
         if (session) {
           const response = await fetch(`/api/form/get?id=${id}`);
           if (response.ok) {
             const data = await response.json();
             dispatch(setFormData(data));
+            setSubmittedAddress(data["property-address"] || null);
           } else {
             throw new Error(
               `Failed to fetch form data: ${response.statusText}`,
@@ -61,7 +63,9 @@ const Form: React.FC = () => {
         } else {
           const storedData = localStorage.getItem(`form_${id}`);
           if (storedData) {
-            dispatch(setFormData(JSON.parse(storedData)));
+            const data = JSON.parse(storedData);
+            dispatch(setFormData(data));
+            setSubmittedAddress(data["property-address"] || null);
           }
         }
       } catch (error) {
@@ -150,6 +154,8 @@ const Form: React.FC = () => {
     }
 
     try {
+      setSubmittedAddress(formData["property-address"] || null);
+
       console.log("Saving form data with ID:", formId);
       localStorage.setItem(`form_${formId}`, JSON.stringify(formData));
 
@@ -390,12 +396,12 @@ const Form: React.FC = () => {
   };
 
   const renderFormHeader = () => {
-    console.log("Form Data in header:", formData);
-    if (formData["property-address"]) {
+    if (submittedAddress) {
       return (
         <div className="mb-6 border-gray-200 pb-4">
-          <h2 className="text-xl font-semibold capitalize text-gray-800">
-            Offer for: {formData["property-address"]}
+          <h2 className="rounded-lg border border-gray-200 bg-gray-200 pl-4 text-xl font-semibold capitalize text-gray-800">
+            <span className="text-red-500">Editing</span> Current Offer:{" "}
+            {submittedAddress}
           </h2>
         </div>
       );
