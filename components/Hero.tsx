@@ -16,14 +16,16 @@ export const Hero = () => {
   const handleGetStarted = () => {
     setIsLoading(true);
     try {
-      // Generate a new form ID regardless of auth status
       const newFormId = uuidv4();
 
-      // Store the form ID in localStorage for persistence
-      localStorage.setItem("currentFormId", newFormId);
-
-      // Redirect to form page with the new ID
-      router.push(`/offerform?id=${newFormId}`);
+      if (session) {
+        // For authenticated users, redirect to new form
+        router.push(`/offerform?id=${newFormId}`);
+      } else {
+        // For unauthenticated users
+        localStorage.setItem("currentFormId", newFormId);
+        router.push(`/offerform?id=${newFormId}`);
+      }
     } catch (error) {
       console.error("Error:", error);
     } finally {

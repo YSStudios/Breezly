@@ -50,27 +50,87 @@ const Form: React.FC = () => {
       setSaveError(null);
       try {
         if (session) {
-          const response = await fetch(`/api/form/get?id=${id}`);
-          if (!response.ok) {
-            throw new Error(
-              `Failed to fetch form data: ${response.statusText}`,
+          // Check if this is a new form
+          const isNewForm =
+            id === searchParams?.get("id") && !searchParams?.get("existing");
+
+          if (isNewForm) {
+            // Initialize empty form data immediately
+            dispatch(
+              setFormData({
+                status: "DRAFT",
+                createdAt: new Date().toISOString(),
+              }),
+            );
+
+            try {
+              // Attempt to create in database but don't block on failure
+              await fetch("/api/forms", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  formId: id,
+                  data: {
+                    status: "DRAFT",
+                    createdAt: new Date().toISOString(),
+                  },
+                }),
+              });
+            } catch (error) {
+              // Log error but continue with empty form
+              console.warn(
+                "Failed to initialize form in database, continuing with empty form",
+              );
+            }
+          } else {
+            // Try to fetch existing form
+            const response = await fetch(`/api/form/get?id=${id}`);
+            if (!response.ok) {
+              throw new Error(
+                `Failed to fetch form data: ${response.statusText}`,
+              );
+            }
+            const data = await response.json();
+            dispatch(setFormData(data));
+          }
+        } else {
+          // Handle unauthenticated users
+          const storedData = localStorage.getItem(`form_${id}`);
+          if (storedData) {
+            dispatch(setFormData(JSON.parse(storedData)));
+          } else {
+            dispatch(
+              setFormData({
+                status: "DRAFT",
+                createdAt: new Date().toISOString(),
+              }),
             );
           }
-          const data = await response.json();
-          dispatch(setFormData(data));
         }
       } catch (error) {
         console.error("Error fetching form data:", error);
-        setSaveError(
-          `Error fetching form data: ${
-            error instanceof Error ? error.message : "Unknown error"
-          }`,
-        );
+        // For new forms, don't show error to user, just initialize empty form
+        if (!searchParams?.get("existing")) {
+          dispatch(
+            setFormData({
+              status: "DRAFT",
+              createdAt: new Date().toISOString(),
+            }),
+          );
+        } else {
+          setSaveError(
+            `Error fetching form data: ${
+              error instanceof Error ? error.message : "Unknown error"
+            }`,
+          );
+        }
       } finally {
         setIsLoading(false);
       }
     },
-    [session, dispatch],
+    [session, dispatch, searchParams],
   );
 
   useEffect(() => {
