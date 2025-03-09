@@ -2,28 +2,29 @@
 
 import StripeWrapper from "@/components/StripeWrapper";
 import CheckoutForm from "@/components/CheckoutForm";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/app/store/store";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { clearCart, addItem } from "@/app/store/slices/cartSlice";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const cartItems = useSelector((state: RootState) => state.cart.items);
+  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    // Debug logs
-    console.log("Checkout page mounted");
-    console.log("Checkout page - Cart items:", cartItems);
-    console.log("Cart items length:", cartItems.length);
-    console.log("Cart items content:", JSON.stringify(cartItems, null, 2));
-
+    // Ensure only one offer is in the cart
     if (cartItems.length === 0) {
-      console.log("No items in cart");
-      // Optionally redirect if cart is empty
-      // router.push('/plans');
+      router.push('/dashboard');
+    } else if (cartItems.length > 1) {
+      // Keep only the most recent offer
+      const mostRecentOffer = cartItems[cartItems.length - 1];
+      dispatch(clearCart());
+      dispatch(addItem(mostRecentOffer));
     }
-  }, [cartItems]);
+  }, [cartItems, router, dispatch]);
 
   const calculateTotal = () => {
     return cartItems.reduce(
@@ -36,42 +37,42 @@ export default function CheckoutPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="mb-8 text-center text-2xl font-bold">Checkout</h1>
 
-      {/* Cart Summary */}
-      <div className="mb-8 rounded-lg bg-white p-6 shadow-md">
-        <h2 className="mb-4 text-xl font-semibold">Order Summary</h2>
-        {cartItems.map((item) => (
-          <div key={item.id} className="mb-4 border-b pb-4">
+      {/* Single Offer Summary */}
+      {cartItems.length > 0 && (
+        <div className="mb-8 rounded-lg bg-white p-6 shadow-md">
+          <h2 className="mb-4 text-xl font-semibold">Order Summary</h2>
+          <div className="mb-4 border-b pb-4">
             <div className="flex justify-between">
               <div>
-                <h3 className="font-medium">{item.name}</h3>
-                <p className="text-sm text-gray-600">{item.description}</p>
-                {item.offerDetails && (
+                <h3 className="font-medium">{cartItems[0].name}</h3>
+                <p className="text-sm text-gray-600">{cartItems[0].description}</p>
+                {cartItems[0].offerDetails && (
                   <div className="mt-2 text-sm text-gray-600">
-                    <p>Property: {item.offerDetails.propertyAddress}</p>
-                    <p>Type: {item.offerDetails.propertyType}</p>
-                    <p>Purchase Price: ${item.offerDetails.purchasePrice}</p>
-                    <p>Closing Date: {item.offerDetails.closingDate}</p>
+                    <p>Property: {cartItems[0].offerDetails.propertyAddress}</p>
+                    <p>Type: {cartItems[0].offerDetails.propertyType}</p>
+                    <p>Purchase Price: ${cartItems[0].offerDetails.purchasePrice}</p>
+                    <p>Closing Date: {cartItems[0].offerDetails.closingDate}</p>
                   </div>
                 )}
               </div>
               <div className="text-right">
-                <p className="font-medium">${item.price.toFixed(2)}</p>
-                <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                <p className="font-medium">${cartItems[0].price.toFixed(2)}</p>
+                <p className="text-sm text-gray-600">Qty: 1</p>
               </div>
             </div>
           </div>
-        ))}
 
-        {/* Total */}
-        <div className="mt-4 border-t pt-4">
-          <div className="flex justify-between">
-            <span className="font-semibold">Total:</span>
-            <span className="font-semibold">
-              ${calculateTotal().toFixed(2)}
-            </span>
+          {/* Total */}
+          <div className="mt-4 border-t pt-4">
+            <div className="flex justify-between">
+              <span className="font-semibold">Total:</span>
+              <span className="font-semibold">
+                ${cartItems[0].price.toFixed(2)}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Stripe Checkout Form */}
       <StripeWrapper>

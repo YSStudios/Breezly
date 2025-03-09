@@ -21,6 +21,7 @@ import type { RootState } from "../app/store/store";
 // import generatePDF from "../utils/generatePDF";
 import SavingPopup from "./SavingPopup";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-hot-toast";
 
 const DEBUG = process.env.NODE_ENV === "development";
 
@@ -42,7 +43,7 @@ const Form: React.FC = () => {
   const [showSavingPopup, setShowSavingPopup] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  // const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
 
   //
   const fetchFormData = useCallback(
@@ -174,6 +175,12 @@ const Form: React.FC = () => {
     initForm();
   }, [searchParams, fetchFormData, dispatch, session]);
 
+  useEffect(() => {
+    if (formId && formData && formData.data && formData.data.paymentStatus === "PAID") {
+      setIsLocked(true);
+    }
+  }, [formId, formData]);
+
   // Update handlers to use Redux
   const handleSetStep = (step: number, substep?: number) => {
     dispatch(setStep(step));
@@ -181,6 +188,10 @@ const Form: React.FC = () => {
   };
 
   const handleInputChange = (name: string, value: any) => {
+    if (isLocked && name === "property-address") {
+      toast.error("This offer has been purchased and the property address cannot be changed.");
+      return;
+    }
     dispatch(
       updateFormState({
         formData: {
@@ -438,6 +449,33 @@ const Form: React.FC = () => {
     return null;
   };
 
+  const renderLockedNotification = () => {
+    if (isLocked) {
+      return (
+        <div className="mb-6 rounded-md bg-blue-50 p-4">
+          <div className="flex items-center">
+            <svg 
+              className="h-5 w-5 text-blue-400" 
+              xmlns="http://www.w3.org/2000/svg" 
+              viewBox="0 0 20 20" 
+              fill="currentColor"
+            >
+              <path 
+                fillRule="evenodd" 
+                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" 
+                clipRule="evenodd" 
+              />
+            </svg>
+            <p className="ml-3 text-sm font-medium text-blue-800">
+              This offer has been purchased and finalized. The property address cannot be modified.
+            </p>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   if (status === "loading") {
     return <div>Loading...</div>;
   }
@@ -458,6 +496,7 @@ const Form: React.FC = () => {
         {/* Rest of the form content */}
         <div className="md:w-3/4">
           {renderFormHeader()}
+          {renderLockedNotification()}
           {getPreviousSubstepName() && (
             <button
               onClick={prevSubstep}
