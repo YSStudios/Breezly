@@ -9,8 +9,6 @@ const MAX_PARTIES = 5;
 const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData }) => {
     const [buyers, setBuyers] = useState([0]);
     const [sellers, setSellers] = useState([0]);
-    const [selectedBuyerTypes, setSelectedBuyerTypes] = useState<{ [key: number]: string }>({});
-    const [selectedSellerTypes, setSelectedSellerTypes] = useState<{ [key: number]: string }>({});
 
     useEffect(() => {
         const buyerCount = Object.keys(formData).filter(key => key.startsWith('buyer-type-')).length;
@@ -18,22 +16,14 @@ const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
         
         setBuyers(Array.from({ length: Math.max(1, buyerCount) }, (_, i) => i));
         setSellers(Array.from({ length: Math.max(1, sellerCount) }, (_, i) => i));
-
-        const newBuyerTypes: { [key: number]: string } = {};
-        const newSellerTypes: { [key: number]: string } = {};
-        for (let i = 0; i < buyerCount; i++) {
-            newBuyerTypes[i] = formData[`buyer-type-${i}`];
-        }
-        for (let i = 0; i < sellerCount; i++) {
-            newSellerTypes[i] = formData[`seller-type-${i}`];
-        }
-        setSelectedBuyerTypes(newBuyerTypes);
-        setSelectedSellerTypes(newSellerTypes);
     }, [formData]);
 
     const partyTypeQuestion = (partyType: 'buyer' | 'seller'): Question => ({
         id: `${partyType}-type`,
         description: `Who is the ${partyType}?`,
+        tooltip: partyType === 'buyer' 
+            ? "Specify whether the buyer is an individual person or a business entity. This affects how the offer will be structured and signed."
+            : "Specify whether the seller is an individual person or a business entity. This affects how the offer will be structured and signed.",
         options: [
             {
                 value: 'individual',
@@ -49,11 +39,6 @@ const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
     });
 
     const handlePartyTypeChange = (partyType: 'buyer' | 'seller', partyIndex: number) => (questionId: string, value: string) => {
-        if (partyType === 'buyer') {
-            setSelectedBuyerTypes(prev => ({ ...prev, [partyIndex]: value }));
-        } else {
-            setSelectedSellerTypes(prev => ({ ...prev, [partyIndex]: value }));
-        }
         onInputChange(`${questionId}-${partyIndex}`, value);
     };
 
@@ -67,21 +52,12 @@ const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
 
     const handleRemoveParty = (partyType: 'buyer' | 'seller', indexToRemove: number) => {
         const setParties = partyType === 'buyer' ? setBuyers : setSellers;
-        const setSelectedTypes = partyType === 'buyer' ? setSelectedBuyerTypes : setSelectedSellerTypes;
         const parties = partyType === 'buyer' ? buyers : sellers;
 
         if (parties.length > 1) {
             setParties(prev => {
                 const newParties = prev.filter((_, index) => index !== indexToRemove);
                 return newParties.map((_, index) => index);
-            });
-            setSelectedTypes(prev => {
-                const newTypes = { ...prev };
-                for (let i = indexToRemove; i < parties.length - 1; i++) {
-                    newTypes[i] = newTypes[i + 1];
-                }
-                delete newTypes[parties.length - 1];
-                return newTypes;
             });
         }
     };
@@ -95,11 +71,12 @@ const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
 
     const renderPartySection = (partyType: 'buyer' | 'seller') => {
         const parties = partyType === 'buyer' ? buyers : sellers;
-        const selectedTypes = partyType === 'buyer' ? selectedBuyerTypes : selectedSellerTypes;
 
         return (
             <div className="space-y-6">
-                <h2 className="text-3xl font-bold text-gray-900">{partyType === 'buyer' ? 'Buyer' : 'Seller'} Details</h2>
+                <h2 className="text-3xl font-bold text-gray-900">
+                    {partyType === 'buyer' ? 'Buyer' : 'Seller'} Details
+                </h2>
                 {parties.map((partyIndex) => (
                     <div key={partyIndex} className="bg-white p-6 rounded-lg shadow">
                         {getPartyLabel(partyType, partyIndex) && (
@@ -126,38 +103,38 @@ const Step3: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
                             initialValue={formData[`${partyType}-type-${partyIndex}`]}
                         />
                         
-                        {selectedTypes[partyIndex] && (
-                            <div className="space-y-4 mt-4">
-                                <div>
-                                    <label htmlFor={`name-${partyType}-${partyIndex}`} className="block text-sm font-medium text-gray-700">
-                                        {selectedTypes[partyIndex] === 'individual' ? 'Full Name:' : 'Name:'}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id={`name-${partyType}-${partyIndex}`}
-                                        name={`name-${partyType}-${partyIndex}`}
-                                        placeholder={selectedTypes[partyIndex] === 'individual' 
-                                            ? (partyType === 'buyer' ? 'e.g. Alex Garcia Smith' : 'e.g. John Doe') 
-                                            : (partyType === 'buyer' ? 'e.g. ABC Ltd.' : 'e.g. XYZ Corp')}
-                                        value={formData[`name-${partyType}-${partyIndex}`] || ''}
-                                        onChange={(e) => onInputChange(`name-${partyType}-${partyIndex}`, e.target.value)}
-                                        className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor={`address-${partyType}-${partyIndex}`} className="block text-sm font-medium text-gray-700">Address:</label>
-                                    <input
-                                        type="text"
-                                        id={`address-${partyType}-${partyIndex}`}
-                                        name={`address-${partyType}-${partyIndex}`}
-                                        placeholder="e.g. Street, City, State ZIP Code"
-                                        value={formData[`address-${partyType}-${partyIndex}`] || ''}
-                                        onChange={(e) => onInputChange(`address-${partyType}-${partyIndex}`, e.target.value)}
-                                        className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    />
-                                </div>
+                        <div className="space-y-4 mt-4">
+                            <div>
+                                <label htmlFor={`name-${partyType}-${partyIndex}`} className="block text-sm font-medium text-gray-700">
+                                    Name
+                                </label>
+                                <input
+                                    type="text"
+                                    id={`name-${partyType}-${partyIndex}`}
+                                    name={`name-${partyType}-${partyIndex}`}
+                                    placeholder={`Enter ${partyType}'s name`}
+                                    value={formData[`name-${partyType}-${partyIndex}`] || ''}
+                                    onChange={(e) => onInputChange(`name-${partyType}-${partyIndex}`, e.target.value)}
+                                    className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    title="Enter the full legal name as it should appear on official documents"
+                                />
                             </div>
-                        )}
+                            <div>
+                                <label htmlFor={`address-${partyType}-${partyIndex}`} className="block text-sm font-medium text-gray-700">
+                                    Address
+                                </label>
+                                <input
+                                    type="text"
+                                    id={`address-${partyType}-${partyIndex}`}
+                                    name={`address-${partyType}-${partyIndex}`}
+                                    placeholder="e.g. Street, City, State ZIP Code"
+                                    value={formData[`address-${partyType}-${partyIndex}`] || ''}
+                                    onChange={(e) => onInputChange(`address-${partyType}-${partyIndex}`, e.target.value)}
+                                    className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    title={`Enter the complete mailing address for the ${partyType}`}
+                                />
+                            </div>
+                        </div>
                     </div>
                 ))}
                 

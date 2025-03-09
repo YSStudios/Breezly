@@ -150,6 +150,7 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
   const purchasePriceQuestion: Question = {
     id: 'purchasePrice',
     description: 'What is the purchase price?',
+    tooltip: 'This is the total amount you are offering to pay for the property. Include the full purchase price in dollars.',
     options: [
       {
         value: 'price', label: 'Enter price',
@@ -161,6 +162,7 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
   const depositAmountQuestion: Question = {
     id: 'depositAmount',
     description: 'How much is the initial deposit?',
+    tooltip: 'The deposit (or earnest money) shows your good faith in the transaction. It\'s typically 1-3% of the purchase price.',
     options: [
       {
         value: 'amount', label: 'Enter amount',
@@ -172,6 +174,7 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
   const depositMethodQuestion: Question = {
     id: 'depositMethod',
     description: 'How will the deposit be paid?',
+    tooltip: 'Select the method you will use to pay the deposit. This should be a secure form of payment that can be verified by all parties.',
     options: [
       { value: 'Cash', label: 'Cash', icon: CurrencyDollarIcon },
       { value: 'Personal check', label: 'Personal check', icon: DocumentTextIcon },
@@ -195,6 +198,7 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
   const depositDueDateQuestion: Question = {
     id: 'depositDueDate',
     description: 'When is the deposit due?',
+    tooltip: 'Specify when you will provide the deposit. This is typically within 24-72 hours of offer acceptance.',
     options: [
       { value: 'Unsure', label: 'Unsure', icon: QuestionMarkCircleIcon },
       { 
@@ -209,6 +213,7 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
   const escrowAgentQuestion: Question = {
     id: 'escrowAgent',
     description: 'Who will hold the deposit until the deal is closed?',
+    tooltip: 'An escrow agent is a neutral third party who holds the deposit money until closing. This can be a title company, real estate broker, or attorney.',
     options: [
       { value: 'Individual', label: 'Individual', icon: UserIcon, textFields: [{ placeholder: 'e.g. Morgan Leigh Brown' }] },
       { value: 'Corporation/Organization', label: 'Corporation/Organization', icon: BuildingOfficeIcon, textFields: [{ placeholder: 'Full Name' }] },
@@ -218,6 +223,7 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
   const possessionQuestion: Question = {
     id: 'possession',
     description: 'When will the seller provide possession?',
+    tooltip: 'Specify when you will take possession of the property. This is typically upon closing and funding, but can be negotiated for earlier or later dates.',
     options: [
       { 
         value: 'Upon closing and funding', 
@@ -240,6 +246,7 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
   const conditionsQuestion: Question = {
     id: 'hasConditions',
     description: 'Is this offer subject to any conditions?',
+    tooltip: 'Conditions (also called contingencies) protect the buyer by making the offer dependent on certain requirements being met, such as a satisfactory home inspection or mortgage approval.',
     options: [
       { value: 'Yes', label: 'Yes', icon: ClipboardDocumentCheckIcon },
       { value: 'No', label: 'No', icon: QuestionMarkCircleIcon },
@@ -249,6 +256,7 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
   const specificConditionsQuestion: Question = {
     id: 'conditions',
     description: 'Which conditions must be satisfied?',
+    tooltip: 'Select all conditions that must be met before the sale can proceed. These protect your interests as a buyer but may make your offer less competitive.',
     multiSelect: true,
     options: [
       { value: 'Buyer must obtain a new loan', label: 'Buyer must obtain a new loan' },
@@ -270,6 +278,7 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
   const completionDateQuestion: Question = {
     id: 'completionDate',
     description: 'When do the conditions have to be completed by?',
+    tooltip: 'This is the deadline for all conditions to be satisfied. Typically 7-14 days after offer acceptance for most conditions.',
     options: [
       { value: 'date', label: 'Select date', textFields: [{ type: 'date', label: 'Completion Date' }] },
     ],
@@ -278,6 +287,7 @@ const Step4: React.FC<StepProps> = ({ currentSubstep, onInputChange, formData })
   const acceptanceQuestion: Question = {
     id: 'acceptance',
     description: 'What is the deadline for the seller to accept this offer?',
+    tooltip: 'Set a deadline for the seller to respond to your offer. This is typically 24-48 hours from when you submit the offer.',
     options: [
       {
         value: 'deadline', label: 'Acceptance Deadline:',
