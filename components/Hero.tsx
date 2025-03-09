@@ -13,16 +13,48 @@ export const Hero = () => {
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleGetStarted = () => {
+  const handleGetStarted = async () => {
     setIsLoading(true);
     try {
-      const newFormId = uuidv4();
-
       if (session) {
-        // For authenticated users, redirect to new form
+        // For authenticated users, check if there are any existing draft forms
+        const response = await fetch("/api/form/list");
+        if (response.ok) {
+          const forms = await response.json();
+
+          // Look for the most recent form that's in DRAFT state
+          const draftForm = forms.find(
+            (form: { id: string; data: any }) =>
+              form.data && form.data.status === "DRAFT",
+          );
+
+          if (draftForm) {
+            // Use the existing draft form instead of creating a new one
+            router.push(`/offerform?id=${draftForm.id}&existing=true`);
+            return;
+          }
+        }
+
+        // No existing draft form, create a new one
+        const newFormId = uuidv4();
         router.push(`/offerform?id=${newFormId}`);
       } else {
-        // For unauthenticated users
+        // For unauthenticated users, check localStorage for existing drafts
+        const currentFormId = localStorage.getItem("currentFormId");
+        if (currentFormId) {
+          const storedData = localStorage.getItem(`form_${currentFormId}`);
+          if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            // Only use stored form if it exists and is in draft state
+            if (parsedData && parsedData.status === "DRAFT") {
+              router.push(`/offerform?id=${currentFormId}`);
+              return;
+            }
+          }
+        }
+
+        // No existing draft form, create a new one
+        const newFormId = uuidv4();
         localStorage.setItem("currentFormId", newFormId);
         router.push(`/offerform?id=${newFormId}`);
       }

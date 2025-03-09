@@ -5,6 +5,8 @@ import { useSession } from "next-auth/react";
 import { CalendarIcon } from "lucide-react";
 import { FormData } from "../../components/types";
 import { format } from "date-fns";
+import { v4 as uuidv4 } from "uuid";
+import { toast } from "react-hot-toast";
 
 interface SavedForm {
   id: string;
@@ -15,8 +17,8 @@ interface SavedForm {
 
 const Dashboard = () => {
   const router = useRouter();
-  const { data: session, status } = useSession();
-  const [savedForms, setSavedForms] = useState<SavedForm[]>([]);
+  const { status } = useSession();
+  const [forms, setForms] = useState<SavedForm[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formToDelete, setFormToDelete] = useState<string | null>(null);
@@ -29,8 +31,8 @@ const Dashboard = () => {
           const response = await fetch("/api/form/list");
           if (response.ok) {
             const data = await response.json();
-            console.log('Fetched forms data:', data);
-            setSavedForms(data);
+            console.log("Fetched forms data:", data);
+            setForms(data);
           } else {
             console.error("Failed to fetch forms:", response.statusText);
           }
@@ -47,9 +49,27 @@ const Dashboard = () => {
     fetchForms();
   }, [status, router]);
 
-  const createNewForm = () => {
-    localStorage.removeItem("currentFormId");
-    router.push("/offerform");
+  const createNewForm = async () => {
+    try {
+      // First, look for existing draft forms
+      const existingDraftForm = forms.find(
+        (form) => form.data && form.data.status === "DRAFT",
+      );
+
+      if (existingDraftForm) {
+        // Use the existing draft form instead of creating a new one
+        router.push(`/offerform?id=${existingDraftForm.id}&existing=true`);
+        return;
+      }
+
+      // No existing draft form, create a new one
+      const newFormId = uuidv4();
+      localStorage.removeItem("currentFormId");
+      router.push(`/offerform?id=${newFormId}`);
+    } catch (error) {
+      console.error("Error creating form:", error);
+      toast.error("Failed to create a new form. Please try again.");
+    }
   };
 
   const initiateDeleteForm = (formId: string) => {
@@ -64,7 +84,7 @@ const Dashboard = () => {
           method: "DELETE",
         });
         if (response.ok) {
-          setSavedForms((prevForms) =>
+          setForms((prevForms) =>
             prevForms.filter((form) => form.id !== formToDelete),
           );
         } else {
@@ -146,11 +166,11 @@ const Dashboard = () => {
           </div>
 
           <h2 className="mb-4 text-xl font-semibold text-gray-800">
-            Current Offers ({savedForms.length})
+            Current Offers ({forms.length})
           </h2>
           {isLoading ? (
             <p>Loading offers...</p>
-          ) : savedForms.length > 0 ? (
+          ) : forms.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full">
                 <thead className="bg-gray-50">
@@ -174,18 +194,18 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {savedForms.map((form) => (
+                  {forms.map((form) => (
                     <tr key={form.id} className="hover:bg-gray-50">
                       <td className="whitespace-nowrap px-6 py-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {form.data && typeof form.data === 'object' 
+                          {form.data && typeof form.data === "object"
                             ? form.data["property-address"] || "N/A"
                             : "N/A"}
                         </div>
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">
                         <div className="text-sm text-gray-500">
-                          {form.data && typeof form.data === 'object'
+                          {form.data && typeof form.data === "object"
                             ? form.data["property-location"] || "N/A"
                             : "N/A"}
                         </div>
