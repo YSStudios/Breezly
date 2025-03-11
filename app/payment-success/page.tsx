@@ -153,10 +153,10 @@ export default function PaymentSuccessPage() {
   // Loading state
   if (isLoading && !offerDetails) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Processing Your Purchase</h2>
+      <div className="flex justify-center items-center p-4 min-h-screen bg-gray-50">
+        <div className="p-8 w-full max-w-md text-center bg-white rounded-lg shadow-md">
+          <div className="mx-auto mb-4 w-12 h-12 rounded-full border-t-2 border-b-2 border-teal-500 animate-spin"></div>
+          <h2 className="mb-2 text-xl font-semibold text-gray-800">Processing Your Purchase</h2>
           <p className="text-gray-600">Please wait while we finalize your offer...</p>
         </div>
       </div>
@@ -166,31 +166,31 @@ export default function PaymentSuccessPage() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8 text-center">
-          <div className="text-yellow-500 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="flex justify-center items-center p-4 min-h-screen bg-gray-50">
+        <div className="p-8 w-full max-w-md text-center bg-white rounded-lg shadow-md">
+          <div className="mb-4 text-yellow-500">
+            <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">We're Processing Your Payment</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <h2 className="mb-2 text-xl font-semibold text-gray-800">We're Processing Your Payment</h2>
+          <p className="mb-6 text-gray-600">{error}</p>
           <div className="flex flex-col space-y-3">
             <button
               onClick={handleReturnToDashboard}
-              className="w-full px-4 py-2 text-white font-medium bg-teal-600 rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="px-4 py-2 w-full font-medium text-white bg-teal-600 rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
               Go to My Dashboard
             </button>
             <button
               onClick={() => window.location.reload()}
-              className="w-full px-4 py-2 text-teal-600 font-medium border border-teal-600 rounded-md hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="px-4 py-2 w-full font-medium text-teal-600 rounded-md border border-teal-600 hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
               Try Again
             </button>
             <button
               onClick={handleManualRetrieve}
-              className="w-full px-4 py-2 text-blue-600 font-medium border border-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 mt-3"
+              className="px-4 py-2 mt-3 w-full font-medium text-blue-600 rounded-md border border-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               Retrieve My Recent Offer
             </button>
@@ -202,24 +202,24 @@ export default function PaymentSuccessPage() {
 
   // Success state
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="px-4 py-12 min-h-screen bg-gray-50 sm:px-6 lg:px-8">
+      <div className="overflow-hidden mx-auto max-w-md bg-white rounded-lg shadow-md">
         <div className="p-6">
           <div className="flex justify-center">
-            <div className="rounded-full bg-green-100 p-3">
-              <svg className="h-8 w-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <div className="p-3 bg-green-100 rounded-full">
+              <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
               </svg>
             </div>
           </div>
           
-          <h2 className="mt-4 text-center text-2xl font-bold text-gray-900">Payment Successful!</h2>
+          <h2 className="mt-4 text-2xl font-bold text-center text-gray-900">Payment Successful!</h2>
           <p className="mt-2 text-center text-gray-600">
             Your offer has been successfully purchased and is now ready.
           </p>
           
           {offerDetails && (
-            <div className="mt-6 bg-gray-50 p-4 rounded-md">
+            <div className="p-4 mt-6 bg-gray-50 rounded-md">
               <h3 className="font-medium text-gray-900">Offer Details</h3>
               <p className="mt-2 text-sm text-gray-600">
                 <strong>Property:</strong> {offerDetails["property-address"] || "N/A"}
@@ -227,7 +227,7 @@ export default function PaymentSuccessPage() {
               <p className="text-sm text-gray-600">
                 <strong>Purchase Price:</strong> ${offerDetails["purchasePrice"] ? Number(offerDetails["purchasePrice"]).toLocaleString() : "N/A"}
               </p>
-              <p className="mt-2 text-xs text-gray-500 italic">
+              <p className="mt-2 text-xs italic text-gray-500">
                 The property address is now locked and cannot be modified.
               </p>
             </div>
@@ -237,7 +237,7 @@ export default function PaymentSuccessPage() {
             <button
               onClick={handleDownloadOffer}
               disabled={isLoading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:bg-gray-400"
+              className="flex justify-center px-4 py-2 w-full text-sm font-medium text-white bg-teal-600 rounded-md border border-transparent shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:bg-gray-400"
             >
               {isLoading ? "Processing..." : "Download Offer PDF"}
             </button>
@@ -245,14 +245,14 @@ export default function PaymentSuccessPage() {
             <button
               onClick={handleEmailOffer}
               disabled={isLoading || emailSent}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
+              className="flex justify-center px-4 py-2 w-full text-sm font-medium text-white bg-blue-600 rounded-md border border-transparent shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
             >
               {isLoading ? "Processing..." : emailSent ? "Email Sent ✓" : "Email Offer"}
             </button>
             
             <button
               onClick={handleReturnToDashboard}
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+              className="flex justify-center px-4 py-2 w-full text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
             >
               Return to Dashboard
             </button>
