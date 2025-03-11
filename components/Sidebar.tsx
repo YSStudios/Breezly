@@ -11,7 +11,7 @@ import {
 
 export const substepNames: { [key: number]: { [key: number]: string } } = {
   1: { 1: "" },
-  2: { 1: "Location", 2: "Address", 3: "Features", 4: "Additional Details" },
+  2: { 1: "Address", 2: "Features", 3: "Additional Details" },
   3: { 1: "Buyer Details", 2: "Seller Details" },
   4: { 1: "Purchase Price", 2: "Deposit", 3: "Escrow Agent", 4: "Closing and Possession", 5: "Conditions", 6: "Condition Details", 7: "Additional Clauses", 8: "Acceptance"},
   5: { 1: "Review and Generate" }

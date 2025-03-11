@@ -3,8 +3,9 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 interface FormState {
   currentStep: number;
   currentSubstep: number;
-  formData: any;
+  formData: { [key: string]: any };
   formId: string | null;
+  isPaid: boolean;
 }
 
 const initialState: FormState = {
@@ -12,6 +13,7 @@ const initialState: FormState = {
   currentSubstep: 1,
   formData: {},
   formId: null,
+  isPaid: false,
 };
 
 const formSlice = createSlice({

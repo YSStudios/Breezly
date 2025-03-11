@@ -70,9 +70,8 @@ export interface FormQuestionProps {
 
 export interface StepProps {
   currentSubstep: number;
-  onInputChange: (name: string, value: string) => void;
-  formData: FormData;
-  onPropertySelect: (property: any) => void;
+  formData: any;
+  onInputChange: (field: string, value: any) => void;
 }
 
 export interface ConditionDetailsProps {
