@@ -28,9 +28,9 @@ interface Step1Props {
 
 const Step1: React.FC<Step1Props> = ({ currentSubstep }) => {
   const { watch, setValue } = useFormContext();
-  
+
   const propertyType = watch("property-type") || "";
-  
+
   const handlePropertyClick = (property: any) => {
     setValue("property-type", property.value);
   };
@@ -60,7 +60,7 @@ const Step1: React.FC<Step1Props> = ({ currentSubstep }) => {
                     ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-teal-300
                     ${
                       isSelected
-                        ? "bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-lg animate-gradient-pulse"
+                        ? "animate-gradient-pulse bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-lg"
                         : "bg-white text-gray-700 shadow"
                     }
                   `}

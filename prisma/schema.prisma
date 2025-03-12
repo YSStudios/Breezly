@@ -39,13 +39,13 @@ model Session {
 
 model FormData {
   id        String   @id @default(cuid())
-  data      Json
   userId    String
+  data      Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  status    String?  @default("PENDING")
-  paymentId String?
   user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model User {
@@ -76,9 +76,9 @@ model Product {
   description String
   price       Float
   imageUrl    String
-  userId      String
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+  userId      String
   orderItems  OrderItem[]
   user        User        @relation(fields: [userId], references: [id])
 }

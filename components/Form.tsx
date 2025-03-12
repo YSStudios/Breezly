@@ -17,7 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const Form: React.FC = () => {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
-  
+
   // Local state for UI elements
   const [currentStep, setCurrentStep] = useState(1);
   const [currentSubstep, setCurrentSubstep] = useState(1);
@@ -34,30 +34,30 @@ const Form: React.FC = () => {
     defaultValues: {
       "property-type": "",
       "property-address": "",
-      "depositAmount": "",
-      "depositMethod": "",
-      "escrowAgent": "",
-      "escrowAgentName": "",
-      "possession": "",
-      "possessionDate": "",
-      "closingDate": "",
-      "hasConditions": "",
-      "purchasePrice": "",
-      "status": "DRAFT",
-      "paymentStatus": "",
-      "createdAt": new Date().toISOString(),
-    }
+      depositAmount: "",
+      depositMethod: "",
+      escrowAgent: "",
+      escrowAgentName: "",
+      possession: "",
+      possessionDate: "",
+      closingDate: "",
+      hasConditions: "",
+      purchasePrice: "",
+      status: "DRAFT",
+      paymentStatus: "",
+      createdAt: new Date().toISOString(),
+    },
   });
-  
+
   // Initialize form from URL or localStorage
   const initializeForm = useCallback(async () => {
     setIsLoading(true);
-    
+
     try {
       // Check if form ID is in URL
       const urlId = searchParams?.get("id");
-      let id = urlId || "";  // Ensure id is never null
-      
+      let id = urlId || ""; // Ensure id is never null
+
       if (!id) {
         // Check if there's a form in progress
         if (session) {
@@ -67,10 +67,10 @@ const Form: React.FC = () => {
             if (response.ok) {
               const forms = await response.json();
               // Find most recent draft
-              const draftForm = forms.find((form: any) => 
-                form.data && form.data.status === "DRAFT"
+              const draftForm = forms.find(
+                (form: any) => form.data && form.data.status === "DRAFT",
               );
-              
+
               if (draftForm) {
                 id = draftForm.id;
                 methods.reset(draftForm.data);
@@ -101,7 +101,7 @@ const Form: React.FC = () => {
             }
           }
         }
-        
+
         // If no existing form, create new one
         id = uuidv4();
       } else {
@@ -124,20 +124,20 @@ const Form: React.FC = () => {
           }
         }
       }
-      
+
       // Set the form ID
       setFormId(id);
-      
+
       // For new forms, initialize in DB/localStorage
       if (!urlId) {
         const initialData = methods.getValues();
-        
+
         if (session) {
           try {
             await fetch("/api/forms", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ formId: id, data: initialData })
+              body: JSON.stringify({ formId: id, data: initialData }),
             });
           } catch (error) {
             console.error("Error creating form:", error);
@@ -149,70 +149,78 @@ const Form: React.FC = () => {
       }
     } catch (error) {
       console.error("Error initializing form:", error);
-      setSaveError(`Error initializing form: ${error instanceof Error ? error.message : "Unknown error"}`);
+      setSaveError(
+        `Error initializing form: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
     } finally {
       setIsLoading(false);
     }
   }, [searchParams, session, methods]);
-  
+
   // Load form data on initial render
   useEffect(() => {
     initializeForm();
   }, [initializeForm]);
-  
+
   // Check if form is locked (paid)
   useEffect(() => {
     const formData = methods.getValues();
     setIsLocked(formData.paymentStatus === "PAID");
   }, [methods]);
-  
+
   // Save form data
   const saveFormData = async () => {
     if (!formId) return;
-    
+
     setShowSavingPopup(true);
-    
+
     try {
       const data = methods.getValues();
-      
+
       // Always save to localStorage
       localStorage.setItem(`form_${formId}`, JSON.stringify(data));
-      
+
       // If logged in, save to server
       if (session) {
         const response = await fetch("/api/form/save", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ formId, data })
+          body: JSON.stringify({ formId, data }),
         });
-        
+
         if (!response.ok) {
           throw new Error(`Server error: ${response.status}`);
         }
       }
-      
+
       setSaveError(null);
     } catch (error) {
       console.error("Error saving form:", error);
-      setSaveError(`Error saving: ${error instanceof Error ? error.message : "Unknown error"}`);
+      setSaveError(
+        `Error saving: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
     } finally {
       setTimeout(() => {
         setShowSavingPopup(false);
       }, 500);
     }
   };
-  
+
   // Step navigation
   const getMaxSubsteps = (step: number): number => {
     const maxSteps = { 1: 1, 2: 3, 3: 2, 4: 8, 5: 1 };
     return maxSteps[step as keyof typeof maxSteps] || 1;
   };
-  
+
   const nextSubstep = async () => {
     if (formId) {
       await saveFormData();
     }
-    
+
     const maxSubsteps = getMaxSubsteps(currentStep);
     if (currentSubstep < maxSubsteps) {
       setCurrentSubstep(currentSubstep + 1);
@@ -221,12 +229,12 @@ const Form: React.FC = () => {
       setCurrentSubstep(1);
     }
   };
-  
+
   const prevSubstep = async () => {
     if (formId) {
       await saveFormData();
     }
-    
+
     if (currentSubstep > 1) {
       setCurrentSubstep(currentSubstep - 1);
     } else if (currentStep > 1) {
@@ -234,40 +242,45 @@ const Form: React.FC = () => {
       setCurrentSubstep(getMaxSubsteps(currentStep - 1));
     }
   };
-  
+
   const goToStep = async (step: number, substep: number = 1) => {
     if (formId) {
       await saveFormData();
     }
-    
+
     setCurrentStep(step);
     setCurrentSubstep(substep);
   };
-  
+
   // Helper to get previous step name for navigation
   const getPreviousSubstepName = (): string | null => {
     if (currentSubstep > 1) {
       return substepNames[currentStep]?.[currentSubstep - 1] || null;
     } else if (currentStep > 1) {
       const prevStep = currentStep - 1;
-      if (Object.keys(substepNames[prevStep] || {}).length === 1 && !substepNames[prevStep]?.[1]) {
+      if (
+        Object.keys(substepNames[prevStep] || {}).length === 1 &&
+        !substepNames[prevStep]?.[1]
+      ) {
         return stepTitles[prevStep - 1];
       } else {
-        const lastSubstep = Math.max(...Object.keys(substepNames[prevStep] || {}).map(Number));
+        const lastSubstep = Math.max(
+          ...Object.keys(substepNames[prevStep] || {}).map(Number),
+        );
         return substepNames[prevStep]?.[lastSubstep] || null;
       }
     }
     return null;
   };
-  
+
   // Render the current step
   const renderStep = () => {
     const stepProps = {
       currentSubstep,
       formId,
-      isLocked
+      isLocked,
     };
-    
+
     const content = (
       <motion.div
         key={`step-${currentStep}-${currentSubstep}`}
@@ -280,13 +293,15 @@ const Form: React.FC = () => {
         {currentStep === 2 && <Step2 {...stepProps} />}
         {currentStep === 3 && <Step3 {...stepProps} />}
         {currentStep === 4 && <Step4 {...stepProps} />}
-        {currentStep === 5 && <Step5 formData={methods.getValues()} formId={formId} />}
+        {currentStep === 5 && (
+          <Step5 formData={methods.getValues()} formId={formId} />
+        )}
       </motion.div>
     );
-    
+
     return <AnimatePresence mode="wait">{content}</AnimatePresence>;
   };
-  
+
   // Handle email/download
   const handleDownloadOffer = async () => {
     setIsLoading(true);
@@ -294,14 +309,14 @@ const Form: React.FC = () => {
       const response = await fetch("/api/send-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          template: "offer-sent", 
-          data: methods.getValues() 
-        })
+        body: JSON.stringify({
+          template: "offer-sent",
+          data: methods.getValues(),
+        }),
       });
-      
+
       if (!response.ok) throw new Error("Failed to send email");
-      
+
       toast.success("Offer has been sent via email!");
     } catch (error) {
       console.error("Error sending email:", error);
@@ -310,33 +325,43 @@ const Form: React.FC = () => {
       setIsLoading(false);
     }
   };
-  
+
   // Render form header with property address
   const renderFormHeader = () => {
     const address = methods.watch("property-address");
     if (address) {
       return (
-        <div className="mb-6 border-gray-200 pb-4">
-          <h2 className="text-xl font-semibold capitalize text-gray-800">
-            Offer for: {address}
+        <div className="mb-6 rounded-lg border-gray-200 bg-gray-100 p-3">
+          <h2 className="text-xl font-semibold capitalize text-emerald-800">
+            Editing Offer: <p className="text-gray-700">{address}</p>
           </h2>
         </div>
       );
     }
     return null;
   };
-  
+
   // Render locked notification for paid forms
   const renderLockedNotification = () => {
     if (isLocked) {
       return (
         <div className="mb-6 rounded-md bg-blue-50 p-4">
           <div className="flex items-center">
-            <svg className="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+            <svg
+              className="h-5 w-5 text-blue-400"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                clipRule="evenodd"
+              />
             </svg>
             <p className="ml-3 text-sm font-medium text-blue-800">
-              This offer has been purchased and finalized. The property address cannot be modified.
+              This offer has been purchased and finalized. The property address
+              cannot be modified.
             </p>
           </div>
         </div>
@@ -348,7 +373,7 @@ const Form: React.FC = () => {
   if (status === "loading") {
     return <div>Loading...</div>;
   }
-  
+
   return (
     <FormProvider {...methods}>
       <div className="container mx-auto mt-8 px-4 py-4">
@@ -356,37 +381,46 @@ const Form: React.FC = () => {
           {/* Desktop Sidebar */}
           <div className="hidden md:block md:w-1/4">
             <div className="sticky top-24">
-              <Sidebar 
-                currentStep={currentStep} 
-                currentSubstep={currentSubstep} 
-                handleSetStep={goToStep} 
+              <Sidebar
+                currentStep={currentStep}
+                currentSubstep={currentSubstep}
+                handleSetStep={goToStep}
               />
             </div>
           </div>
-          
+
           {/* Main content */}
           <div className="md:w-3/4">
             {renderFormHeader()}
             {renderLockedNotification()}
-            
+
             {/* Back navigation */}
             {getPreviousSubstepName() && (
               <button
                 onClick={prevSubstep}
                 className="mb-4 flex items-center text-emerald-600 hover:text-emerald-700"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="mr-2 h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 {getPreviousSubstepName()}
               </button>
             )}
-            
+
             {/* Form content */}
-            <div className="mb-8 rounded-lg bg-white p-8 shadow-lg">
+            <div className="mb-8 rounded-lg bg-gray-100 p-8 shadow-lg">
               {renderStep()}
             </div>
-            
+
             {/* Navigation buttons */}
             <div className="relative flex items-center justify-between">
               {(currentStep > 1 || currentSubstep > 1) && (
@@ -394,18 +428,29 @@ const Form: React.FC = () => {
                   onClick={prevSubstep}
                   className="flex items-center rounded-full bg-gray-200 px-6 py-3 font-bold text-gray-700 transition-colors duration-300 hover:bg-gray-300"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="mr-2 h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   Previous
                 </button>
               )}
-              
+
               {currentStep === 5 ? (
                 <div className="mt-6 flex gap-4">
                   <button
                     className={`rounded px-4 py-2 font-bold text-white ${
-                      isLoading ? "cursor-not-allowed bg-blue-300" : "bg-blue-500 hover:bg-blue-700"
+                      isLoading
+                        ? "cursor-not-allowed bg-blue-300"
+                        : "bg-blue-500 hover:bg-blue-700"
                     }`}
                     onClick={handleDownloadOffer}
                     disabled={isLoading}
@@ -420,22 +465,31 @@ const Form: React.FC = () => {
                     className="flex items-center rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 px-6 py-3 font-bold text-white transition-all duration-300 hover:from-purple-500 hover:to-indigo-600"
                   >
                     Next
-                    <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="ml-2 h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </button>
                   <SavingPopup isVisible={showSavingPopup} />
                 </div>
               )}
             </div>
-            
+
             {/* Error display */}
             {saveError && (
               <div className="mt-4 rounded-lg bg-red-100 p-4 text-red-500">
                 <p>{saveError}</p>
               </div>
             )}
-            
+
             {/* Debug toggle */}
             <div className="mt-6 text-right">
               <button
@@ -446,7 +500,7 @@ const Form: React.FC = () => {
                 {showDebug ? "Hide Debug" : "Show Debug"}
               </button>
             </div>
-            
+
             {/* Debug panel */}
             {showDebug && (
               <div className="mt-8 rounded-lg border border-gray-300 bg-gray-100 p-4">
