@@ -1,303 +1,287 @@
 "use client";
 import React, { useEffect, useState, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
+import { FormProvider, useForm } from "react-hook-form";
+import { toast } from "react-hot-toast";
 import Sidebar, { substepNames, stepTitles } from "./Sidebar";
 import Step1 from "./steps/Step1";
 import Step2 from "./steps/Step2";
 import Step3 from "./steps/Step3";
 import Step4 from "./steps/Step4";
 import Step5 from "./steps/Step5";
-import {
-  setStep,
-  setSubstep,
-  setFormData,
-  setFormId,
-  updateFormState,
-} from "../app/store/slices/formSlice";
-import type { RootState } from "../app/store/store";
-// import generatePDF from "../utils/generatePDF";
 import SavingPopup from "./SavingPopup";
 import { motion, AnimatePresence } from "framer-motion";
 
-const DEBUG = process.env.NODE_ENV === "development";
-
 const Form: React.FC = () => {
-  const dispatch = useDispatch();
-  // const router = useRouter();
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
 
-  // Get state from Redux
-  const currentStep = useSelector((state: RootState) => state.form.currentStep);
-  const currentSubstep = useSelector(
-    (state: RootState) => state.form.currentSubstep,
-  );
-  const formData = useSelector((state: RootState) => state.form.formData);
-  const formId = useSelector((state: RootState) => state.form.formId);
-
-  // Remove local state for step management since it's now in Redux
+  // Local state for UI elements
+  const [currentStep, setCurrentStep] = useState(1);
+  const [currentSubstep, setCurrentSubstep] = useState(1);
+  const [formId, setFormId] = useState<string>("");
   const [showSavingPopup, setShowSavingPopup] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  // const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
 
-  //
-  const fetchFormData = useCallback(
-    async (id: string) => {
-      setIsLoading(true);
-      setSaveError(null);
-      try {
+  // Initialize React Hook Form with default empty values
+  // This ensures fields are defined even before data is loaded
+  const methods = useForm({
+    defaultValues: {
+      "property-type": "",
+      "property-address": "",
+      depositAmount: "",
+      depositMethod: "",
+      escrowAgent: "",
+      escrowAgentName: "",
+      possession: "",
+      possessionDate: "",
+      closingDate: "",
+      hasConditions: "",
+      purchasePrice: "",
+      status: "DRAFT",
+      paymentStatus: "",
+      createdAt: new Date().toISOString(),
+    },
+  });
+
+  // Initialize form from URL or localStorage
+  const initializeForm = useCallback(async () => {
+    setIsLoading(true);
+
+    try {
+      // Check if form ID is in URL
+      const urlId = searchParams?.get("id");
+      let id = urlId || ""; // Ensure id is never null
+
+      if (!id) {
+        // Check if there's a form in progress
         if (session) {
-          // Check if this is a new form
-          const isNewForm =
-            id === searchParams?.get("id") && !searchParams?.get("existing");
-
-          if (isNewForm) {
-            // Initialize empty form data immediately
-            dispatch(
-              setFormData({
-                status: "DRAFT",
-                createdAt: new Date().toISOString(),
-              }),
-            );
-
-            try {
-              // Attempt to create in database but don't block on failure
-              await fetch("/api/forms", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  formId: id,
-                  data: {
-                    status: "DRAFT",
-                    createdAt: new Date().toISOString(),
-                  },
-                }),
-              });
-            } catch (error) {
-              // Log error but continue with empty form
-              console.warn(
-                "Failed to initialize form in database, continuing with empty form",
+          // Try to fetch existing forms from API
+          try {
+            const response = await fetch("/api/form/list");
+            if (response.ok) {
+              const forms = await response.json();
+              // Find most recent draft
+              const draftForm = forms.find(
+                (form: any) => form.data && form.data.status === "DRAFT",
               );
+
+              if (draftForm) {
+                id = draftForm.id;
+                methods.reset(draftForm.data);
+                setFormId(id);
+                return;
+              }
             }
-          } else {
-            // Try to fetch existing form
-            const response = await fetch(`/api/form/get?id=${id}`);
-            if (!response.ok) {
-              throw new Error(
-                `Failed to fetch form data: ${response.statusText}`,
-              );
-            }
-            const data = await response.json();
-            dispatch(setFormData(data));
+          } catch (error) {
+            console.error("Error fetching forms:", error);
           }
         } else {
-          // Handle unauthenticated users
+          // Check localStorage for anonymous users
+          const storedId = localStorage.getItem("currentFormId");
+          if (storedId) {
+            const storedData = localStorage.getItem(`form_${storedId}`);
+            if (storedData) {
+              try {
+                const parsedData = JSON.parse(storedData);
+                if (parsedData && parsedData.status === "DRAFT") {
+                  id = storedId;
+                  methods.reset(parsedData);
+                  setFormId(id);
+                  return;
+                }
+              } catch (error) {
+                console.error("Error parsing localStorage data:", error);
+              }
+            }
+          }
+        }
+
+        // If no existing form, create new one
+        id = uuidv4();
+      } else {
+        // Form ID is in URL, try to load it
+        if (session) {
+          const response = await fetch(`/api/form/get?id=${id}`);
+          if (response.ok) {
+            const data = await response.json();
+            methods.reset(data.data || data);
+          }
+        } else {
+          // Try localStorage for the specific ID
           const storedData = localStorage.getItem(`form_${id}`);
           if (storedData) {
-            dispatch(setFormData(JSON.parse(storedData)));
-          } else {
-            dispatch(
-              setFormData({
-                status: "DRAFT",
-                createdAt: new Date().toISOString(),
-              }),
-            );
+            try {
+              methods.reset(JSON.parse(storedData));
+            } catch (error) {
+              console.error("Error parsing localStorage data:", error);
+            }
           }
         }
-      } catch (error) {
-        console.error("Error fetching form data:", error);
-        // For new forms, don't show error to user, just initialize empty form
-        if (!searchParams?.get("existing")) {
-          dispatch(
-            setFormData({
-              status: "DRAFT",
-              createdAt: new Date().toISOString(),
-            }),
-          );
-        } else {
-          setSaveError(
-            `Error fetching form data: ${
-              error instanceof Error ? error.message : "Unknown error"
-            }`,
-          );
-        }
-      } finally {
-        setIsLoading(false);
       }
-    },
-    [session, dispatch, searchParams],
-  );
 
-  useEffect(() => {
-    const initForm = async () => {
-      const urlFormId = searchParams?.get("id");
+      // Set the form ID
+      setFormId(id);
 
-      if (urlFormId) {
-        dispatch(setFormId(urlFormId));
-        await fetchFormData(urlFormId);
-      } else {
-        const newFormId = uuidv4();
-        dispatch(setFormId(newFormId));
-
-        dispatch(setFormData({}));
+      // For new forms, initialize in DB/localStorage
+      if (!urlId) {
+        const initialData = methods.getValues();
 
         if (session) {
           try {
-            const response = await fetch("/api/forms", {
+            await fetch("/api/forms", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                formId: newFormId,
-                data: {},
-              }),
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ formId: id, data: initialData }),
             });
-
-            if (!response.ok) {
-              throw new Error("Failed to create new form");
-            }
           } catch (error) {
-            console.error("Error creating new form:", error);
-            setSaveError("Failed to initialize new form");
+            console.error("Error creating form:", error);
           }
+        } else {
+          localStorage.setItem("currentFormId", id);
+          localStorage.setItem(`form_${id}`, JSON.stringify(initialData));
         }
       }
-    };
-
-    initForm();
-  }, [searchParams, fetchFormData, dispatch, session]);
-
-  // Update handlers to use Redux
-  const handleSetStep = (step: number, substep?: number) => {
-    dispatch(setStep(step));
-    dispatch(setSubstep(substep || 1));
-  };
-
-  const handleInputChange = (name: string, value: any) => {
-    dispatch(
-      updateFormState({
-        formData: {
-          ...formData,
-          [name]: value,
-        },
-      }),
-    );
-  };
-
-  const saveFormData = () => {
-    if (!formId) {
-      setSaveError("No formId available for saving");
-      return;
-    }
-
-    try {
-      console.log("Saving form data with ID:", formId);
-      localStorage.setItem(`form_${formId}`, JSON.stringify(formData));
-
-      if (session) {
-        console.log("Saving to server with ID:", formId);
-        fetch("/api/form/save", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ formId, data: formData }),
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("Failed to save form data to server");
-            }
-            setSaveError(null); // Clear any existing errors
-          })
-          .catch((error) => {
-            console.error("Error saving form data:", error);
-            setSaveError(`Error saving form data: ${error.message}`);
-          });
-      }
     } catch (error) {
-      console.error("Error saving form data:", error);
+      console.error("Error initializing form:", error);
       setSaveError(
-        `Error saving form data: ${
+        `Error initializing form: ${
           error instanceof Error ? error.message : "Unknown error"
         }`,
       );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchParams, session, methods]);
+
+  // Load form data on initial render
+  useEffect(() => {
+    initializeForm();
+  }, [initializeForm]);
+
+  // Check if form is locked (paid)
+  useEffect(() => {
+    const formData = methods.getValues();
+    setIsLocked(formData.paymentStatus === "PAID");
+  }, [methods]);
+
+  // Save form data
+  const saveFormData = async () => {
+    if (!formId) return;
+
+    setShowSavingPopup(true);
+
+    try {
+      const data = methods.getValues();
+
+      // Always save to localStorage
+      localStorage.setItem(`form_${formId}`, JSON.stringify(data));
+
+      // If logged in, save to server
+      if (session) {
+        const response = await fetch("/api/form/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ formId, data }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+      }
+
+      setSaveError(null);
+    } catch (error) {
+      console.error("Error saving form:", error);
+      setSaveError(
+        `Error saving: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    } finally {
+      setTimeout(() => {
+        setShowSavingPopup(false);
+      }, 500);
     }
   };
 
+  // Step navigation
+  const getMaxSubsteps = (step: number): number => {
+    const maxSteps = { 1: 1, 2: 3, 3: 2, 4: 8, 5: 1 };
+    return maxSteps[step as keyof typeof maxSteps] || 1;
+  };
+
+  const nextSubstep = async () => {
+    if (formId) {
+      await saveFormData();
+    }
+
+    const maxSubsteps = getMaxSubsteps(currentStep);
+    if (currentSubstep < maxSubsteps) {
+      setCurrentSubstep(currentSubstep + 1);
+    } else if (currentStep < 5) {
+      setCurrentStep(currentStep + 1);
+      setCurrentSubstep(1);
+    }
+  };
+
+  const prevSubstep = async () => {
+    if (formId) {
+      await saveFormData();
+    }
+
+    if (currentSubstep > 1) {
+      setCurrentSubstep(currentSubstep - 1);
+    } else if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+      setCurrentSubstep(getMaxSubsteps(currentStep - 1));
+    }
+  };
+
+  const goToStep = async (step: number, substep: number = 1) => {
+    if (formId) {
+      await saveFormData();
+    }
+
+    setCurrentStep(step);
+    setCurrentSubstep(substep);
+  };
+
+  // Helper to get previous step name for navigation
   const getPreviousSubstepName = (): string | null => {
     if (currentSubstep > 1) {
-      // If we're not on the first substep of current step
       return substepNames[currentStep]?.[currentSubstep - 1] || null;
     } else if (currentStep > 1) {
-      // If we're on first substep of any step after step 1
-      const previousStep = currentStep - 1;
-      // Use stepTitles for steps without substeps
+      const prevStep = currentStep - 1;
       if (
-        Object.keys(substepNames[previousStep]).length === 1 &&
-        !substepNames[previousStep][1]
+        Object.keys(substepNames[prevStep] || {}).length === 1 &&
+        !substepNames[prevStep]?.[1]
       ) {
-        return stepTitles[previousStep - 1];
+        return stepTitles[prevStep - 1];
       } else {
-        // Get the last substep of the previous step
-        const lastSubstepNumber = Math.max(
-          ...Object.keys(substepNames[previousStep]).map(Number),
+        const lastSubstep = Math.max(
+          ...Object.keys(substepNames[prevStep] || {}).map(Number),
         );
-        return substepNames[previousStep][lastSubstepNumber] || null;
+        return substepNames[prevStep]?.[lastSubstep] || null;
       }
     }
     return null;
   };
 
-  const nextSubstep = () => {
-    const maxSubsteps = getMaxSubsteps(currentStep);
-    if (currentSubstep < maxSubsteps) {
-      dispatch(setSubstep(currentSubstep + 1));
-    } else if (currentStep < 5) {
-      // Assuming you have 5 steps total
-      dispatch(setStep(currentStep + 1));
-      dispatch(setSubstep(1));
-    }
-  };
-
-  const prevSubstep = () => {
-    if (currentSubstep > 1) {
-      dispatch(setSubstep(currentSubstep - 1));
-    } else if (currentStep > 1) {
-      dispatch(setStep(currentStep - 1));
-      // Get the max substeps for the previous step and set it as the current substep
-      const maxSubstepsForPreviousStep = getMaxSubsteps(currentStep - 1);
-      dispatch(setSubstep(maxSubstepsForPreviousStep));
-    }
-  };
-
-  const getMaxSubsteps = (step: number): number => {
-    // Define the number of substeps for each step
-    switch (step) {
-      case 1:
-        return 1;
-      case 2:
-        return 4;
-      case 3:
-        return 2;
-      case 4:
-        return 8;
-      case 5:
-        return 1;
-      default:
-        return 1;
-    }
-  };
-
+  // Render the current step
   const renderStep = () => {
-    console.log("Rendering step, formData:", formData);
-    const stepContent = (
+    const stepProps = {
+      currentSubstep,
+      formId,
+      isLocked,
+    };
+
+    const content = (
       <motion.div
         key={`step-${currentStep}-${currentSubstep}`}
         initial={{ opacity: 0, x: 20 }}
@@ -305,133 +289,81 @@ const Form: React.FC = () => {
         exit={{ opacity: 0, x: -20 }}
         transition={{ duration: 0.3 }}
       >
-        {(() => {
-          switch (currentStep) {
-            case 1:
-              return (
-                <Step1
-                  currentSubstep={currentSubstep}
-                  onInputChange={handleInputChange}
-                  formData={formData}
-                  onPropertySelect={handlePropertySelection}
-                />
-              );
-            case 2:
-              return (
-                <Step2
-                  currentSubstep={currentSubstep}
-                  onInputChange={handleInputChange}
-                  formData={formData}
-                  onPropertySelect={handlePropertySelection}
-                />
-              );
-            case 3:
-              return (
-                <Step3
-                  currentSubstep={currentSubstep}
-                  onInputChange={handleInputChange}
-                  formData={formData}
-                  onPropertySelect={handlePropertySelection}
-                />
-              );
-            case 4:
-              return (
-                <Step4
-                  currentSubstep={currentSubstep}
-                  onInputChange={handleInputChange}
-                  formData={formData}
-                  onPropertySelect={handlePropertySelection}
-                />
-              );
-            case 5:
-              return <Step5 formData={formData} formId={formId || ""} />; // Pass formId here with a default value if null
-            default:
-              return null;
-          }
-        })()}
+        {currentStep === 1 && <Step1 {...stepProps} />}
+        {currentStep === 2 && <Step2 {...stepProps} />}
+        {currentStep === 3 && <Step3 {...stepProps} />}
+        {currentStep === 4 && <Step4 {...stepProps} />}
+        {currentStep === 5 && (
+          <Step5 formData={methods.getValues()} formId={formId} />
+        )}
       </motion.div>
     );
 
-    return <AnimatePresence mode="wait">{stepContent}</AnimatePresence>;
+    return <AnimatePresence mode="wait">{content}</AnimatePresence>;
   };
 
-  // const handleGeneratePDF = async () => {
-  //   try {
-  //     const pdfBlob = await generatePDF(formData); // Generate the PDF
-  //     const url = URL.createObjectURL(pdfBlob); // Create a URL for the Blob
-
-  //     const link = document.createElement("a"); // Create a link element
-  //     link.href = url; // Set the URL as the link's href
-  //     link.download = "offer.pdf"; // Set the default file name
-  //     document.body.appendChild(link); // Append the link to the body
-  //     link.click(); // Programmatically click the link to trigger the download
-  //     document.body.removeChild(link); // Remove the link from the document
-  //     URL.revokeObjectURL(url); // Clean up the URL object
-  //   } catch (error) {
-  //     console.error("Error generating PDF:", error);
-  //   }
-  // };
-
-  const handleNextClick = async () => {
-    setShowSavingPopup(true);
-    await saveFormData();
-
-    // Wait for the animation to complete before moving to the next step
-    setTimeout(() => {
-      nextSubstep();
-      setShowSavingPopup(false);
-    }, 500); // Adjust this time to match your animation duration
-  };
-
-  const handlePropertySelection = (propertyData: any) => {
-    console.log("Selected property data:", propertyData);
-    dispatch(
-      updateFormState({
-        formData: {
-          ...formData,
-          "property-type": propertyData.value,
-        },
-      }),
-    );
-  };
-
+  // Handle email/download
   const handleDownloadOffer = async () => {
-    console.log("Template:", "offer-sent");
-    console.log("Form Data:", formData);
-
     setIsLoading(true);
     try {
       const response = await fetch("/api/send-email", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ template: "offer-sent", data: formData }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          template: "offer-sent",
+          data: methods.getValues(),
+        }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Email API Error:", errorData);
-        throw new Error("Failed to send email");
-      }
+      if (!response.ok) throw new Error("Failed to send email");
 
-      alert("Offer has been sent via email!");
+      toast.success("Offer has been sent via email!");
     } catch (error) {
-      console.error("Error:", error);
-      alert("Failed to send offer via email. Please try again.");
+      console.error("Error sending email:", error);
+      toast.error("Failed to send offer. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Render form header with property address
   const renderFormHeader = () => {
-    console.log("Form Data in header:", formData);
-    if (formData["property-address"]) {
+    const address = methods.watch("property-address");
+    if (address) {
       return (
-        <div className="mb-6 border-gray-200 pb-4">
-          <h2 className="text-xl font-semibold capitalize text-gray-800">
-            Offer for: {formData["property-address"]}
+        <div className="mb-6 rounded-lg border-gray-200 bg-gray-100 p-3">
+          <h2 className="text-xl font-semibold capitalize text-emerald-800">
+            Editing Offer: <p className="text-gray-700">{address}</p>
           </h2>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Render locked notification for paid forms
+  const renderLockedNotification = () => {
+    if (isLocked) {
+      return (
+        <div className="mb-6 rounded-md bg-blue-50 p-4">
+          <div className="flex items-center">
+            <svg
+              className="h-5 w-5 text-blue-400"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <p className="ml-3 text-sm font-medium text-blue-800">
+              This offer has been purchased and finalized. The property address
+              cannot be modified.
+            </p>
+          </div>
         </div>
       );
     }
@@ -441,51 +373,32 @@ const Form: React.FC = () => {
   if (status === "loading") {
     return <div>Loading...</div>;
   }
-  return (
-    <div className="container mx-auto mt-8 px-4 py-4">
-      <div className="flex flex-col gap-8 md:flex-row">
-        {/* Desktop Sidebar - Hide on mobile */}
-        <div className="hidden md:block md:w-1/4">
-          <div className="sticky top-24">
-            <Sidebar
-              currentStep={currentStep}
-              currentSubstep={currentSubstep}
-              handleSetStep={handleSetStep}
-            />
-          </div>
-        </div>
 
-        {/* Rest of the form content */}
-        <div className="md:w-3/4">
-          {renderFormHeader()}
-          {getPreviousSubstepName() && (
-            <button
-              onClick={prevSubstep}
-              className="mb-4 flex items-center text-emerald-600 hover:text-emerald-700"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="mr-2 h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              {getPreviousSubstepName()}
-            </button>
-          )}
-          <div className="mb-8 rounded-lg bg-white p-8 shadow-lg">
-            {renderStep()}
+  return (
+    <FormProvider {...methods}>
+      <div className="container mx-auto mt-8 px-4 py-4">
+        <div className="flex flex-col gap-8 md:flex-row">
+          {/* Desktop Sidebar */}
+          <div className="hidden md:block md:w-1/4">
+            <div className="sticky top-24">
+              <Sidebar
+                currentStep={currentStep}
+                currentSubstep={currentSubstep}
+                handleSetStep={goToStep}
+              />
+            </div>
           </div>
-          <div className="relative flex items-center justify-between">
-            {currentStep > 1 || currentSubstep > 1 ? (
+
+          {/* Main content */}
+          <div className="md:w-3/4">
+            {renderFormHeader()}
+            {renderLockedNotification()}
+
+            {/* Back navigation */}
+            {getPreviousSubstepName() && (
               <button
                 onClick={prevSubstep}
-                className="flex items-center rounded-full bg-gray-200 px-6 py-3 font-bold text-gray-700 transition-colors duration-300 hover:bg-gray-300"
+                className="mb-4 flex items-center text-emerald-600 hover:text-emerald-700"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -495,72 +408,112 @@ const Form: React.FC = () => {
                 >
                   <path
                     fillRule="evenodd"
-                    d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                    d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z"
                     clipRule="evenodd"
                   />
                 </svg>
-                Previous
+                {getPreviousSubstepName()}
               </button>
-            ) : (
-              <div></div>
             )}
-            {currentStep === 5 ? (
-              <div className="mt-6 flex gap-4">
+
+            {/* Form content */}
+            <div className="mb-8 rounded-lg bg-gray-100 p-8 shadow-lg">
+              {renderStep()}
+            </div>
+
+            {/* Navigation buttons */}
+            <div className="relative flex items-center justify-between">
+              {(currentStep > 1 || currentSubstep > 1) && (
                 <button
-                  className={`rounded px-4 py-2 font-bold text-white ${
-                    isLoading
-                      ? "cursor-not-allowed bg-blue-300"
-                      : "bg-blue-500 hover:bg-blue-700"
-                  }`}
-                  onClick={handleDownloadOffer}
-                  disabled={isLoading}
+                  onClick={prevSubstep}
+                  className="flex items-center rounded-full bg-gray-200 px-6 py-3 font-bold text-gray-700 transition-colors duration-300 hover:bg-gray-300"
                 >
-                  {isLoading ? "Sending..." : "Download My Offer"}
-                </button>
-              </div>
-            ) : (
-              <div className="relative">
-                <button
-                  onClick={handleNextClick}
-                  className="flex items-center rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 px-6 py-3 font-bold text-white transition-all duration-300 hover:from-purple-500 hover:to-indigo-600"
-                >
-                  Next
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="ml-2 h-5 w-5"
+                    className="mr-2 h-5 w-5"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
                     <path
                       fillRule="evenodd"
-                      d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                      d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
                       clipRule="evenodd"
                     />
                   </svg>
+                  Previous
                 </button>
-                <SavingPopup isVisible={showSavingPopup} />
+              )}
+
+              {currentStep === 5 ? (
+                <div className="mt-6 flex gap-4">
+                  <button
+                    className={`rounded px-4 py-2 font-bold text-white ${
+                      isLoading
+                        ? "cursor-not-allowed bg-blue-300"
+                        : "bg-blue-500 hover:bg-blue-700"
+                    }`}
+                    onClick={handleDownloadOffer}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Sending..." : "Download My Offer"}
+                  </button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <button
+                    onClick={nextSubstep}
+                    className="flex items-center rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 px-6 py-3 font-bold text-white transition-all duration-300 hover:from-purple-500 hover:to-indigo-600"
+                  >
+                    Next
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="ml-2 h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                  <SavingPopup isVisible={showSavingPopup} />
+                </div>
+              )}
+            </div>
+
+            {/* Error display */}
+            {saveError && (
+              <div className="mt-4 rounded-lg bg-red-100 p-4 text-red-500">
+                <p>{saveError}</p>
+              </div>
+            )}
+
+            {/* Debug toggle */}
+            <div className="mt-6 text-right">
+              <button
+                type="button"
+                onClick={() => setShowDebug(!showDebug)}
+                className="rounded bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+              >
+                {showDebug ? "Hide Debug" : "Show Debug"}
+              </button>
+            </div>
+
+            {/* Debug panel */}
+            {showDebug && (
+              <div className="mt-8 rounded-lg border border-gray-300 bg-gray-100 p-4">
+                <h3 className="text-lg font-bold text-gray-700">Form Data</h3>
+                <pre className="mt-2 max-h-96 overflow-auto rounded border border-gray-200 bg-white p-3 text-xs">
+                  {JSON.stringify(methods.getValues(), null, 2)}
+                </pre>
               </div>
             )}
           </div>
-          {saveError && (
-            <div className="mt-4 rounded-lg bg-red-100 p-4 text-red-500">
-              <p>{saveError}</p>
-              {DEBUG && (
-                <details className="mt-2">
-                  <summary className="cursor-pointer text-sm font-medium">
-                    Debug Information
-                  </summary>
-                  <pre className="mt-2 overflow-auto text-xs">
-                    {JSON.stringify({ session, formId, formData }, null, 2)}
-                  </pre>
-                </details>
-              )}
-            </div>
-          )}
         </div>
       </div>
-      {/* Remove any submit button if it exists */}
-    </div>
+    </FormProvider>
   );
 };
 

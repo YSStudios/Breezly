@@ -26,7 +26,9 @@ export interface TextField {
   placeholder?: string;
   helperText?: string;
   prefix?: string;
-  type?: 'text' | 'date';
+  type?: 'text' | 'date' | 'mapbox-autocomplete';
+  accessToken?: string;
+  additionalComponent?: React.ReactNode;
 }
 
 export interface NumberFieldProps {
@@ -48,7 +50,8 @@ export interface Option {
 
 export interface Question {
   id: string;
-  description?: string;
+  description: string;
+  tooltip?: string;
   options: Option[];
   multiSelect?: boolean;
 }
@@ -67,13 +70,21 @@ export interface FormQuestionProps {
 
 export interface StepProps {
   currentSubstep: number;
-  onInputChange: (name: string, value: string) => void;
-  formData: FormData;
-  onPropertySelect: (property: any) => void;
+  formData: any;
+  onInputChange: (field: string, value: any) => void;
 }
 
 export interface ConditionDetailsProps {
   selectedConditions: string[];
   onInputChange: (name: string, value: string) => void;
   formData: FormData;
+}
+
+// Mapbox Types
+export interface MapboxFeature {
+  id: string;
+  place_name: string;
+  geometry: {
+    coordinates: [number, number];
+  };
 }

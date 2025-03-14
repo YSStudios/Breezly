@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { StepProps } from "../types";
+import React from "react";
+import { useFormContext } from "react-hook-form";
 import {
   HomeIcon,
   BuildingOffice2Icon,
@@ -21,15 +21,18 @@ const propertyTypes = [
   { value: "other", label: "Other", icon: QuestionMarkCircleIcon },
 ];
 
-const Step1: React.FC<StepProps> = ({
-  currentSubstep,
-  onInputChange,
-  formData,
-  onPropertySelect,
-}) => {
+interface Step1Props {
+  currentSubstep: number;
+  isLocked?: boolean;
+}
+
+const Step1: React.FC<Step1Props> = ({ currentSubstep }) => {
+  const { watch, setValue } = useFormContext();
+
+  const propertyType = watch("property-type") || "";
+
   const handlePropertyClick = (property: any) => {
-    onInputChange("property-type", property.value);
-    onPropertySelect(property);
+    setValue("property-type", property.value);
   };
 
   return (
@@ -45,7 +48,7 @@ const Step1: React.FC<StepProps> = ({
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
             {propertyTypes.map((type) => {
               const Icon = type.icon;
-              const isSelected = formData["property-type"] === type.value;
+              const isSelected = propertyType === type.value;
               return (
                 <button
                   key={type.value}
@@ -57,7 +60,7 @@ const Step1: React.FC<StepProps> = ({
                     ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-teal-300
                     ${
                       isSelected
-                        ? "bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-lg animate-gradient-pulse"
+                        ? "animate-gradient-pulse bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-lg"
                         : "bg-white text-gray-700 shadow"
                     }
                   `}
