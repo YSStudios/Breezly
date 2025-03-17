@@ -51,20 +51,29 @@ const Dashboard = () => {
 
   const createNewForm = async () => {
     try {
-      // First, look for existing draft forms
-      const existingDraftForm = forms.find(
-        (form) => form.data && form.data.status === "DRAFT",
-      );
-
-      if (existingDraftForm) {
-        // Use the existing draft form instead of creating a new one
-        router.push(`/offerform?id=${existingDraftForm.id}&existing=true`);
-        return;
-      }
-
-      // No existing draft form, create a new one
+      // Create a new unique form ID
       const newFormId = uuidv4();
+      
+      // Create a new form in the database
+      const response = await fetch("/api/form/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: newFormId,
+          data: { status: "DRAFT" }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create a new form");
+      }
+      
+      // Clear any previously stored form ID
       localStorage.removeItem("currentFormId");
+      
+      // Navigate to the offer form with the new ID
       router.push(`/offerform?id=${newFormId}`);
     } catch (error) {
       console.error("Error creating form:", error);

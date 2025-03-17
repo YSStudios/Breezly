@@ -55,43 +55,77 @@ https://user-images.githubusercontent.com/28986134/212368288-12f41e37-aa8c-4e0a-
 ### Frameworks
 
 - [Next.js](https://nextjs.org/) – React framework for building performant apps with the best developer experience
-- [Auth.js](https://authjs.dev/) – Handle user authentication with ease with providers like Google, Twitter, GitHub, etc.
-- [Prisma](https://www.prisma.io/) – Typescript-first ORM for Node.js
+- [Auth.js](https://authjs.dev/) – Handle user authentication with ease with providers like Google, Twitter, GitHub, etc.
+- [Prisma](https://www.prisma.io/) – Typescript-first ORM for Node.js
 
 ### Platforms
 
-- [Vercel](https://vercel.com/) – Easily preview & deploy changes with git
-- [Vercel Postgres](https://vercel.com/postgres) – Serverless Postgres at the Edge
+- [Vercel](https://vercel.com/) – Easily preview & deploy changes with git
+- [Vercel Postgres](https://vercel.com/postgres) – Serverless Postgres at the Edge
 
 ### UI
 
-- [Tailwind CSS](https://tailwindcss.com/) – Utility-first CSS framework for rapid UI development
-- [Radix](https://www.radix-ui.com/) – Primitives like modal, popover, etc. to build a stellar user experience
-- [Framer Motion](https://framer.com/motion) – Motion library for React to animate components with ease
-- [Lucide](https://lucide.dev/) – Beautifully simple, pixel-perfect icons
-- [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) – Optimize custom fonts and remove external network requests for improved performance
+- [Tailwind CSS](https://tailwindcss.com/) – Utility-first CSS framework for rapid UI development
+- [Radix](https://www.radix-ui.com/) – Primitives like modal, popover, etc. to build a stellar user experience
+- [Framer Motion](https://framer.com/motion) – Motion library for React to animate components with ease
+- [Lucide](https://lucide.dev/) – Beautifully simple, pixel-perfect icons
+- [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) – Optimize custom fonts and remove external network requests for improved performance
 - [`ImageResponse`](https://nextjs.org/docs/app/api-reference/functions/image-response) – Generate dynamic Open Graph images at the edge
 
 ### Hooks and Utilities
 
-- `useIntersectionObserver` –  React hook to observe when an element enters or leaves the viewport
-- `useLocalStorage` – Persist data in the browser's local storage
+- `useIntersectionObserver` – React hook to observe when an element enters or leaves the viewport
+- `useLocalStorage` – Persist data in the browser's local storage
 - `useScroll` – React hook to observe scroll position ([example](https://github.com/steven-tey/precedent/blob/main/components/layout/navbar.tsx#L12))
-- `nFormatter` – Format numbers with suffixes like `1.2k` or `1.2M`
+- `nFormatter` – Format numbers with suffixes like `1.2k` or `1.2M`
 - `capitalize` – Capitalize the first letter of a string
 - `truncate` – Truncate a string to a specified length
-- [`use-debounce`](https://www.npmjs.com/package/use-debounce) – Debounce a function call / state update
+- [`use-debounce`](https://www.npmjs.com/package/use-debounce) – Debounce a function call / state update
 
 ### Code Quality
 
-- [TypeScript](https://www.typescriptlang.org/) – Static type checker for end-to-end typesafety
-- [Prettier](https://prettier.io/) – Opinionated code formatter for consistent code style
-- [ESLint](https://eslint.org/) – Pluggable linter for Next.js and TypeScript
+- [TypeScript](https://www.typescriptlang.org/) – Static type checker for end-to-end typesafety
+- [Prettier](https://prettier.io/) – Opinionated code formatter for consistent code style
+- [ESLint](https://eslint.org/) – Pluggable linter for Next.js and TypeScript
 
 ### Miscellaneous
 
-- [Vercel Analytics](https://vercel.com/analytics) – Track unique visitors, pageviews, and more in a privacy-friendly way
+- [Vercel Analytics](https://vercel.com/analytics) – Track unique visitors, pageviews, and more in a privacy-friendly way
 
 ## Author
 
 - Steven Tey ([@steventey](https://twitter.com/steventey))
+
+## Stripe Integration Setup
+
+### 1. Set up Stripe Account and Products
+1. Create a [Stripe account](https://stripe.com/docs/development/quickstart) if you don't have one
+2. Create a product with a price in your Stripe Dashboard
+3. Note down the price ID (it starts with `price_`)
+
+### 2. Configure Environment Variables
+Create or update your `.env.local` file with the following:
+
+```
+# Stripe API keys
+STRIPE_SECRET_KEY=sk_test_your_secret_key
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key
+
+# Base URL
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+
+# Stripe Price ID for the standard plan
+STRIPE_PRICE_STANDARD=price_your_price_id
+
+# Stripe Pricing Table ID (if using Stripe Pricing Table)
+NEXT_PUBLIC_STRIPE_PRICING_TABLE_ID=prctbl_your_pricing_table_id
+```
+
+### 3. Webhook setup (for production)
+1. Create a webhook in your Stripe Dashboard
+2. Set the endpoint URL to `https://your-domain.com/api/webhooks/stripe`
+3. Add the `checkout.session.completed` event
+4. Note down the webhook signing secret and add it to your environment:
+```
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+```

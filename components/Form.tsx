@@ -304,24 +304,21 @@ const Form: React.FC = () => {
 
   // Handle email/download
   const handleDownloadOffer = async () => {
+    // Only allow downloading if the form is purchased
+    if (!isLocked) {
+      toast.error("You need to purchase this offer before downloading");
+      return;
+    }
+    
     setIsLoading(true);
     try {
-      const response = await fetch("/api/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          template: "offer-sent",
-          data: methods.getValues(),
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to send email");
-
-      toast.success("Offer has been sent via email!");
+      // Direct download approach using the generate-pdf endpoint
+      window.location.href = `/api/generate-pdf?formId=${formId}`;
+      // Wait a bit before setting loading to false
+      setTimeout(() => setIsLoading(false), 1000);
     } catch (error) {
-      console.error("Error sending email:", error);
-      toast.error("Failed to send offer. Please try again.");
-    } finally {
+      console.error("Error downloading offer:", error);
+      toast.error("Failed to download your offer. Please try again.");
       setIsLoading(false);
     }
   };
@@ -446,17 +443,19 @@ const Form: React.FC = () => {
 
               {currentStep === 5 ? (
                 <div className="mt-6 flex gap-4">
-                  <button
-                    className={`rounded px-4 py-2 font-bold text-white ${
-                      isLoading
-                        ? "cursor-not-allowed bg-blue-300"
-                        : "bg-blue-500 hover:bg-blue-700"
-                    }`}
-                    onClick={handleDownloadOffer}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Sending..." : "Download My Offer"}
-                  </button>
+                  {isLocked ? (
+                    <button
+                      className={`rounded px-4 py-2 font-bold text-white ${
+                        isLoading
+                          ? "cursor-not-allowed bg-blue-300"
+                          : "bg-blue-500 hover:bg-blue-700"
+                      }`}
+                      onClick={handleDownloadOffer}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Processing..." : "Download My Offer"}
+                    </button>
+                  ) : null}
                 </div>
               ) : (
                 <div className="relative">
