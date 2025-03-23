@@ -134,7 +134,7 @@ const Form: React.FC = () => {
 
         if (session) {
           try {
-            await fetch("/api/forms", {
+            await fetch("/api/form/save", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ formId: id, data: initialData }),

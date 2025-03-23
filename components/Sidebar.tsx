@@ -55,11 +55,7 @@ const baseStepConfigs: StepConfigs = {
   5: {
     title: "Review & Send",
     icon: PaperAirplaneIcon,
-    substeps: {
-      1: "Review Offer",
-      2: "Generate PDF",
-      3: "Send to Seller",
-    },
+    substeps: {},
   },
 };
 

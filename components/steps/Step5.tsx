@@ -504,7 +504,7 @@ const Step5: React.FC<Step5Props> = ({ formData, formId }) => {
                       </button>
 
                       {/* Test mode button */}
-                      <button
+                      {/* <button
                         onClick={() => {
                           // FOR TESTING ONLY: Simulate purchase completion
                           // This bypasses Stripe and marks the offer as purchased directly
@@ -534,7 +534,7 @@ const Step5: React.FC<Step5Props> = ({ formData, formId }) => {
                         className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-center font-medium text-gray-700 hover:bg-gray-50"
                       >
                         Test Purchase (Skip Payment)
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                 </div>
