@@ -3,7 +3,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import MultiStepForm from "./MultiStepForm";
 
 function App() {
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState<Record<string, any>>({});
   
   // Initialize form methods with formData as defaultValues
   const methods = useForm({
@@ -35,7 +35,7 @@ function App() {
     return () => subscription.unsubscribe();
   }, [methods]);
   
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: string, value: any): void => {
     setFormData(prev => ({
       ...prev,
       [field]: value
