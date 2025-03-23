@@ -312,7 +312,7 @@ export function OfferSummary({ formId, formData = {} }: OfferSummaryProps) {
             </div>
             
             <div className="mb-4 text-sm text-gray-600 bg-blue-50 p-3 rounded-md">
-              <p>The recipient will receive the offer details, and you'll receive a confirmation email to your account email address.</p>
+              <p>The recipient will receive the offer details, and you&apos;ll receive a confirmation email to your account email address.</p>
             </div>
             
             <form onSubmit={handleSendEmailSubmit} className="space-y-4">
@@ -379,7 +379,7 @@ export function OfferSummary({ formId, formData = {} }: OfferSummaryProps) {
               <h3 className="text-sm font-medium text-green-800">Email Sent!</h3>
               <div className="mt-1 text-sm text-green-700">
                 <p>Your offer has been successfully emailed to {emailFormData.recipientEmail}.</p>
-                <p className="mt-1">You'll also receive a confirmation email.</p>
+                <p className="mt-1">You&apos;ll also receive a confirmation email.</p>
               </div>
             </div>
             <div className="ml-auto pl-3">

@@ -252,10 +252,14 @@ export default function PaymentSuccessPage() {
             
             <button
               onClick={handleReturnToDashboard}
-              className="flex justify-center px-4 py-2 w-full text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+              className="flex justify-center px-4 py-2 w-full text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Return to Dashboard
             </button>
+            
+            <p className="pt-2 text-xs text-center text-gray-500">
+              We&apos;ve sent a confirmation to your email address. Can&apos;t find it? Check your spam folder.
+            </p>
           </div>
         </div>
       </div>

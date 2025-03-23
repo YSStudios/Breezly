@@ -8,25 +8,55 @@ import DynamicFormSection from './DynamicFormSection';
 import { 
   FinancingConditions, 
   InspectionConditions,
-  AppraisalConditions,
-  TitleConditions,
   AdditionalClauses
 } from './field-groups';
 import { useFormContext } from 'react-hook-form';
 import { OfferSummary } from './OfferSummary';
 
+// Define types for substep configurations
+interface BaseSubstepConfig {
+  id: string;
+  title: string;
+}
+
+interface FieldsSubstepConfig extends BaseSubstepConfig {
+  fields?: Array<{
+    id: string;
+    type: string;
+    label?: string;
+    [key: string]: any;
+  }>;
+}
+
+interface PartySubstepConfig extends BaseSubstepConfig {
+  partyType?: 'buyer' | 'seller';
+  maxParties?: number;
+}
+
+interface SpecializedSubstepConfig extends BaseSubstepConfig {
+  specialComponent?: string;
+}
+
+interface ReviewSubstepConfig extends BaseSubstepConfig {
+  isReview?: boolean;
+}
+
+type SubstepConfig = FieldsSubstepConfig & PartySubstepConfig & SpecializedSubstepConfig & ReviewSubstepConfig;
+
 export function StepContent() {
   const { currentStep, currentSubstep, isLocked, formId } = useFormFlow();
   const { control, getValues } = useFormContext();
   const stepConfig = getStepByIndex(currentStep);
-  const substepConfig = getSubstepByIndex(currentStep, currentSubstep);
+  const substepConfig = getSubstepByIndex(currentStep, currentSubstep) as SubstepConfig;
+  const { parties, addParty, removeParty, getPartyLabel } = useParties(
+    (substepConfig?.partyType as 'buyer' | 'seller') || 'buyer',
+    substepConfig?.maxParties || 5
+  );
   
   // Handle specialized component mappings
   const specializedComponents: Record<string, React.ReactNode> = {
     'financing': <FinancingConditions />,
     'inspection': <InspectionConditions />,
-    'appraisal': <AppraisalConditions />,
-    'title': <TitleConditions />,
     'additional-clauses': <AdditionalClauses />
   };
   
@@ -49,13 +79,6 @@ export function StepContent() {
   
   // Render parties section (buyer/seller)
   if (substepConfig?.partyType) {
-    const {
-      parties,
-      addParty,
-      removeParty,
-      getPartyLabel
-    } = useParties(substepConfig.partyType as 'buyer' | 'seller', substepConfig.maxParties || 5);
-    
     const renderParty = (index: number) => (
       <PartyField
         partyType={substepConfig.partyType as 'buyer' | 'seller'}

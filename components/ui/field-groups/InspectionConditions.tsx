@@ -7,6 +7,7 @@ import { DateField } from '../form/DateField';
 export function InspectionConditions() {
   const { control } = useFormContext();
   const inspectionType = useWatch({ control, name: 'inspection-type' });
+  const inspectionResponse = useWatch({ control, name: 'inspection-response' });
   
   const inspectionOptions = [
     { value: 'standard', label: 'Standard Inspection Period' },
@@ -41,7 +42,7 @@ export function InspectionConditions() {
             label="Response Period"
           />
           
-          {useWatch({ control, name: 'inspection-response' }) === 'custom' && (
+          {inspectionResponse === 'custom' && (
             <TextField
               name="inspection-response-custom"
               label="Custom Response Period"
