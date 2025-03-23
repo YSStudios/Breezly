@@ -1,5 +1,5 @@
 import React from "react";
-import { useFormContext, Controller, Control } from "react-hook-form";
+import { useFormContext, Controller, Control, useWatch, FieldValues } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
 import { Option, TextField } from "../types";
 
@@ -162,12 +162,17 @@ export const RadioFieldWithText: React.FC<RadioFieldWithTextProps> = ({
   const formContext = useFormContext();
   const controlToUse = control || (formContext ? formContext.control : null);
   
+  // Using null coalescing for control
+  const value = useWatch({
+    control: controlToUse ?? undefined,
+    name,
+    defaultValue: ""
+  });
+  
   if (!controlToUse) {
     console.error("No form control available. Make sure the component is within a FormProvider.");
     return <div>Error: Form control not available</div>;
   }
-
-  const value = controlToUse.watch(name);
 
   return (
     <div className="space-y-4">
@@ -321,17 +326,22 @@ export const CheckboxField: React.FC<CheckboxFieldProps> = ({ name, options, lab
   const formContext = useFormContext();
   const controlToUse = control || (formContext ? formContext.control : null);
   
+  // Using null coalescing for control
+  const watchedValue = useWatch({
+    control: controlToUse ?? undefined,
+    name,
+    defaultValue: []
+  });
+  
   if (!controlToUse) {
     console.error("No form control available. Make sure the component is within a FormProvider.");
     return <div>Error: Form control not available</div>;
   }
-
-  const value = controlToUse.watch(name) || [];
   
   // Convert string to array if needed
-  const selectedValues = typeof value === 'string' 
-    ? value.split(',').filter(v => v.trim() !== '')
-    : Array.isArray(value) ? value : [];
+  const selectedValues = typeof watchedValue === 'string' 
+    ? watchedValue.split(',').filter(v => v.trim() !== '')
+    : Array.isArray(watchedValue) ? watchedValue : [];
 
   return (
     <div className="space-y-4">
@@ -452,7 +462,7 @@ export const MoneyField: React.FC<MoneyFieldProps> = ({ name, label, placeholder
         name={name}
         control={controlToUse}
         render={({ field }) => {
-          const handleChange = (e) => {
+          const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             // Process input, removing non-numeric characters except dots
             const value = e.target.value.replace(/[^0-9.]/g, '');
             field.onChange(value);
