@@ -221,12 +221,25 @@ const Form: React.FC = () => {
       await saveFormData();
     }
 
-    const maxSubsteps = getMaxSubsteps(currentStep);
-    if (currentSubstep < maxSubsteps) {
-      setCurrentSubstep(currentSubstep + 1);
-    } else if (currentStep < 5) {
-      setCurrentStep(currentStep + 1);
+    // Check if we're on the acceptance deadline page
+    const hasConditions = methods.getValues("hasConditions");
+    const isAcceptanceDeadlinePage =
+      currentStep === 4 &&
+      ((hasConditions === "Yes" && currentSubstep === 8) ||
+        (hasConditions === "No" && currentSubstep === 7));
+
+    if (isAcceptanceDeadlinePage) {
+      // Go directly to step 5
+      setCurrentStep(5);
       setCurrentSubstep(1);
+    } else {
+      const maxSubsteps = getMaxSubsteps(currentStep);
+      if (currentSubstep < maxSubsteps) {
+        setCurrentSubstep(currentSubstep + 1);
+      } else if (currentStep < 5) {
+        setCurrentStep(currentStep + 1);
+        setCurrentSubstep(1);
+      }
     }
   };
 
@@ -275,12 +288,6 @@ const Form: React.FC = () => {
 
   // Render the current step
   const renderStep = () => {
-    const stepProps = {
-      currentSubstep,
-      formId,
-      isLocked,
-    };
-
     const content = (
       <motion.div
         key={`step-${currentStep}-${currentSubstep}`}
@@ -289,13 +296,34 @@ const Form: React.FC = () => {
         exit={{ opacity: 0, x: -20 }}
         transition={{ duration: 0.3 }}
       >
-        {currentStep === 1 && <Step1 {...stepProps} />}
-        {currentStep === 2 && <Step2 {...stepProps} />}
-        {currentStep === 3 && <Step3 {...stepProps} />}
-        {currentStep === 4 && <Step4 {...stepProps} />}
-        {currentStep === 5 && (
-          <Step5 formData={methods.getValues()} formId={formId} />
-        )}
+        {(() => {
+          switch (currentStep) {
+            case 1:
+              return (
+                <Step1 currentSubstep={currentSubstep} isLocked={isLocked} />
+              );
+            case 2:
+              return (
+                <Step2 currentSubstep={currentSubstep} isLocked={isLocked} />
+              );
+            case 3:
+              return (
+                <Step3 currentSubstep={currentSubstep} isLocked={isLocked} />
+              );
+            case 4:
+              return (
+                <Step4
+                  currentSubstep={currentSubstep}
+                  isLocked={isLocked}
+                  handleSetStep={goToStep}
+                />
+              );
+            case 5:
+              return <Step5 formData={methods.getValues()} formId={formId} />;
+            default:
+              return null;
+          }
+        })()}
       </motion.div>
     );
 
@@ -309,7 +337,7 @@ const Form: React.FC = () => {
       toast.error("You need to purchase this offer before downloading");
       return;
     }
-    
+
     setIsLoading(true);
     try {
       // Direct download approach using the generate-pdf endpoint

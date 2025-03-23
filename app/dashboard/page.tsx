@@ -53,7 +53,7 @@ const Dashboard = () => {
     try {
       // Create a new unique form ID
       const newFormId = uuidv4();
-      
+
       // Create a new form in the database
       const response = await fetch("/api/form/create", {
         method: "POST",
@@ -62,17 +62,17 @@ const Dashboard = () => {
         },
         body: JSON.stringify({
           id: newFormId,
-          data: { status: "DRAFT" }
+          data: { status: "DRAFT" },
         }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to create a new form");
       }
-      
+
       // Clear any previously stored form ID
       localStorage.removeItem("currentFormId");
-      
+
       // Navigate to the offer form with the new ID
       router.push(`/offerform?id=${newFormId}`);
     } catch (error) {
@@ -122,7 +122,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[90rem] px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-900">My Offers</h1>
           <div className="flex items-center">
@@ -181,45 +181,62 @@ const Dashboard = () => {
             <p>Loading offers...</p>
           ) : forms.length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="min-w-full">
+              <table className="w-full table-fixed">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="w-[20%] px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Property Address
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                      Location
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="w-[15%] px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Purchase Price
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                      Seller&apos;s Email
+                    <th className="w-[15%] px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Buyer Name
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="w-[15%] px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Seller Name
+                    </th>
+                    <th className="w-[10%] px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Status
+                    </th>
+                    <th className="w-[15%] px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Updated Date
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"></th>
+                    <th className="w-[10%] px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {forms.map((form) => (
                     <tr key={form.id} className="hover:bg-gray-50">
-                      <td className="whitespace-nowrap px-6 py-4">
+                      <td className="px-4 py-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {form.data && typeof form.data === "object"
-                            ? form.data["property-address"] || "N/A"
-                            : "N/A"}
+                          {form.data &&
+                          typeof form.data === "object" &&
+                          form.data["property-address"] ? (
+                            <>
+                              {/* First line: Street address */}
+                              <div>
+                                {form.data["property-address"]
+                                  .split(",")
+                                  .slice(0, 2)
+                                  .join(",")}
+                              </div>
+                              {/* Second line: State, ZIP, Country */}
+                              <div className="mt-1 text-sm text-gray-900">
+                                {form.data["property-address"]
+                                  .split(",")
+                                  .slice(2)
+                                  .join(",")}
+                              </div>
+                            </>
+                          ) : (
+                            "N/A"
+                          )}
                         </div>
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4">
-                        <div className="text-sm text-gray-500">
-                          {form.data && typeof form.data === "object"
-                            ? form.data["property-location"] || "N/A"
-                            : "N/A"}
-                        </div>
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4">
+                      <td className="whitespace-nowrap px-4 py-4">
                         <div className="text-sm text-gray-500">
                           {form.data["purchasePrice"]
                             ? `$${Number(
@@ -228,33 +245,53 @@ const Dashboard = () => {
                             : "N/A"}
                         </div>
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4">
+                      <td className="whitespace-nowrap px-4 py-4">
                         <div className="text-sm text-gray-500">
-                          {form.data["email"] || "N/A"}
+                          {form.data["name-buyer-0"] || "N/A"}
                         </div>
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4">
+                      <td className="whitespace-nowrap px-4 py-4">
+                        <div className="text-sm text-gray-500">
+                          {form.data["name-seller-0"] || "N/A"}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="text-sm text-gray-500">
+                          {form.data["paymentStatus"] === "PAID" ? (
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                              Purchased
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
+                              Draft
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-4">
                         <div className="text-sm text-gray-500">
                           {form.updatedAt
                             ? format(new Date(form.updatedAt), "dd MMM yyyy")
                             : "N/A"}
                         </div>
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                        <button
-                          onClick={() =>
-                            router.push(`/offerform?id=${form.id}`)
-                          }
-                          className="mr-4 text-indigo-600 hover:text-indigo-900"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => initiateDeleteForm(form.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Delete
-                        </button>
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex justify-end space-x-3">
+                          <button
+                            onClick={() =>
+                              router.push(`/offerform?id=${form.id}`)
+                            }
+                            className="text-sm font-medium text-indigo-600 hover:text-indigo-900"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => initiateDeleteForm(form.id)}
+                            className="text-sm font-medium text-red-600 hover:text-red-900"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

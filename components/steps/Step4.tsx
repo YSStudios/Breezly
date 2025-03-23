@@ -16,13 +16,15 @@ import {
 interface Step4Props {
   currentSubstep: number;
   isLocked?: boolean;
+  handleSetStep: (step: number, substep: number) => void;
 }
 
-const Step4: React.FC<Step4Props> = ({ currentSubstep }) => {
+const Step4: React.FC<Step4Props> = ({
+  currentSubstep,
+  isLocked,
+  handleSetStep,
+}) => {
   const { control, watch } = useFormContext();
-
-  // Watch values for conditional rendering
-  // const depositMethod = watch("depositMethod");
   const hasConditions = watch("hasConditions");
 
   // Define option configurations
@@ -46,18 +48,6 @@ const Step4: React.FC<Step4Props> = ({ currentSubstep }) => {
       hasTextField: true,
     },
   ];
-
-  // const depositDueDateOptions = [
-  //   { value: "Unsure", label: "Unsure", icon: QuestionMarkCircleIcon },
-  //   {
-  //     value: "Specify date",
-  //     label: "Specify date",
-  //     icon: CalendarIcon,
-  //     hasDateField: true,
-  //     dateFieldName: "depositDueDate",
-  //     dateFieldLabel: "Select Due Date",
-  //   },
-  // ];
 
   const escrowAgentOptions = [
     {
@@ -106,21 +96,6 @@ const Step4: React.FC<Step4Props> = ({ currentSubstep }) => {
     { value: "No", label: "No", icon: QuestionMarkCircleIcon },
   ];
 
-  // const additionalClauseOptions = [
-  //   { value: "yes", label: "Yes" },
-  //   { value: "no", label: "No" },
-  // ];
-
-  const acceptanceOptions = [
-    {
-      value: "deadline",
-      label: "Acceptance Deadline",
-      hasDateField: true,
-      dateFieldName: "acceptanceDeadline",
-      dateFieldLabel: "When is the deadline for acceptance?",
-    },
-  ];
-
   // Add this new component for date fields
   const DateField = ({ name, label }: { name: string; label?: string }) => {
     const { control } = useFormContext();
@@ -140,7 +115,9 @@ const Step4: React.FC<Step4Props> = ({ currentSubstep }) => {
               type="date"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
               value={field.value || ""}
-              onChange={field.onChange}
+              onChange={(e) => {
+                field.onChange(e);
+              }}
               onClick={(e) => e.stopPropagation()}
             />
           )}
@@ -898,7 +875,9 @@ const Step4: React.FC<Step4Props> = ({ currentSubstep }) => {
                         type="date"
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
                         value={field.value || ""}
-                        onChange={field.onChange}
+                        onChange={(e) => {
+                          field.onChange(e);
+                        }}
                       />
                     </div>
                   )}
@@ -1732,17 +1711,50 @@ const Step4: React.FC<Step4Props> = ({ currentSubstep }) => {
         </>
       )}
 
-      {currentSubstep === 6 && <AdditionalConditionDetails />}
-
-      {currentSubstep === 7 && <AdditionalClauses />}
-
-      {currentSubstep === 8 && (
+      {currentSubstep === 6 && (
         <>
-          <h2 className="mb-4 text-2xl font-bold">Acceptance</h2>
+          {hasConditions === "Yes" ? (
+            <AdditionalConditionDetails />
+          ) : (
+            <AdditionalClauses />
+          )}
+        </>
+      )}
+
+      {currentSubstep === 7 && hasConditions === "Yes" && <AdditionalClauses />}
+
+      {((currentSubstep === 8 && hasConditions === "Yes") ||
+        (currentSubstep === 7 && hasConditions === "No")) && (
+        <>
+          <h2 className="mb-4 text-2xl font-bold">Acceptance Deadline</h2>
           <h3 className="mb-2 text-lg font-medium">
             What is the deadline for the seller to accept this offer?
           </h3>
-          {renderRadioOptions("acceptanceMethod", acceptanceOptions)}
+          <div className="mt-4">
+            <Controller
+              name="acceptanceDeadline"
+              control={control}
+              render={({ field }) => (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Acceptance Deadline
+                  </label>
+                  <input
+                    type="date"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+                    value={field.value || ""}
+                    onChange={(e) => {
+                      field.onChange(e);
+                    }}
+                  />
+                  <p className="mt-2 text-sm text-gray-500">
+                    Select the date by which the seller must accept or reject
+                    this offer. Click Next to proceed to review your offer.
+                  </p>
+                </div>
+              )}
+            />
+          </div>
         </>
       )}
     </div>
