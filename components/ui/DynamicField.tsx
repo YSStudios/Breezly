@@ -30,15 +30,12 @@ interface DynamicFieldProps {
 export function DynamicField({ field, disabled = false }: DynamicFieldProps) {
   const { control } = useFormContext();
   
-  // Always call useWatch, but conditionally use its value
-  const watchedValue = field.conditionalDisplay 
-    ? useWatch({ 
-        control, 
-        name: field.conditionalDisplay.field 
-      }) 
-    : null;
+  // Always call useWatch unconditionally
+  // If no conditional display, use a dummy field name that will never match
+  const watchFieldName = field.conditionalDisplay?.field || 'non-existent-field';
+  const watchedValue = useWatch({ control, name: watchFieldName });
   
-  // Handle conditional display
+  // Handle conditional display - only check if conditionalDisplay exists
   if (field.conditionalDisplay && watchedValue !== field.conditionalDisplay.value) {
     return null;
   }

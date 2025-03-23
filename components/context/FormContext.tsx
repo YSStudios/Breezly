@@ -68,12 +68,14 @@ export function FormFlowProvider({
   
   // Sync form changes with parent component if needed
   useEffect(() => {
-    if (onFormChange) {
-      const subscription = methods.watch((values) => {
+    // Always call watch, but only use it if onFormChange is provided
+    const subscription = methods.watch((values) => {
+      if (onFormChange) {
         onFormChange(values);
-      });
-      return () => subscription.unsubscribe();
-    }
+      }
+    });
+    
+    return () => subscription.unsubscribe();
   }, [methods, onFormChange]);
   
   // Update URL when step/substep changes
