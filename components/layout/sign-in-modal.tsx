@@ -70,10 +70,10 @@ const SignInModal = ({ showSignInModal, setShowSignInModal }: SignInModalProps) 
     <Modal showModal={showSignInModal} setShowModal={setShowSignInModal}>
       <div className="w-full overflow-hidden shadow-xl md:max-w-md md:rounded-2xl md:border md:border-gray-200">
         <div className="flex flex-col items-center justify-center space-y-3 border-b border-gray-200 bg-white px-4 py-6 pt-8 text-center md:px-16">
-          <a href="https://offerapp.vercel.app">
+          <a href="https://www.breezly.co">
             <Image
               src="/applogo.webp"
-              alt="OfferApp"
+              alt="Breezly"
               width={30}
               height={30}
               className="mr-2 rounded-sm"

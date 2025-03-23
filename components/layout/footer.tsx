@@ -19,7 +19,7 @@ export default function Footer() {
 							>
 								<Image
 									src="/breezlylogo-green.svg"
-									alt="OfferApp"
+									alt="Breezly"
 									width="200"
 									height="50"
 									className="mr-2 rounded-sm"

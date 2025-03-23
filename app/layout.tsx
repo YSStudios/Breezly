@@ -11,10 +11,10 @@ import { CartProvider } from "contexts/CartContext";
 import ReduxProvider from "@/components/providers/ReduxProvider";
 
 export const metadata = {
-  title: "OfferApp - Send real estate offers quick and easy",
+  title: "Breezly - Send real estate offers quick and easy",
   description:
-    "Offer app is a completely self-powered real-estate offer writing platform. Save thousands and get your real-estate offer sent quickly and easily.",
-  metadataBase: new URL("https://offerapp.vercel.app"),
+    "Breezly is a completely self-powered real-estate offer writing platform. Save thousands and get your real-estate offer sent quickly and easily.",
+  metadataBase: new URL("https://www.breezly.co"),
 };
 
 export default async function RootLayout({
