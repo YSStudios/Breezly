@@ -30,14 +30,17 @@ interface DynamicFieldProps {
 export function DynamicField({ field, disabled = false }: DynamicFieldProps) {
   const { control } = useFormContext();
   
+  // Always call useWatch, but conditionally use its value
+  const watchedValue = field.conditionalDisplay 
+    ? useWatch({ 
+        control, 
+        name: field.conditionalDisplay.field 
+      }) 
+    : null;
+  
   // Handle conditional display
-  if (field.conditionalDisplay) {
-    const { field: dependentField, value } = field.conditionalDisplay;
-    const watchedValue = useWatch({ control, name: dependentField });
-    
-    if (watchedValue !== value) {
-      return null;
-    }
+  if (field.conditionalDisplay && watchedValue !== field.conditionalDisplay.value) {
+    return null;
   }
   
   // Render the appropriate field based on type
@@ -72,7 +75,6 @@ export function DynamicField({ field, disabled = false }: DynamicFieldProps) {
           name={field.id}
           label={field.label}
           options={field.options || []}
-          disabled={disabled}
         />
       );
       
@@ -83,7 +85,6 @@ export function DynamicField({ field, disabled = false }: DynamicFieldProps) {
           label={field.label}
           options={field.options || []}
           columns={4}
-          disabled={disabled}
         />
       );
       
