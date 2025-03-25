@@ -1,69 +1,36 @@
-import { useState, Dispatch, SetStateAction, useCallback, useMemo } from "react";
+import {
+  useState,
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useMemo,
+} from "react";
 import { signIn } from "next-auth/react";
 import Modal from "@/components/shared/modal";
 import { LoadingDots, Google } from "@/components/shared/icons";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface SignInModalProps {
   showSignInModal: boolean;
   setShowSignInModal: Dispatch<SetStateAction<boolean>>;
 }
 
-const SignInModal = ({ showSignInModal, setShowSignInModal }: SignInModalProps) => {
-  const [signInClicked, setSignInClicked] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+const SignInModal = ({
+  showSignInModal,
+  setShowSignInModal,
+}: SignInModalProps) => {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [isRegistering, setIsRegistering] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleOAuthSignIn = (provider: string) => {
     setIsLoading(true);
-    setError("");
+    signIn(provider);
+  };
 
-    if (isRegistering) {
-      try {
-        const res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, name }),
-        });
-        
-        if (res.ok) {
-          const result = await signIn("credentials", { redirect: false, email, password });
-          if (result?.error) {
-            setError(result.error);
-          } else {
-            setShowSignInModal(false);
-          }
-        } else {
-          const data = await res.json();
-          setError(data.message || "Registration failed");
-        }
-      } catch (error) {
-        setError("An error occurred during registration");
-      }
-    } else {
-      try {
-        const result = await signIn("credentials", {
-          redirect: false,
-          email,
-          password,
-        });
-
-        if (result?.error) {
-          setError(result.error);
-        } else {
-          setShowSignInModal(false);
-        }
-      } catch (error) {
-        setError("An error occurred. Please try again.");
-      }
-    }
-
-    setIsLoading(false);
+  const navigateToAuthPage = () => {
+    setShowSignInModal(false);
+    router.push("/auth/signin");
   };
 
   return (
@@ -79,65 +46,29 @@ const SignInModal = ({ showSignInModal, setShowSignInModal }: SignInModalProps) 
               className="mr-2 rounded-sm"
             />
           </a>
-          <h3 className="font-display text-2xl font-bold">
-            {isRegistering ? "Register" : "Sign In"}
-          </h3>
+          <h3 className="font-display text-2xl font-bold">Sign In</h3>
           <p className="text-sm text-gray-500">
-            This is strictly for demo purposes - only your email and profile
-            picture will be stored.
+            Choose your preferred sign in method
           </p>
         </div>
 
         <div className="flex flex-col space-y-4 bg-gray-50 px-4 py-8 md:px-16">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {isRegistering && (
-              <input
-                type="text"
-                placeholder="Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
+          <button
+            type="button"
+            onClick={() => handleOAuthSignIn("google")}
+            disabled={isLoading}
+            className="flex h-10 w-full items-center justify-center space-x-3 rounded-md border border-gray-200 bg-white text-black transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isLoading ? (
+              <LoadingDots color="#808080" />
+            ) : (
+              <>
+                <Google className="h-5 w-5" />
+                <p>Sign In with Google</p>
+              </>
             )}
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              required
-            />
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`${
-                isLoading
-                  ? "cursor-not-allowed bg-gray-400"
-                  : "bg-blue-500 hover:bg-blue-600"
-              } w-full rounded-md px-3 py-2 text-white focus:outline-none`}
-            >
-              {isLoading ? <LoadingDots color="#fff" /> : (isRegistering ? "Register" : "Sign In")}
-            </button>
-          </form>
-          {error && <p className="text-center text-sm text-red-500">{error}</p>}
-          <p className="text-center text-sm">
-            {isRegistering ? "Already have an account? " : "Don't have an account? "}
-            <button
-              type="button"
-              className="text-blue-500 hover:underline"
-              onClick={() => setIsRegistering(!isRegistering)}
-            >
-              {isRegistering ? "Sign In" : "Register"}
-            </button>
-          </p>
+          </button>
+
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300"></div>
@@ -146,27 +77,28 @@ const SignInModal = ({ showSignInModal, setShowSignInModal }: SignInModalProps) 
               <span className="bg-gray-50 px-2 text-gray-500">Or</span>
             </div>
           </div>
+
           <button
             type="button"
-            disabled={signInClicked}
-            className={`${
-              signInClicked
-                ? "cursor-not-allowed border-gray-200 bg-gray-100"
-                : "border border-gray-200 bg-white text-black hover:bg-gray-50"
-            } flex h-10 w-full items-center justify-center space-x-3 rounded-md border text-sm shadow-sm transition-all duration-75 focus:outline-none`}
-            onClick={() => {
-              setSignInClicked(true);
-              signIn("google");
-            }}
+            onClick={navigateToAuthPage}
+            className="flex h-10 w-full items-center justify-center space-x-3 rounded-md bg-emerald-500 text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-1"
           >
-            {signInClicked ? (
-              <LoadingDots color="#808080" />
-            ) : (
-              <>
-                <Google className="h-5 w-5" />
-                <p>Sign In with Google</p>
-              </>
-            )}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-5 w-5"
+            >
+              <rect width="20" height="16" x="2" y="4" rx="2" />
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            </svg>
+            <p>Continue with Email</p>
           </button>
         </div>
       </div>

@@ -1,16 +1,18 @@
-import { createContext, useContext } from 'react';
-import { Session } from 'next-auth';
+import React, { createContext, useContext } from "react";
+import { Session } from "next-auth";
 
 interface SessionContextProps {
   session: Session | null;
 }
 
-const SessionContext = createContext<SessionContextProps | undefined>(undefined);
+const SessionContext = createContext<SessionContextProps | undefined>(
+  undefined,
+);
 
 export const useSessionContext = () => {
   const context = useContext(SessionContext);
   if (!context) {
-    throw new Error('useSessionContext must be used within a SessionProvider');
+    throw new Error("useSessionContext must be used within a SessionProvider");
   }
   return context;
 };
