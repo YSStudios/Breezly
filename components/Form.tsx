@@ -518,7 +518,7 @@ const Form: React.FC = () => {
             )}
 
             {/* Debug toggle */}
-            <div className="mt-6 text-right">
+            {/* <div className="mt-6 text-right">
               <button
                 type="button"
                 onClick={() => setShowDebug(!showDebug)}
@@ -526,7 +526,7 @@ const Form: React.FC = () => {
               >
                 {showDebug ? "Hide Debug" : "Show Debug"}
               </button>
-            </div>
+            </div> */}
 
             {/* Debug panel */}
             {showDebug && (
