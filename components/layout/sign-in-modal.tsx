@@ -1,4 +1,10 @@
-import { useState, Dispatch, SetStateAction, useCallback, useMemo } from "react";
+import {
+  useState,
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useMemo,
+} from "react";
 import { signIn } from "next-auth/react";
 import Modal from "@/components/shared/modal";
 import { LoadingDots, Google } from "@/components/shared/icons";
@@ -9,7 +15,10 @@ interface SignInModalProps {
   setShowSignInModal: Dispatch<SetStateAction<boolean>>;
 }
 
-const SignInModal = ({ showSignInModal, setShowSignInModal }: SignInModalProps) => {
+const SignInModal = ({
+  showSignInModal,
+  setShowSignInModal,
+}: SignInModalProps) => {
   const [signInClicked, setSignInClicked] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,14 +37,14 @@ const SignInModal = ({ showSignInModal, setShowSignInModal }: SignInModalProps) 
     if (isForgotPassword) {
       // Handle password reset request
       try {
-        const res = await fetch('/api/auth/forgot-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch("/api/auth/forgot-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email }),
         });
-        
+
         const data = await res.json();
-        
+
         if (res.ok) {
           setResetEmailSent(true);
         } else {
@@ -49,14 +58,14 @@ const SignInModal = ({ showSignInModal, setShowSignInModal }: SignInModalProps) 
     } else if (isRegistering) {
       // Handle registration
       try {
-        const res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password, name }),
         });
-        
+
         const data = await res.json();
-        
+
         if (res.ok) {
           // Auto sign in after successful registration
           const result = await signIn("credentials", {
@@ -64,12 +73,13 @@ const SignInModal = ({ showSignInModal, setShowSignInModal }: SignInModalProps) 
             email,
             password,
           });
-          
+
           if (result?.error) {
             console.error("Sign in after registration failed:", result.error);
             setError(result.error);
           } else {
             setShowSignInModal(false);
+            window.location.reload(); // Force a reload to ensure auth state is updated
           }
         } else {
           console.error("Registration failed:", data.message);
@@ -87,17 +97,23 @@ const SignInModal = ({ showSignInModal, setShowSignInModal }: SignInModalProps) 
           setIsLoading(false);
           return;
         }
-        
-        console.log(`Attempting to sign in with email: ${email.substring(0, 3)}...`);
-        
+
+        console.log(
+          `Attempting to sign in with email: ${email.substring(0, 3)}...`,
+        );
+
         const result = await signIn("credentials", {
           redirect: false,
           email,
           password,
-          callbackUrl: '/'
+          callbackUrl: "/",
         });
 
-        console.log("Sign-in result:", { error: result?.error, ok: result?.ok, status: result?.status });
+        console.log("Sign-in result:", {
+          error: result?.error,
+          ok: result?.ok,
+          status: result?.status,
+        });
 
         if (result?.error) {
           console.error("Sign in failed:", result.error);
@@ -122,19 +138,19 @@ const SignInModal = ({ showSignInModal, setShowSignInModal }: SignInModalProps) 
   };
 
   // Reset form when switching between modes
-  const handleModeSwitch = (mode: 'signin' | 'register' | 'forgot') => {
+  const handleModeSwitch = (mode: "signin" | "register" | "forgot") => {
     setError("");
     setEmail("");
     setPassword("");
     setName("");
-    
-    if (mode === 'signin') {
+
+    if (mode === "signin") {
       setIsRegistering(false);
       setIsForgotPassword(false);
-    } else if (mode === 'register') {
+    } else if (mode === "register") {
       setIsRegistering(true);
       setIsForgotPassword(false);
-    } else if (mode === 'forgot') {
+    } else if (mode === "forgot") {
       setIsForgotPassword(true);
       setIsRegistering(false);
       setResetEmailSent(false);
@@ -155,11 +171,15 @@ const SignInModal = ({ showSignInModal, setShowSignInModal }: SignInModalProps) 
             />
           </a>
           <h3 className="font-display text-2xl font-bold">
-            {isForgotPassword ? "Reset Password" : (isRegistering ? "Register" : "Sign In")}
+            {isForgotPassword
+              ? "Reset Password"
+              : isRegistering
+              ? "Register"
+              : "Sign In"}
           </h3>
           <p className="text-sm text-gray-500">
-            {isForgotPassword 
-              ? "Enter your email to receive a password reset link" 
+            {isForgotPassword
+              ? "Enter your email to receive a password reset link"
               : "This is strictly for demo purposes - only your email and profile picture will be stored."}
           </p>
         </div>
@@ -167,13 +187,13 @@ const SignInModal = ({ showSignInModal, setShowSignInModal }: SignInModalProps) 
         <div className="flex flex-col space-y-4 bg-gray-50 px-4 py-8 md:px-16">
           {isForgotPassword && resetEmailSent ? (
             <div className="text-center">
-              <div className="mb-4 p-4 bg-green-50 rounded-md text-green-800">
+              <div className="mb-4 rounded-md bg-green-50 p-4 text-green-800">
                 Check your email for a password reset link
               </div>
               <button
                 type="button"
                 className="text-blue-500 hover:underline"
-                onClick={() => handleModeSwitch('signin')}
+                onClick={() => handleModeSwitch("signin")}
               >
                 Return to Sign In
               </button>
@@ -228,30 +248,34 @@ const SignInModal = ({ showSignInModal, setShowSignInModal }: SignInModalProps) 
               </button>
             </form>
           )}
-          
+
           {error && <p className="text-center text-sm text-red-500">{error}</p>}
-          
+
           {!resetEmailSent && (
             <div className="flex flex-col space-y-2">
               {!isForgotPassword && (
                 <p className="text-center text-sm">
-                  {isRegistering ? "Already have an account? " : "Don't have an account? "}
+                  {isRegistering
+                    ? "Already have an account? "
+                    : "Don't have an account? "}
                   <button
                     type="button"
                     className="text-blue-500 hover:underline"
-                    onClick={() => handleModeSwitch(isRegistering ? 'signin' : 'register')}
+                    onClick={() =>
+                      handleModeSwitch(isRegistering ? "signin" : "register")
+                    }
                   >
                     {isRegistering ? "Sign In" : "Register"}
                   </button>
                 </p>
               )}
-              
+
               <p className="text-center text-sm">
                 {isForgotPassword ? (
                   <button
                     type="button"
                     className="text-blue-500 hover:underline"
-                    onClick={() => handleModeSwitch('signin')}
+                    onClick={() => handleModeSwitch("signin")}
                   >
                     Back to Sign In
                   </button>
@@ -259,7 +283,7 @@ const SignInModal = ({ showSignInModal, setShowSignInModal }: SignInModalProps) 
                   <button
                     type="button"
                     className="text-blue-500 hover:underline"
-                    onClick={() => handleModeSwitch('forgot')}
+                    onClick={() => handleModeSwitch("forgot")}
                   >
                     Forgot your password?
                   </button>
@@ -267,7 +291,7 @@ const SignInModal = ({ showSignInModal, setShowSignInModal }: SignInModalProps) 
               </p>
             </div>
           )}
-          
+
           {!isForgotPassword && (
             <>
               <div className="relative">
