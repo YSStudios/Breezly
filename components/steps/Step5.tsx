@@ -208,7 +208,7 @@ const Step5: React.FC<Step5Props> = ({ formData, formId }) => {
     // Create checkout session with the actual price ID
     try {
       // Use the actual price ID from Stripe
-      const priceId = "price_1QLFOFEgn55dkaBZk7uR59fZ";
+      const priceId = "price_1R6f2jEgn55dkaBZCsbDErRg";
 
       console.log("Initiating checkout with price ID:", priceId);
       console.log("Form ID:", formId);
@@ -428,19 +428,16 @@ const Step5: React.FC<Step5Props> = ({ formData, formId }) => {
               </div>
             </div>
           ) : (
-            <div className="rounded-lg bg-white p-6 shadow-md">
-              <h2 className="mb-4 text-2xl font-bold">Choose a Plan</h2>
-              <p className="mb-4">Select a plan to complete your purchase:</p>
-
+            <div className="rounded-lg bg-white">
               <div className="flex flex-col space-y-4">
                 {/* Standard Plan */}
                 <div className="overflow-hidden rounded-lg border border-gray-200 transition-all hover:shadow-md">
                   <div className="border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-indigo-100 p-4">
                     <h3 className="text-lg font-bold text-indigo-700">
-                      Standard
+                      One-Time Purchase
                     </h3>
                     <div className="mt-1 flex items-baseline">
-                      <span className="text-2xl font-bold">$29</span>
+                      <span className="text-2xl font-bold">$10</span>
                       <span className="ml-1 text-gray-500">/one-time</span>
                     </div>
                   </div>
