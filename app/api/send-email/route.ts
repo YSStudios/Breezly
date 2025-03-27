@@ -6,15 +6,6 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/options";
 
-// Since we can't find the module, let's mock it temporarily
-// Later, you can properly implement or import this function
-async function generatePDF(data: any): Promise<Buffer> {
-  // This is a placeholder - in reality, you'd use a PDF generation library
-  console.log('Generating PDF for data:', data);
-  // Return an empty buffer for now
-  return Buffer.from('PDF content would go here');
-}
-
 // Make sure to initialize sendgrid
 sendgrid.setApiKey(process.env.SENDGRID_API_KEY || "");
 
@@ -254,8 +245,48 @@ This is a placeholder PDF. In production, a properly formatted PDF would be atta
       
       // Return response based on email sending status
       if (recipientEmailSent && senderEmailSent) {
+        // Update form status to PENDING in the database
+        try {
+          const currentData = formData.data as Record<string, any>;
+          await prisma.formData.update({
+            where: { id: formId },
+            data: {
+              data: {
+                ...currentData,
+                status: "PENDING",
+                emailedTo: data.email,
+                emailedAt: new Date().toISOString()
+              }
+            }
+          });
+          console.log(`✅ Form ${formId} marked as PENDING after email sent`);
+        } catch (updateError) {
+          console.error('Error updating form status to PENDING:', updateError);
+          // Continue with the response even if the status update fails
+        }
+        
         return NextResponse.json({ success: true, message: "Both recipient and sender emails sent successfully" });
       } else if (recipientEmailSent) {
+        // Update form status to PENDING in the database even if sender email failed
+        try {
+          const currentData = formData.data as Record<string, any>;
+          await prisma.formData.update({
+            where: { id: formId },
+            data: {
+              data: {
+                ...currentData,
+                status: "PENDING",
+                emailedTo: data.email,
+                emailedAt: new Date().toISOString()
+              }
+            }
+          });
+          console.log(`✅ Form ${formId} marked as PENDING after email sent (despite sender email failure)`);
+        } catch (updateError) {
+          console.error('Error updating form status to PENDING:', updateError);
+          // Continue with the response even if the status update fails
+        }
+        
         return NextResponse.json({ 
           success: true, 
           message: "Recipient email sent, but sender confirmation failed", 
