@@ -365,126 +365,99 @@ const Dashboard = () => {
                 Draft Offers ({forms.length})
               </h2>
               {forms.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="w-full table-fixed">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="w-[20%] px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                          Property Address
-                        </th>
-                        <th className="w-[15%] px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                          Purchase Price
-                        </th>
-                        <th className="w-[15%] px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                          Buyer Name
-                        </th>
-                        <th className="w-[15%] px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                          Seller Name
-                        </th>
-                        <th className="w-[10%] px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                          Status
-                        </th>
-                        <th className="w-[15%] px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                          Updated Date
-                        </th>
-                        <th className="w-[10%] px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 bg-white">
-                      {forms.map((form) => (
-                        <tr key={form.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {form.data &&
-                              typeof form.data === "object" &&
-                              form.data["property-address"] ? (
-                                <>
-                                  {/* First line: Street address */}
-                                  <div>
-                                    {form.data["property-address"]
-                                      .split(",")
-                                      .slice(0, 2)
-                                      .join(",")}
-                                  </div>
-                                  {/* Second line: State, ZIP, Country */}
-                                  <div className="mt-1 text-sm text-gray-900">
-                                    {form.data["property-address"]
-                                      .split(",")
-                                      .slice(2)
-                                      .join(",")}
-                                  </div>
-                                </>
-                              ) : (
-                                "(incomplete)"
-                              )}
-                            </div>
-                          </td>
-                          <td className="whitespace-nowrap px-4 py-4">
-                            <div className="text-sm text-gray-500">
-                              {form.data["purchasePrice"]
-                                ? `$${Number(
-                                    form.data["purchasePrice"],
-                                  ).toLocaleString()}`
-                                : "(incomplete)"}
-                            </div>
-                          </td>
-                          <td className="whitespace-nowrap px-4 py-4">
-                            <div className="text-sm text-gray-500">
-                              {form.data["name-buyer-0"] || "(incomplete)"}
-                            </div>
-                          </td>
-                          <td className="whitespace-nowrap px-4 py-4">
-                            <div className="text-sm text-gray-500">
-                              {form.data["name-seller-0"] || "(incomplete)"}
-                            </div>
-                          </td>
-                          <td className="px-4 py-4">
-                            <div className="text-sm text-gray-500">
-                              {form.data["paymentStatus"] === "PAID" ? (
-                                <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                                  Purchased
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
-                                  Draft
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="whitespace-nowrap px-4 py-4">
-                            <div className="text-sm text-gray-500">
-                              {form.updatedAt
-                                ? format(
-                                    new Date(form.updatedAt),
-                                    "dd MMM yyyy",
-                                  )
-                                : "(incomplete)"}
-                            </div>
-                          </td>
-                          <td className="px-4 py-4 text-right">
-                            <div className="flex justify-end space-x-3">
-                              <button
-                                onClick={() =>
-                                  router.push(`/offerform?id=${form.id}`)
-                                }
-                                className="text-sm font-medium text-indigo-600 hover:text-indigo-900"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => initiateDeleteForm(form.id)}
-                                className="text-sm font-medium text-red-600 hover:text-red-900"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {forms.map((form) => (
+                    <div
+                      key={form.id}
+                      className="rounded-lg bg-white p-4 shadow"
+                    >
+                      <div className="mb-4 flex items-center justify-between">
+                        <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
+                          Draft
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {form.updatedAt
+                            ? format(new Date(form.updatedAt), "dd MMM yyyy")
+                            : "(incomplete)"}
+                        </span>
+                      </div>
+
+                      <div className="mb-4 space-y-2">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            Address:
+                          </div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {form.data &&
+                            typeof form.data === "object" &&
+                            form.data["property-address"]
+                              ? form.data["property-address"]
+                                  .split(",")
+                                  .slice(0, 1)
+                                  .join(",")
+                              : "(incomplete)"}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {form.data &&
+                            typeof form.data === "object" &&
+                            form.data["property-address"]
+                              ? form.data["property-address"]
+                                  .split(",")
+                                  .slice(1)
+                                  .join(",")
+                                  .trim()
+                              : ""}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">
+                            Purchase Price:
+                          </span>
+                          <span className="text-sm text-gray-900">
+                            {form.data["purchasePrice"]
+                              ? `$${Number(
+                                  form.data["purchasePrice"],
+                                ).toLocaleString()}`
+                              : "(incomplete)"}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Buyer:</span>
+                          <span className="text-sm text-gray-900">
+                            {form.data["name-buyer-0"] || "(incomplete)"}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Seller:</span>
+                          <span className="text-sm text-gray-900">
+                            {form.data["name-seller-0"] || "(incomplete)"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 border-t border-gray-200 pt-4">
+                        <div className="flex items-center justify-end space-x-3">
+                          <button
+                            onClick={() =>
+                              router.push(`/offerform?id=${form.id}`)
+                            }
+                            className="rounded-md bg-gray-50 px-2.5 py-1 text-sm font-medium text-indigo-600 hover:bg-gray-100"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => initiateDeleteForm(form.id)}
+                            className="rounded-md bg-gray-50 px-2.5 py-1 text-sm font-medium text-red-600 hover:bg-red-50"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <p>No offers found. Create a new offer to get started!</p>
