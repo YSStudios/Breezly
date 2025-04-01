@@ -267,19 +267,21 @@ const Step5: React.FC<Step5Props> = ({ formData, formId }) => {
   // Content for the full offer preview
   const OfferPreviewContent = () => (
     <div className="scrollable-container max-h-[80vh] overflow-y-auto relative">
-      {/* Simple diagonal DRAFT watermark */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ zIndex: 10 }}>
-        <div className="relative h-full w-full">
-          {[...Array(6)].map((_, i) => (
-            <div 
-              key={i} 
-              className="absolute text-red-200 text-[150px] font-bold opacity-30 w-full text-center"
-              style={{ top: `${i * 40}%`, transform: 'rotate(-30deg)' }}>
-              DRAFT
-            </div>
-          ))}
+      {/* Diagonal DRAFT watermark only shown for unpurchased offers */}
+      {!isPurchased && (
+        <div className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ zIndex: 10 }}>
+          <div className="relative h-full w-full">
+            {[...Array(6)].map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute text-red-200 text-[150px] font-bold opacity-30 w-full text-center"
+                style={{ top: `${i * 40}%`, transform: 'rotate(-30deg)' }}>
+                DRAFT
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       <div className="relative z-20">
         <h2 className="mb-10 text-center font-bold">
           Offer to Purchase Real Estate
@@ -320,8 +322,12 @@ const Step5: React.FC<Step5Props> = ({ formData, formId }) => {
             <p className="mb-15">
               The Property is located at: {formData["property-address"]}. The
               legal land description is as follows:{" "}
-              {formData["legal-land-description"] || "N/A"}. All Property included
-              within this Offer is referred to as the &quot;Property&quot;.
+              {formData["legal-land-description"] === 'attach' ||
+              !formData["legal-land-description-text"] ||
+              formData["legal-land-description-text"] === 'N/A'
+                ? '\n____________________________________________________________________________________________________.\n'
+                : formData["legal-land-description-text"]}
+              . All Property included within this Offer is referred to as the &quot;Property&quot;.
             </p>
           </li>
           <li>
@@ -357,6 +363,76 @@ const Step5: React.FC<Step5Props> = ({ formData, formId }) => {
               Offer. The balance will be subject to adjustments.
             </p>
           </li>
+          <li>
+            <h3 className="mb-10">Return of Deposit</h3>
+            <p className="mb-15">
+              {formData["escrowAgentName"] || "The escrow agent"} will return the Deposit to the Buyer if the Offer is rejected or expires prior to acceptance.
+            </p>
+          </li>
+          <li>
+            <h3 className="mb-10">Closing & Possession</h3>
+            <p className="mb-15">
+              The Closing Date will be on or be prior to {formData["closingDate"]} or at such other time agreed by the Parties, at which point the Buyer will take possession of the Property.
+              {formData["possession"] === 'Before funding, under a temporary lease'
+                ? ` The Buyer will take possession on ${formData["possessionDate"]} under a temporary lease arrangement.`
+                : ''}
+            </p>
+          </li>
+          <li>
+            <h3 className="mb-10">Conditions</h3>
+            <p className="mb-10">
+              The Buyer&apos;s obligation to purchase the Property is contingent upon the following enumerated condition(s):
+            </p>
+            {typeof formData["conditions"] === 'string' && formData["conditions"] ? 
+              formData["conditions"].split(',').map((condition, index) => (
+                <p key={index} className="mb-10 ml-20">
+                  {String.fromCharCode(97 + index)}. {condition.trim()}
+                </p>
+              )) : 
+              <p className="mb-10 ml-20">a. No conditions specified.</p>
+            }
+            <p className="mb-15">
+              All conditions must be satisfied by {formData["completionDate"]}.
+            </p>
+          </li>
+          <li>
+            <h3 className="mb-10">Additional Clauses</h3>
+            <p className="mb-15">
+              {formData["additionalClauses"] || "No additional clauses"}
+            </p>
+          </li>
+          <li>
+            <h3 className="mb-10">Notices</h3>
+            <p className="mb-10">
+              All notices pursuant to this Offer must be written and signed by the respective party or its agent and all such correspondence will be effective upon it being mailed with return receipt requested, hand-delivered, or emailed as follows:
+            </p>
+            <p className="mb-5">Buyer</p>
+            <p className="mb-0 ml-20">Name: {formData["name-buyer-0"]}</p>
+            <p className="mb-0 ml-20">Address: {formData["address-buyer-0"]}</p>
+            <p className="mb-15 ml-20">Email: {formData["email"]}</p>
+            <p className="mb-5">Seller</p>
+            <p className="mb-0 ml-20">Name: {formData["name-seller-0"]}</p>
+            <p className="mb-0 ml-20">Address: {formData["address-seller-0"]}</p>
+            <p className="mb-15 ml-20">Email: {formData["seller-email"] || "N/A"}</p>
+          </li>
+          <li>
+            <h3 className="mb-10">Severability</h3>
+            <p className="mb-15">
+              If any term or provision of this Offer will, to any extent, be determined to be invalid or unenforceable by a court of competent jurisdiction, the remainder of this Offer will not be affected and each unaffected term and provision of this Offer will remain valid and be enforceable to the fullest extent permitted by law.
+            </p>
+          </li>
+          <li>
+            <h3 className="mb-10">Interpretation</h3>
+            <p className="mb-15">
+              Headings are inserted for the convenience of the Parties only and are not to be considered when interpreting this Offer. Words in the singular mean and include the plural and vice versa. Words in the masculine gender mean and include the feminine gender and vice versa. Words importing persons include firms and corporations and vice versa.
+            </p>
+          </li>
+          <li>
+            <h3 className="mb-10">Time of Essence</h3>
+            <p className="mb-15">
+              Time is of the essence in this Offer. Every calendar day except Saturday, Sunday, or a US national holiday will be deemed a business day and all relevant time periods in this Offer will be calculated in business days. Performance will be due the next business day if any deadline falls on a Saturday, Sunday, or a US national holiday. A business day ends at 5:00 p.m. local time in the time zone in which the Property is situated.
+            </p>
+          </li>
         </ol>
 
         <h3 className="mb-10 text-center">Buyer&apos;s Offer</h3>
@@ -374,9 +450,68 @@ const Step5: React.FC<Step5Props> = ({ formData, formId }) => {
         <p className="mb-5">Address: {formData["address-buyer-0"]}</p>
         <p className="mb-5">Date: ____________________________</p>
         <p className="mb-20">Email: {formData["email"]}</p>
+
+        {/* Second page content */}
+        <div className="page-break"></div>
+        <h3 className="mb-10 text-center">Seller&apos;s Acceptance/ Counteroffer/ Rejection</h3>
+        <p className="mb-10"><strong>_____Acceptance of offer to purchase:</strong> The Seller accepts the foregoing offer on the terms and conditions specified above, and agrees to convey the Property to the Buyer.</p>
+        <div className="flex">
+          <div className="flex-item"> 
+            <p className="mb-5">_________________________</p>
+            <p className="mb-10">Seller&apos;s Signature</p>
+          </div>
+          <div className="flex-item">
+            <p className="mb-5">_________________________</p>
+            <p className="mb-10">Date</p>
+          </div>
+          <div className="flex-item">
+            <p className="mb-5">_________________________</p>
+            <p className="mb-15">Time</p>
+          </div>
+        </div>
+        
+        <p className="mb-10"><strong>_____Counteroffer:</strong> The Seller presents for the Buyer&apos;s Acceptance the terms of the Buyer&apos;s offer subject to the exceptions or modifications as specified in the attached addendum.</p>
+        <div className="flex">
+          <div className="flex-item"> 
+            <p className="mb-5">_________________________</p>
+            <p className="mb-10">Seller&apos;s Signature</p>
+          </div>
+          <div className="flex-item">
+            <p className="mb-5">_________________________</p>
+            <p className="mb-10">Date</p>
+          </div>
+          <div className="flex-item">
+            <p className="mb-5">_________________________</p>
+            <p className="mb-15">Time</p>
+          </div>
+        </div>
+        
+        <p className="mb-10"><strong>_____Rejection:</strong> The Seller rejects the foregoing offer.</p>
+        <div className="flex">
+          <div className="flex-item"> 
+            <p className="mb-5">_________________________</p>
+            <p className="mb-10">Seller&apos;s Signature</p>
+          </div>
+          <div className="flex-item">
+            <p className="mb-5">_________________________</p>
+            <p className="mb-10">Date</p>
+          </div>
+          <div className="flex-item">
+            <p className="mb-5">_________________________</p>
+            <p className="mb-15">Time</p>
+          </div>
+        </div>
+        
+        <p className="mb-5">Seller&apos;s Name: {formData["name-seller-0"]}</p>
+        <p className="mb-5">Address: {formData["address-seller-0"]}</p>
+        <p className="mb-5">Date: ____________________________</p>
+        <p className="mb-20">Email: {formData["seller-email"] || "N/A"}</p>
       </div>
     </div>
   );
+
+  // Update the preview modal title based on purchase status
+  const modalTitle = isPurchased ? "Offer to Purchase Real Estate" : "Offer Preview";
 
   return (
     <div className="flex flex-col">
@@ -623,7 +758,7 @@ const Step5: React.FC<Step5Props> = ({ formData, formId }) => {
           >
             <div className="relative">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Full Offer Preview</h2>
+                <h2 className="text-2xl font-bold">{modalTitle}</h2>
                 <button
                   className="text-gray-500 hover:text-gray-700"
                   onClick={() => setIsPreviewOpen(false)}
