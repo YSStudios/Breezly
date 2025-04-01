@@ -73,9 +73,8 @@ const getStepConfigs = (hasConditions: string | undefined): StepConfigs => {
       ...configs[4].substeps,
       ...(hasConditions === "Yes"
         ? {
-            6: "Condition Details",
-            7: "Additional Clauses",
-            8: "Acceptance Deadline",
+            6: "Additional Clauses",
+            7: "Acceptance Deadline",
           }
         : {
             6: "Additional Clauses",
