@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useFormContext, Controller } from "react-hook-form";
 import { RadioOptions } from "./FormComponents";
 import { CONDITIONS_OPTIONS } from "../Step4";
@@ -80,7 +80,10 @@ const ConditionDetails: React.FC = () => {
   ];
 
   // Watch changes specifically for opening/closing conditions
-  const conditionsValues = watch("conditions") || {};
+  const watchedConditions = watch("conditions");
+  
+  // Use useMemo to avoid creating a new object on every render
+  const conditionsValues = useMemo(() => watchedConditions || {}, [watchedConditions]);
 
   // Auto-open condition details when newly selected, without re-rendering on every field change
   useEffect(() => {
